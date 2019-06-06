@@ -11,6 +11,7 @@ import net.minecraftforge.fml.common.Loader;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class CurseHelper {
 
@@ -18,14 +19,14 @@ public class CurseHelper {
 
         Map<Enchantment, Integer> enchants = EnchantmentHelper.getEnchantments(stack);
 
-        return !enchants.isEmpty() && enchants.keySet().stream().allMatch(Enchantment::isCurse);
+        return enchants.keySet().stream().filter(Objects::nonNull).allMatch(Enchantment::isCurse);
     }
 
     public static boolean isCursed(ItemStack stack) {
 
         Map<Enchantment, Integer> enchants = EnchantmentHelper.getEnchantments(stack);
 
-        return enchants.keySet().stream().anyMatch(Enchantment::isCurse);
+        return enchants.keySet().stream().filter(Objects::nonNull).anyMatch(Enchantment::isCurse);
     }
 
     public static boolean isItemBlacklisted(ItemStack stack) {

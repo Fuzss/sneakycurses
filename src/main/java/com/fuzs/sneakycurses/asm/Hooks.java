@@ -46,7 +46,7 @@ public final class Hooks {
 
     public static int getColor() {
 
-        int color = ItemDye.DYE_COLORS[ConfigHandler.a4CurseGlintColour.getDyeDamage()];
+        int color = ItemDye.DYE_COLORS[ConfigHandler.a4CurseGlintColor.getDyeDamage()];
 
         return (alphaValue() << 24) | color;
 
@@ -58,7 +58,7 @@ public final class Hooks {
     }
 
     private static boolean leaveAsIs() {
-        return targetStack.isEmpty() || !CurseHelper.isCursed(targetStack) || ConfigHandler.a4CurseGlintColour.getDyeDamage() == -1;
+        return targetStack.isEmpty() || !CurseHelper.isCursed(targetStack) || ConfigHandler.a4CurseGlintColor.getDyeDamage() == -1;
     }
 
 }

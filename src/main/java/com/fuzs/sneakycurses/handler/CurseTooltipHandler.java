@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings({"deprecation", "unused"})
-public class ClientEventHandler {
+public class CurseTooltipHandler {
 
     @SubscribeEvent
     public void makeTooltip(ItemTooltipEvent evt) {
@@ -26,10 +26,10 @@ public class ClientEventHandler {
 
             List<String> tooltip = evt.getToolTip();
 
-            // colourise cursed item name
+            // colorise cursed item name
             if (CurseHelper.isCursed(stack)) {
-                if (ConfigHandler.a5NameColour.getDyeDamage() != -1 || CurseHelper.onlyCurses(stack)) {
-                    String s3 = ConfigHandler.a5NameColour.getChatColor() + tooltip.get(0);
+                if (ConfigHandler.a5NameColor.getDyeDamage() != -1 || CurseHelper.onlyCurses(stack)) {
+                    String s3 = ConfigHandler.a5NameColor.getChatColor() + tooltip.get(0);
                     tooltip.set(0, s3);
                 }
             }

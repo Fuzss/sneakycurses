@@ -1,9 +1,7 @@
 package com.fuzs.sneakycurses.handler;
 
 import com.fuzs.sneakycurses.SneakyCurses;
-import com.fuzs.sneakycurses.helper.EnumConfigColour;
-import net.minecraft.item.EnumDyeColor;
-import net.minecraft.util.IStringSerializable;
+import com.fuzs.sneakycurses.helper.EnumConfigColor;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.Config.Type;
 import net.minecraftforge.common.config.ConfigManager;
@@ -31,17 +29,17 @@ public class ConfigHandler {
 	@Config.Comment("Blacklist for items that will even have an enchantment glint when only containing curses.")
 	public static String[] a3hideGlintBlacklist = new String[] { "minecraft:enchanted_book" };
 
-	@Config.Name("Curse Glint Colour")
-	@Config.Comment("Set the enchantment glint colour for items that contain curses. Darker colours are less visible.")
-	public static EnumConfigColour a4CurseGlintColour = EnumConfigColour.RED;
+	@Config.Name("Curse Glint Color")
+	@Config.Comment("Set the enchantment glint color for items that contain curses. Darker colors are less visible.")
+	public static EnumConfigColor a4CurseGlintColor = EnumConfigColor.RED;
 
 	@Config.Name("Quark Compat")
-	@Config.Comment("Prioritise coloured runes from the Quark mod over the custom curse glint colour from this mod.")
+	@Config.Comment("Prioritise colored runes from the Quark mod over the custom curse glint color from this mod.")
 	public static boolean a51QuarkCompat = true;
 
-	@Config.Name("Item Name Colour")
-	@Config.Comment("Change the name colour of cursed items. Vanilla default is \"magenta\", \"default\" will remove the name colour from items solely containing curses.")
-	public static EnumConfigColour a5NameColour = EnumConfigColour.BROWN;
+	@Config.Name("Item Name Color")
+	@Config.Comment("Change the name color of cursed items. Vanilla default is \"magenta\", \"default\" will remove the name color from items solely containing curses.")
+	public static EnumConfigColor a5NameColor = EnumConfigColor.BROWN;
 
 	@Config.Name("Disguise NBT Tag")
 	@Config.Comment("Remove one nbt tag entry in case the item is only enchanted with curses. Remove it completely when no entries are left.")
