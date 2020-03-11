@@ -1,7 +1,5 @@
-# Sneaky Curses
-Curse enchantments are now hidden on items. Or a lot easier to spot. Customise the mod to your desires.
+# Sneaky Magic
 
-![SneakyCurses](https://i.imgur.com/1hs2F4V.png)
+A Minecraft mod. Downloads can be found on CurseForge.
 
-## Downloads
-Check this project out on [Curse](https://minecraft.curseforge.com/projects/sneaky-curses).
+![](https://i.imgur.com/1hs2F4V.png)
