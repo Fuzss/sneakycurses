@@ -3,13 +3,13 @@ package com.fuzs.sneakymagic.common;
 import com.fuzs.sneakymagic.config.ConfigBuildHandler;
 import com.google.common.collect.Lists;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.EnchantmentType;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ExperienceOrbEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.item.*;
+import net.minecraft.item.CrossbowItem;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraftforge.event.entity.player.ArrowNockEvent;
@@ -21,15 +21,6 @@ import java.util.List;
 import java.util.Map;
 
 public class EnchantmentHandler {
-
-    private static final EnchantmentType ACTUAL_WEAPON = EnchantmentType.create("ACTUAL_WEAPON", item -> item instanceof SwordItem || item instanceof AxeItem || item instanceof TridentItem);
-    private static final EnchantmentType ARROW_LAUNCHER = EnchantmentType.create("ARROW_LAUNCHER", item -> item instanceof CrossbowItem || item instanceof BowItem);
-
-    public EnchantmentHandler() {
-
-        Lists.newArrayList(Enchantments.SHARPNESS, Enchantments.SMITE, Enchantments.BANE_OF_ARTHROPODS, Enchantments.KNOCKBACK, Enchantments.FIRE_ASPECT, Enchantments.LOOTING, Enchantments.SWEEPING, Enchantments.IMPALING).forEach(ench -> ench.type = ACTUAL_WEAPON);
-        Lists.newArrayList(Enchantments.FLAME, Enchantments.PUNCH, Enchantments.POWER, Enchantments.INFINITY, Enchantments.PIERCING, Enchantments.MULTISHOT, Enchantments.QUICK_CHARGE).forEach(ench -> ench.type = ARROW_LAUNCHER);
-    }
 
     @SuppressWarnings("unused")
     @SubscribeEvent
@@ -61,6 +52,9 @@ public class EnchantmentHandler {
         }
     }
 
+    /**
+     * copied from {@link net.minecraft.entity.item.ExperienceOrbEntity#onCollideWithPlayer}
+     */
     @SuppressWarnings("unused")
     @SubscribeEvent
     public void onPickupXp(final PlayerXpEvent.PickupXp evt) {
@@ -95,6 +89,9 @@ public class EnchantmentHandler {
         evt.setCanceled(true);
     }
 
+    /**
+     * copied from {@link net.minecraft.enchantment.EnchantmentHelper#getRandomItemWithEnchantment}
+     */
     private Map.Entry<EquipmentSlotType, ItemStack> getRandomItemWithEnchantment(LivingEntity entityIn) {
 
         Map<EquipmentSlotType, ItemStack> map = Enchantments.MENDING.getEntityEquipment(entityIn);

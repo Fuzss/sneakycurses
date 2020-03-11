@@ -1,6 +1,8 @@
 package com.fuzs.sneakymagic;
 
 import com.fuzs.sneakymagic.client.CursedTooltipHandler;
+import com.fuzs.sneakymagic.common.CompatibilityHandler;
+import com.fuzs.sneakymagic.common.CompatibilityManager;
 import com.fuzs.sneakymagic.common.EnchantmentHandler;
 import com.fuzs.sneakymagic.config.ConfigBuildHandler;
 import net.minecraftforge.common.MinecraftForge;
@@ -33,7 +35,10 @@ public class SneakyMagic {
 
     private void onCommonSetup(final FMLCommonSetupEvent evt) {
 
+        // need this to run later than usual as it won't sync later on by default
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(new CompatibilityManager()::onModConfig);
         MinecraftForge.EVENT_BUS.register(new EnchantmentHandler());
+        MinecraftForge.EVENT_BUS.register(new CompatibilityHandler());
     }
 
     private void onClientSetup(final FMLClientSetupEvent evt) {

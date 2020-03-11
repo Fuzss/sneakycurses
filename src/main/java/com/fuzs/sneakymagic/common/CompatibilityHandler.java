@@ -2,12 +2,11 @@ package com.fuzs.sneakymagic.common;
 
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.AbstractArrowEntity;
-import net.minecraft.item.ArrowItem;
-import net.minecraft.item.BowItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import net.minecraft.item.*;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -34,7 +33,7 @@ public class CompatibilityHandler {
 
                     AbstractArrowEntity abstractarrowentity = arrowitem.createArrow(evt.getWorld(), itemstack, playerentity);
                     abstractarrowentity.shoot(playerentity, playerentity.rotationPitch, playerentity.rotationYaw, 0.0F, velocity * 3.0F, 10.0F);
-                    addArrowEnchantments(abstractarrowentity, stack);
+                    applyCommonEnchantments(abstractarrowentity, stack);
                     abstractarrowentity.pickupStatus = AbstractArrowEntity.PickupStatus.CREATIVE_ONLY;
                     evt.getWorld().addEntity(abstractarrowentity);
                 }
@@ -45,17 +44,49 @@ public class CompatibilityHandler {
 
     @SuppressWarnings("unused")
     @SubscribeEvent
+    public void onEntityJoinWorld(final EntityJoinWorldEvent evt) {
+
+        if (evt.getEntity() instanceof AbstractArrowEntity) {
+
+            AbstractArrowEntity abstractarrowentity = (AbstractArrowEntity) evt.getEntity();
+            if (abstractarrowentity.getShooter() instanceof LivingEntity) {
+
+                LivingEntity livingEntity = (LivingEntity) abstractarrowentity.getShooter();
+                ItemStack stack = livingEntity.getActiveItemStack();
+
+                if (stack.getItem() instanceof BowItem) {
+
+                    // piercing enchantment for bows
+                    this.applyPiercingEnchantment(abstractarrowentity, stack);
+                }
+            }
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @SubscribeEvent
     public void onItemUseTick(final LivingEntityUseItemEvent.Tick evt) {
 
-        if (evt.getItem().getItem() instanceof BowItem && evt.getItem().getUseDuration() - evt.getDuration() < 20) {
+        Item item = evt.getItem().getItem();
+        int duration = evt.getItem().getUseDuration() - evt.getDuration();
+        if (item instanceof BowItem && duration < 20 || item instanceof TridentItem && duration < 10) {
 
-            // quick charge enchantment for bows
+            // quick charge enchantment for bows and tridents
             int i = EnchantmentHelper.getEnchantmentLevel(Enchantments.QUICK_CHARGE, evt.getItem());
             evt.setDuration(evt.getDuration() - i);
         }
     }
 
-    public static void addArrowEnchantments(AbstractArrowEntity abstractarrowentity, ItemStack stack) {
+    private void applyPiercingEnchantment(AbstractArrowEntity abstractarrowentity, ItemStack stack) {
+
+        int i = EnchantmentHelper.getEnchantmentLevel(Enchantments.PIERCING, stack);
+        if (i > 0) {
+
+            abstractarrowentity.setPierceLevel((byte) i);
+        }
+    }
+
+    private static void applyCommonEnchantments(AbstractArrowEntity abstractarrowentity, ItemStack stack) {
 
         int j = EnchantmentHelper.getEnchantmentLevel(Enchantments.POWER, stack);
         if (j > 0) {
@@ -72,6 +103,15 @@ public class CompatibilityHandler {
         if (EnchantmentHelper.getEnchantmentLevel(Enchantments.FLAME, stack) > 0) {
 
             abstractarrowentity.setFire(100);
+        }
+    }
+
+    public static void applyCrossbowEnchantments(AbstractArrowEntity abstractarrowentity, ItemStack stack) {
+
+        applyCommonEnchantments(abstractarrowentity, stack);
+        if (EnchantmentHelper.getEnchantmentLevel(Enchantments.INFINITY, stack) > 0) {
+
+            abstractarrowentity.pickupStatus = AbstractArrowEntity.PickupStatus.CREATIVE_ONLY;
         }
     }
 
