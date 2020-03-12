@@ -42,7 +42,7 @@ public class EnchantmentHandler {
         if (ConfigBuildHandler.TRUE_INFINITY.get() && EnchantmentHelper.getEnchantmentLevel(Enchantments.INFINITY, evt.getBow()) > 0) {
 
             evt.getPlayer().setActiveHand(evt.getHand());
-            evt.setAction(ActionResult.resultConsume(evt.getBow()));
+            evt.setAction(new ActionResult<>(ActionResultType.SUCCESS, evt.getBow()));
         }
     }
 
@@ -58,7 +58,7 @@ public class EnchantmentHandler {
 
                 // resetting isLoadingStart and isLoadingMiddle is not required as they're reset in CrossbowItem#func_219972_a anyways
                 evt.getPlayer().setActiveHand(evt.getHand());
-                evt.setCancellationResult(ActionResultType.CONSUME);
+                evt.setCancellationResult(ActionResultType.SUCCESS);
                 evt.setCanceled(true);
             }
         }
@@ -102,7 +102,7 @@ public class EnchantmentHandler {
     }
 
     /**
-     * copied from {@link net.minecraft.enchantment.EnchantmentHelper#getRandomItemWithEnchantment}
+     * copied from {@link net.minecraft.enchantment.EnchantmentHelper#func_222189_b}
      */
     private Map.Entry<EquipmentSlotType, ItemStack> getRandomItemWithEnchantment(LivingEntity entityIn) {
 

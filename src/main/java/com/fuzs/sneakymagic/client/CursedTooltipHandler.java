@@ -2,11 +2,14 @@ package com.fuzs.sneakymagic.client;
 
 import com.fuzs.sneakymagic.config.ConfigBuildHandler;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -15,6 +18,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -34,7 +38,7 @@ public class CursedTooltipHandler {
         if (!stack.isEmpty() && (stack.isEnchanted() || ConfigBuildHandler.AFFECT_BOOKS.get())) {
 
             // check if item is cursed
-            Map<Enchantment, Integer> enchants = ConfigBuildHandler.AFFECT_BOOKS.get() ? EnchantmentHelper.getEnchantments(stack) : EnchantmentHelper.func_226652_a_(stack.getEnchantmentTagList());
+            Map<Enchantment, Integer> enchants = ConfigBuildHandler.AFFECT_BOOKS.get() ? EnchantmentHelper.getEnchantments(stack) : getEnchantments(stack.getEnchantmentTagList());
             if (enchants.keySet().stream().filter(Objects::nonNull).anyMatch(Enchantment::isCurse) && stack.hasTag() && stack.getTag() != null) {
 
                 CompoundNBT tag = stack.getTag();
@@ -90,6 +94,19 @@ public class CursedTooltipHandler {
                 .forEach(entry -> curses.add(entry.getKey().getDisplayName(entry.getValue())));
 
         return curses;
+    }
+
+    public static Map<Enchantment, Integer> getEnchantments(ListNBT listnbt) {
+
+        Map<Enchantment, Integer> map = Maps.newLinkedHashMap();
+        for (int i = 0; i < listnbt.size(); ++i) {
+
+            CompoundNBT compoundnbt = listnbt.getCompound(i);
+            Optional.ofNullable(ForgeRegistries.ENCHANTMENTS.getValue(ResourceLocation.tryCreate(compoundnbt.getString("id"))))
+                    .ifPresent((p_222185_2_) -> map.put(p_222185_2_, compoundnbt.getInt("lvl")));
+        }
+
+        return map;
     }
 
 }

@@ -82,7 +82,7 @@ public class CompatibilityHandler {
         int i = EnchantmentHelper.getEnchantmentLevel(Enchantments.PIERCING, stack);
         if (i > 0) {
 
-            abstractarrowentity.setPierceLevel((byte) i);
+            abstractarrowentity.func_213872_b((byte) i);
         }
     }
 

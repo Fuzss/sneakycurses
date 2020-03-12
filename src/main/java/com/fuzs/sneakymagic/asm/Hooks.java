@@ -1,5 +1,6 @@
 package com.fuzs.sneakymagic.asm;
 
+import com.fuzs.sneakymagic.client.CursedTooltipHandler;
 import com.fuzs.sneakymagic.common.CompatibilityHandler;
 import com.fuzs.sneakymagic.config.ConfigBuildHandler;
 import net.minecraft.enchantment.Enchantment;
@@ -66,7 +67,7 @@ public class Hooks {
      */
     public static boolean hasEffect(boolean isEnchanted, ItemStack stack) {
 
-        return isEnchanted && !(EnchantmentHelper.func_226652_a_(stack.getEnchantmentTagList()).keySet().stream().filter(Objects::nonNull)
+        return isEnchanted && !(CursedTooltipHandler.getEnchantments(stack.getEnchantmentTagList()).keySet().stream().filter(Objects::nonNull)
                 .allMatch(Enchantment::isCurse) && ConfigBuildHandler.HIDE_GLINT.get());
     }
 
