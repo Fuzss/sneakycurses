@@ -48,6 +48,57 @@ function initializeCoreMod() {
             }
         },
 
+        // make piercing compatible with multishot
+        'piercing_enchantment_patch': {
+            'target': {
+                'type': 'CLASS',
+                'name': 'net.minecraft.enchantment.PiercingEnchantment'
+            },
+            'transformer': function(classNode) {
+                patchMethod([{
+                    obfName: "func_77326_a",
+                    name: "canApplyTogether",
+                    desc: "(Lnet/minecraft/enchantment/Enchantment;)Z",
+                    patches: [patchPiercingEnchantmentCanApplyTogether]
+                }], classNode, "PiercingEnchantment");
+                return classNode;
+            }
+        },
+
+        // make piercing compatible with multishot
+        'multishot_enchantment_patch': {
+            'target': {
+                'type': 'CLASS',
+                'name': 'net.minecraft.enchantment.MultishotEnchantment'
+            },
+            'transformer': function(classNode) {
+                patchMethod([{
+                    obfName: "func_77326_a",
+                    name: "canApplyTogether",
+                    desc: "(Lnet/minecraft/enchantment/Enchantment;)Z",
+                    patches: [patchMultishotEnchantmentCanApplyTogether]
+                }], classNode, "MultishotEnchantment");
+                return classNode;
+            }
+        },
+
+        // make different types of protection compatible with each other
+        'protection_enchantment_patch': {
+            'target': {
+                'type': 'CLASS',
+                'name': 'net.minecraft.enchantment.ProtectionEnchantment'
+            },
+            'transformer': function(classNode) {
+                patchMethod([{
+                    obfName: "func_77326_a",
+                    name: "canApplyTogether",
+                    desc: "(Lnet/minecraft/enchantment/Enchantment;)Z",
+                    patches: [patchProtectionEnchantmentCanApplyTogether]
+                }], classNode, "ProtectionEnchantment");
+                return classNode;
+            }
+        },
+
         // properly allow infinity enchantment on crossbows
         'crossbow_item_patch': {
             'target': {
@@ -66,6 +117,23 @@ function initializeCoreMod() {
                     desc: "(Lnet/minecraft/world/World;Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)Lnet/minecraft/entity/projectile/AbstractArrowEntity;",
                     patches: [patchCrossbowItemCreateArrow]
                 }], classNode, "CrossbowItem");
+                return classNode;
+            }
+        },
+
+        // hide glint from items solely enchanted with curses
+        'item_patch': {
+            'target': {
+                'type': 'CLASS',
+                'name': 'net.minecraft.item.Item'
+            },
+            'transformer': function(classNode) {
+                patchMethod([{
+                    obfName: "func_77636_d",
+                    name: "hasEffect",
+                    desc: "(Lnet/minecraft/item/ItemStack;)Z",
+                    patches: [patchItemHasEffect]
+                }], classNode, "Item");
                 return classNode;
             }
         }
@@ -128,6 +196,23 @@ function patchInstructions(method, filter, action, obfuscated) {
     }
 }
 
+var patchItemHasEffect = {
+    filter: function(node, obfuscated) {
+        if (matchesNode(node, "net/minecraft/item/ItemStack", obfuscated ? "func_77948_v" : "isEnchanted", "()Z")) {
+            var nextNode = node.getNext();
+            if (nextNode instanceof InsnNode && nextNode.getOpcode().equals(Opcodes.IRETURN)) {
+                return node;
+            }
+        }
+    },
+    action: function(node, instructions, obfuscated) {
+        var insnList = new InsnList();
+        insnList.add(new VarInsnNode(Opcodes.ALOAD, 1));
+        insnList.add(generateHook("hasEffect", "(ZLnet/minecraft/item/ItemStack;)Z"));
+        instructions.insert(node, insnList);
+    }
+};
+
 var patchCrossbowItemCreateArrow = {
     filter: function(node, obfuscated) {
         if (node instanceof VarInsnNode && node.getOpcode().equals(Opcodes.ALOAD) && node.var.equals(5)) {
@@ -150,7 +235,7 @@ var patchCrossbowItemHasAmmo = {
     filter: function(node, obfuscated) {
         if (node instanceof VarInsnNode && node.getOpcode().equals(Opcodes.ISTORE) && node.var.equals(4)) {
             var nextNode = getNthNode(node, -9);
-            if (nextNode instanceof FieldInsnNode && nextNode.getOpcode().equals(Opcodes.GETFIELD) && nextNode.owner.equals("net/minecraft/entity/player/PlayerAbilities") && nextNode.name.equals("isCreativeMode") && nextNode.desc.equals("Z")) {
+            if (nextNode instanceof FieldInsnNode && nextNode.getOpcode().equals(Opcodes.GETFIELD) && nextNode.owner.equals("net/minecraft/entity/player/PlayerAbilities") && nextNode.name.equals(obfuscated ? "field_75098_d" : "isCreativeMode") && nextNode.desc.equals("Z")) {
                 return node;
             }
         }
@@ -160,6 +245,59 @@ var patchCrossbowItemHasAmmo = {
         insnList.add(new VarInsnNode(Opcodes.ALOAD, 1));
         insnList.add(generateHook("hasInfinity", "(ZLnet/minecraft/item/ItemStack;)Z"));
         instructions.insertBefore(node, insnList);
+    }
+};
+
+var patchProtectionEnchantmentCanApplyTogether = {
+    filter: function(node, obfuscated) {
+        if (node instanceof TypeInsnNode && node.getOpcode().equals(Opcodes.INSTANCEOF) && node.desc.equals("net/minecraft/enchantment/ProtectionEnchantment")) {
+            var nextNode = node.getNext();
+            if (nextNode instanceof JumpInsnNode && nextNode.getOpcode().equals(Opcodes.IFEQ)) {
+                return nextNode;
+            }
+        }
+    },
+    action: function(node, instructions, obfuscated) {
+        var insnList = new InsnList();
+        insnList.add(generateHook("canApplyProtection", "()Z"));
+        insnList.add(new JumpInsnNode(Opcodes.IFEQ, node.label));
+        instructions.insert(node, insnList);
+    }
+};
+
+var patchMultishotEnchantmentCanApplyTogether = {
+    filter: function(node, obfuscated) {
+        if (matchesNode(node, "net/minecraft/enchantment/Enchantment", obfuscated ? "func_77326_a" : "canApplyTogether", "(Lnet/minecraft/enchantment/Enchantment;)Z")) {
+            var nextNode = node.getPrevious();
+            if (nextNode instanceof VarInsnNode && nextNode.getOpcode().equals(Opcodes.ALOAD) && nextNode.var.equals(1)) {
+                return node;
+            }
+        }
+    },
+    action: function(node, instructions, obfuscated) {
+        var insnList = new InsnList();
+        insnList.add(new VarInsnNode(Opcodes.ALOAD, 1));
+        insnList.add(generateHook("canApplyMultishot", "(ZLnet/minecraft/enchantment/Enchantment;)Z"));
+        insnList.add(new InsnNode(Opcodes.IRETURN));
+        instructions.insert(node, insnList);
+    }
+};
+
+var patchPiercingEnchantmentCanApplyTogether = {
+    filter: function(node, obfuscated) {
+        if (matchesNode(node, "net/minecraft/enchantment/Enchantment", obfuscated ? "func_77326_a" : "canApplyTogether", "(Lnet/minecraft/enchantment/Enchantment;)Z")) {
+            var nextNode = node.getPrevious();
+            if (nextNode instanceof VarInsnNode && nextNode.getOpcode().equals(Opcodes.ALOAD) && nextNode.var.equals(1)) {
+                return node;
+            }
+        }
+    },
+    action: function(node, instructions, obfuscated) {
+        var insnList = new InsnList();
+        insnList.add(new VarInsnNode(Opcodes.ALOAD, 1));
+        insnList.add(generateHook("canApplyPiercing", "(ZLnet/minecraft/enchantment/Enchantment;)Z"));
+        insnList.add(new InsnNode(Opcodes.IRETURN));
+        instructions.insert(node, insnList);
     }
 };
 

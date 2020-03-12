@@ -12,6 +12,7 @@ import net.minecraft.item.CrossbowItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.ArrowNockEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerXpEvent;
@@ -21,6 +22,17 @@ import java.util.List;
 import java.util.Map;
 
 public class EnchantmentHandler {
+
+    @SuppressWarnings("unused")
+    @SubscribeEvent
+    public void onLivingHurt(final LivingHurtEvent evt) {
+
+        // immediately reset damage immunity after being hit by any projectile, fixes multishot
+        if (evt.getSource().isProjectile() && ConfigBuildHandler.NO_PROJECTILE_RESISTANCE.get()) {
+
+            evt.getEntity().hurtResistantTime = 0;
+        }
+    }
 
     @SuppressWarnings("unused")
     @SubscribeEvent
