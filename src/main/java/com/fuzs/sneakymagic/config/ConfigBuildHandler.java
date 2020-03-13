@@ -1,13 +1,9 @@
 package com.fuzs.sneakymagic.config;
 
-import com.fuzs.sneakymagic.SneakyMagic;
 import com.google.common.collect.Lists;
-import net.minecraft.client.renderer.ItemRenderer;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 import java.util.List;
-import java.util.Locale;
 
 @SuppressWarnings("WeakerAccess")
 public class ConfigBuildHandler {
@@ -32,8 +28,6 @@ public class ConfigBuildHandler {
     public static final ForgeConfigSpec.BooleanValue DISGUISE_TAG;
     public static final ForgeConfigSpec.BooleanValue AFFECT_BOOKS;
     public static final ForgeConfigSpec.BooleanValue HIDE_GLINT;
-    public static final ForgeConfigSpec.EnumValue<ItemGlintColor> GLINT_COLOR;
-    public static final ForgeConfigSpec.EnumValue<ItemGlintColor> CURSED_GLINT_COLOR;
 
     static {
 
@@ -62,36 +56,9 @@ public class ConfigBuildHandler {
         DISGUISE_TAG = ConfigBuildHandler.BUILDER.comment("Remove one nbt tag entry in case the item is only enchanted with curses.").define("Disguise NBT Tag", false);
         AFFECT_BOOKS = ConfigBuildHandler.BUILDER.comment("Prevent curses from showing even on enchanted books.").define("Affect Books", false);
         HIDE_GLINT = ConfigBuildHandler.BUILDER.comment("Hide the enchantment glint in case the item is solely enchanted with curses.").define("Hide Glint", true);
-        GLINT_COLOR = ConfigBuildHandler.BUILDER.comment("Set the default enchantment glint color. Darker colors are less visible.").defineEnum("Glint Color", ItemGlintColor.DEFAULT);
-        CURSED_GLINT_COLOR = ConfigBuildHandler.BUILDER.comment("Set the enchantment glint color for cursed items. Darker colors are less visible.").defineEnum("Curse Glint Color", ItemGlintColor.DEFAULT);
         BUILDER.pop();
     }
 
     public static final ForgeConfigSpec SPEC = BUILDER.build();
-
-    @SuppressWarnings("unused")
-    public enum ItemGlintColor {
-
-        WHITE, ORANGE, MAGENTA, LIGHT_BLUE, YELLOW, LIME, PINK, GREY, SILVER, CYAN, PURPLE, BLUE, BROWN, GREEN, RED, BLACK, DEFAULT;
-
-        private final ResourceLocation location;
-
-        ItemGlintColor() {
-
-            String name = this.name().toLowerCase(Locale.ROOT);
-            this.location = name.equals("default") ? ItemRenderer.RES_ITEM_GLINT : new ResourceLocation(SneakyMagic.MODID, "textures/misc/enchanted_item_glint_" + name + ".png");
-        }
-
-        public ResourceLocation getLocation() {
-
-            return this.location;
-        }
-
-        public boolean isDefault() {
-
-            return this == DEFAULT;
-        }
-
-    }
 
 }
