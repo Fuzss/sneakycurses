@@ -2,13 +2,19 @@ package com.fuzs.sneakymagic.asm;
 
 import com.fuzs.sneakymagic.common.CompatibilityHandler;
 import com.fuzs.sneakymagic.config.ConfigBuildHandler;
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.projectile.AbstractArrowEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 
 import java.util.Objects;
+import java.util.Optional;
 
 @SuppressWarnings({"unused", "JavadocReference"})
 public class Hooks {
@@ -68,6 +74,48 @@ public class Hooks {
 
         return isEnchanted && !(EnchantmentHelper.func_226652_a_(stack.getEnchantmentTagList()).keySet().stream().filter(Objects::nonNull)
                 .allMatch(Enchantment::isCurse) && ConfigBuildHandler.HIDE_GLINT.get());
+    }
+
+    /**
+     * switch "enchanted_item_glint.png" with a colored version in multiple places
+     */
+    public static void setupGlintRenderer(ItemStack stack, boolean isItem) {
+
+        if (!stack.hasEffect() || ConfigBuildHandler.GLINT_COLOR.get().isDefault() && ConfigBuildHandler.CURSED_GLINT_COLOR.get().isDefault()) {
+
+            return;
+        }
+
+        boolean isCursed = EnchantmentHelper.func_226652_a_(stack.getEnchantmentTagList()).keySet().stream().filter(Objects::nonNull).anyMatch(Enchantment::isCurse);
+        setupGlintRenderer(isCursed, isItem);
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    private static void setupGlintRenderer(boolean isCursed, boolean isItem) {
+
+        ResourceLocation location = isCursed ? ConfigBuildHandler.CURSED_GLINT_COLOR.get().getLocation() : ConfigBuildHandler.GLINT_COLOR.get().getLocation();
+        RenderType.Type type = (RenderType.Type) (isItem ? RenderType.GLINT : RenderType.ENTITY_GLINT);
+
+        type.renderState.texture.setupTask = () -> {
+
+            RenderSystem.enableTexture();
+            TextureManager texturemanager = Minecraft.getInstance().getTextureManager();
+            texturemanager.bindTexture(location);
+            texturemanager.getTexture(location).setBlurMipmapDirect(true, false);
+        };
+        type.renderState.texture.texture = Optional.of(location);
+
+
+    }
+
+    public static void setupGlintRenderer(boolean hasEffect) {
+
+        if (!hasEffect || ConfigBuildHandler.GLINT_COLOR.get().isDefault() && ConfigBuildHandler.CURSED_GLINT_COLOR.get().isDefault()) {
+
+            return;
+        }
+
+        setupGlintRenderer(false, false);
     }
 
 }

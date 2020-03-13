@@ -136,6 +136,91 @@ function initializeCoreMod() {
                 }], classNode, "Item");
                 return classNode;
             }
+        },
+
+        // change glint color
+        'item_renderer_patch': {
+            'target': {
+                'type': 'CLASS',
+                'name': 'net.minecraft.client.renderer.ItemRenderer'
+            },
+            'transformer': function(classNode) {
+                patchMethod([{
+                    obfName: "",
+                    name: "renderItem",
+                    desc: "(Lnet/minecraft/item/ItemStack;Lnet/minecraft/client/renderer/model/ItemCameraTransforms$TransformType;ZLcom/mojang/blaze3d/matrix/MatrixStack;Lnet/minecraft/client/renderer/IRenderTypeBuffer;IILnet/minecraft/client/renderer/model/IBakedModel;)V",
+                    patches: [patchItemRendererRenderItem]
+                }], classNode, "ItemRenderer");
+                return classNode;
+            }
+        },
+
+        // change glint color
+        'item_stack_tile_entity_renderer_patch': {
+            'target': {
+                'type': 'CLASS',
+                'name': 'net.minecraft.client.renderer.tileentity.ItemStackTileEntityRenderer'
+            },
+            'transformer': function(classNode) {
+                patchMethod([{
+                    obfName: "",
+                    name: "render",
+                    desc: "(Lnet/minecraft/item/ItemStack;Lcom/mojang/blaze3d/matrix/MatrixStack;Lnet/minecraft/client/renderer/IRenderTypeBuffer;II)V",
+                    patches: [patchItemStackTileEntityRendererRender1, patchItemStackTileEntityRendererRender2]
+                }], classNode, "ItemStackTileEntityRenderer");
+                return classNode;
+            }
+        },
+
+        // change glint color
+        'elytra_layer_patch': {
+            'target': {
+                'type': 'CLASS',
+                'name': 'net.minecraft.client.renderer.entity.layers.ElytraLayer'
+            },
+            'transformer': function(classNode) {
+                patchMethod([{
+                    obfName: "",
+                    name: "render",
+                    desc: "(Lcom/mojang/blaze3d/matrix/MatrixStack;Lnet/minecraft/client/renderer/IRenderTypeBuffer;ILnet/minecraft/entity/LivingEntity;FFFFFF)V",
+                    patches: [patchElytraLayerRender]
+                }], classNode, "ElytraLayer");
+                return classNode;
+            }
+        },
+
+        // change glint color
+        'armor_layer_patch': {
+            'target': {
+                'type': 'CLASS',
+                'name': 'net.minecraft.client.renderer.entity.layers.ArmorLayer'
+            },
+            'transformer': function(classNode) {
+                patchMethod([{
+                    obfName: "",
+                    name: "renderArmorPart",
+                    desc: "(Lcom/mojang/blaze3d/matrix/MatrixStack;Lnet/minecraft/client/renderer/IRenderTypeBuffer;Lnet/minecraft/entity/LivingEntity;FFFFFFLnet/minecraft/inventory/EquipmentSlotType;I)V",
+                    patches: [patchArmorLayerRenderArmorPart]
+                }], classNode, "ArmorLayer");
+                return classNode;
+            }
+        },
+
+        // change glint color
+        'trident_renderer_patch': {
+            'target': {
+                'type': 'CLASS',
+                'name': 'net.minecraft.client.renderer.entity.TridentRenderer'
+            },
+            'transformer': function(classNode) {
+                patchMethod([{
+                    obfName: "",
+                    name: "render",
+                    desc: "(Lnet/minecraft/entity/projectile/TridentEntity;FFLcom/mojang/blaze3d/matrix/MatrixStack;Lnet/minecraft/client/renderer/IRenderTypeBuffer;I)V",
+                    patches: [patchTridentRendererRender]
+                }], classNode, "TridentRenderer");
+                return classNode;
+            }
         }
     };
 }
@@ -196,9 +281,135 @@ function patchInstructions(method, filter, action, obfuscated) {
     }
 }
 
+var patchTridentRendererRender = {
+    filter: function(node, obfuscated) {
+        if (node instanceof VarInsnNode && node.getOpcode().equals(Opcodes.ALOAD) && node.var.equals(5)) {
+            var nextNode = node.getNext();
+            if (nextNode instanceof VarInsnNode && nextNode.getOpcode().equals(Opcodes.ALOAD) && nextNode.var.equals(0)) {
+                nextNode = nextNode.getNext();
+                if (matchesField(nextNode, "net/minecraft/client/renderer/entity/TridentRenderer", obfuscated ? "" : "tridentModel", "Lnet/minecraft/client/renderer/entity/model/TridentModel;")) {
+                    return node.getPrevious();
+                }
+            }
+        }
+    },
+    action: function(node, instructions, obfuscated) {
+        var insnList = new InsnList();
+        insnList.add(new VarInsnNode(Opcodes.ALOAD, 1));
+        insnList.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/entity/projectile/TridentEntity", obfuscated ? "func_226572_w_" : "func_226572_w_", "()Z", false));
+        insnList.add(generateHook("setupGlintRenderer", "(Z)V"));
+        instructions.insert(node, insnList);
+    }
+};
+
+var patchArmorLayerRenderArmorPart = {
+    filter: function(node, obfuscated) {
+        if (node instanceof VarInsnNode && node.getOpcode().equals(Opcodes.ALOAD) && node.var.equals(12)) {
+            var nextNode = node.getNext();
+            if (matchesMethod(nextNode, "net/minecraft/item/ItemStack", obfuscated ? "func_77636_d" : "hasEffect", "()Z")) {
+                nextNode = nextNode.getNext();
+                if (nextNode instanceof VarInsnNode && nextNode.getOpcode().equals(Opcodes.ISTORE) && nextNode.var.equals(16)) {
+                    return nextNode;
+                }
+            }
+        }
+    },
+    action: function(node, instructions, obfuscated) {
+        var insnList = new InsnList();
+        insnList.add(new VarInsnNode(Opcodes.ALOAD, 12));
+        insnList.add(new InsnNode(Opcodes.ICONST_0));
+        insnList.add(generateHook("setupGlintRenderer", "(Lnet/minecraft/item/ItemStack;Z)V"));
+        instructions.insert(node, insnList);
+    }
+};
+
+var patchElytraLayerRender = {
+    filter: function(node, obfuscated) {
+        if (node instanceof VarInsnNode && node.getOpcode().equals(Opcodes.ALOAD) && node.var.equals(2)) {
+            var nextNode = node.getNext();
+            if (nextNode instanceof VarInsnNode && nextNode.getOpcode().equals(Opcodes.ALOAD) && nextNode.var.equals(0)) {
+                nextNode = nextNode.getNext();
+                if (matchesField(nextNode, "net/minecraft/client/renderer/entity/layers/ElytraLayer", obfuscated ? "" : "modelElytra", "Lnet/minecraft/client/renderer/entity/model/ElytraModel;")) {
+                    return node.getPrevious();
+                }
+            }
+        }
+    },
+    action: function(node, instructions, obfuscated) {
+        var insnList = new InsnList();
+        insnList.add(new VarInsnNode(Opcodes.ALOAD, 11));
+        insnList.add(new InsnNode(Opcodes.ICONST_0));
+        insnList.add(generateHook("setupGlintRenderer", "(Lnet/minecraft/item/ItemStack;Z)V"));
+        instructions.insert(node, insnList);
+    }
+};
+
+var patchItemStackTileEntityRendererRender2 = {
+    filter: function(node, obfuscated) {
+        if (node instanceof VarInsnNode && node.getOpcode().equals(Opcodes.ALOAD) && node.var.equals(3)) {
+            var nextNode = node.getNext();
+            if (nextNode instanceof VarInsnNode && nextNode.getOpcode().equals(Opcodes.ALOAD) && nextNode.var.equals(0)) {
+                nextNode = nextNode.getNext();
+                if (matchesField(nextNode, "net/minecraft/client/renderer/tileentity/ItemStackTileEntityRenderer", obfuscated ? "" : "trident", "Lnet/minecraft/client/renderer/entity/model/TridentModel;")) {
+                    return node.getPrevious();
+                }
+            }
+        }
+    },
+    action: function(node, instructions, obfuscated) {
+        var insnList = new InsnList();
+        insnList.add(new VarInsnNode(Opcodes.ALOAD, 1));
+        insnList.add(new InsnNode(Opcodes.ICONST_0));
+        insnList.add(generateHook("setupGlintRenderer", "(Lnet/minecraft/item/ItemStack;Z)V"));
+        instructions.insert(node, insnList);
+    }
+};
+
+var patchItemStackTileEntityRendererRender1 = {
+    filter: function(node, obfuscated) {
+        if (node instanceof VarInsnNode && node.getOpcode().equals(Opcodes.ALOAD) && node.var.equals(8)) {
+            var nextNode = node.getNext();
+            if (matchesMethod(nextNode, "net/minecraft/client/renderer/model/Material", obfuscated ? "" : "getSprite", "()Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;")) {
+                nextNode = nextNode.getNext();
+                if (nextNode instanceof VarInsnNode && nextNode.getOpcode().equals(Opcodes.ALOAD) && nextNode.var.equals(3)) {
+                    return node.getPrevious();
+                }
+            }
+        }
+    },
+    action: function(node, instructions, obfuscated) {
+        var insnList = new InsnList();
+        insnList.add(new VarInsnNode(Opcodes.ALOAD, 1));
+        insnList.add(new InsnNode(Opcodes.ICONST_0));
+        insnList.add(generateHook("setupGlintRenderer", "(Lnet/minecraft/item/ItemStack;Z)V"));
+        instructions.insert(node, insnList);
+    }
+};
+
+var patchItemRendererRenderItem = {
+    filter: function(node, obfuscated) {
+        if (node instanceof FrameNode) {
+            var nextNode = node.getNext();
+            if (nextNode instanceof VarInsnNode && nextNode.getOpcode().equals(Opcodes.ALOAD) && nextNode.var.equals(5)) {
+                nextNode = nextNode.getNext();
+                if (nextNode instanceof VarInsnNode && nextNode.getOpcode().equals(Opcodes.ALOAD) && nextNode.var.equals(12)) {
+                    return node;
+                }
+            }
+        }
+    },
+    action: function(node, instructions, obfuscated) {
+        var insnList = new InsnList();
+        insnList.add(new VarInsnNode(Opcodes.ALOAD, 1));
+        insnList.add(new InsnNode(Opcodes.ICONST_1));
+        insnList.add(generateHook("setupGlintRenderer", "(Lnet/minecraft/item/ItemStack;Z)V"));
+        instructions.insert(node, insnList);
+    }
+};
+
 var patchItemHasEffect = {
     filter: function(node, obfuscated) {
-        if (matchesNode(node, "net/minecraft/item/ItemStack", obfuscated ? "func_77948_v" : "isEnchanted", "()Z")) {
+        if (matchesMethod(node, "net/minecraft/item/ItemStack", obfuscated ? "func_77948_v" : "isEnchanted", "()Z")) {
             var nextNode = node.getNext();
             if (nextNode instanceof InsnNode && nextNode.getOpcode().equals(Opcodes.IRETURN)) {
                 return node;
@@ -235,7 +446,7 @@ var patchCrossbowItemHasAmmo = {
     filter: function(node, obfuscated) {
         if (node instanceof VarInsnNode && node.getOpcode().equals(Opcodes.ISTORE) && node.var.equals(4)) {
             var nextNode = getNthNode(node, -9);
-            if (nextNode instanceof FieldInsnNode && nextNode.getOpcode().equals(Opcodes.GETFIELD) && nextNode.owner.equals("net/minecraft/entity/player/PlayerAbilities") && nextNode.name.equals(obfuscated ? "field_75098_d" : "isCreativeMode") && nextNode.desc.equals("Z")) {
+            if (matchesField(nextNode, "net/minecraft/entity/player/PlayerAbilities", obfuscated ? "field_75098_d" : "isCreativeMode", "Z")) {
                 return node;
             }
         }
@@ -267,7 +478,7 @@ var patchProtectionEnchantmentCanApplyTogether = {
 
 var patchMultishotEnchantmentCanApplyTogether = {
     filter: function(node, obfuscated) {
-        if (matchesNode(node, "net/minecraft/enchantment/Enchantment", obfuscated ? "func_77326_a" : "canApplyTogether", "(Lnet/minecraft/enchantment/Enchantment;)Z")) {
+        if (matchesMethod(node, "net/minecraft/enchantment/Enchantment", obfuscated ? "func_77326_a" : "canApplyTogether", "(Lnet/minecraft/enchantment/Enchantment;)Z")) {
             var nextNode = node.getPrevious();
             if (nextNode instanceof VarInsnNode && nextNode.getOpcode().equals(Opcodes.ALOAD) && nextNode.var.equals(1)) {
                 return node;
@@ -285,7 +496,7 @@ var patchMultishotEnchantmentCanApplyTogether = {
 
 var patchPiercingEnchantmentCanApplyTogether = {
     filter: function(node, obfuscated) {
-        if (matchesNode(node, "net/minecraft/enchantment/Enchantment", obfuscated ? "func_77326_a" : "canApplyTogether", "(Lnet/minecraft/enchantment/Enchantment;)Z")) {
+        if (matchesMethod(node, "net/minecraft/enchantment/Enchantment", obfuscated ? "func_77326_a" : "canApplyTogether", "(Lnet/minecraft/enchantment/Enchantment;)Z")) {
             var nextNode = node.getPrevious();
             if (nextNode instanceof VarInsnNode && nextNode.getOpcode().equals(Opcodes.ALOAD) && nextNode.var.equals(1)) {
                 return node;
@@ -335,9 +546,19 @@ var patchInfinityEnchantmentCanApplyTogether = {
     }
 };
 
+function matchesMethod(node, owner, name, desc) {
+
+    return node instanceof MethodInsnNode && matchesNode(node, owner, name, desc);
+}
+
+function matchesField(node, owner, name, desc) {
+
+    return node instanceof FieldInsnNode && matchesNode(node, owner, name, desc);
+}
+
 function matchesNode(node, owner, name, desc) {
 
-    return node instanceof MethodInsnNode && node.owner.equals(owner) && node.name.equals(name) && node.desc.equals(desc);
+    return node.owner.equals(owner) && node.name.equals(name) && node.desc.equals(desc);
 }
 
 function generateHook(name, desc) {
