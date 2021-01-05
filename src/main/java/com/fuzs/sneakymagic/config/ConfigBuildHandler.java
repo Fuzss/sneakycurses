@@ -2,18 +2,24 @@ package com.fuzs.sneakymagic.config;
 
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @SuppressWarnings("WeakerAccess")
 public class ConfigBuildHandler {
+
+    private static final EntryCollectionBuilder<Enchantment> ENCHANTMENT_COLLECTION_BUILDER = new EntryCollectionBuilder<>(ForgeRegistries.ENCHANTMENTS);
+    private static final EntryCollectionBuilder<Item> ITEM_COLLECTION_BUILDER = new EntryCollectionBuilder<>(ForgeRegistries.ITEMS);
 
     // general
     public static boolean infinityMendingFix;
@@ -23,11 +29,16 @@ public class ConfigBuildHandler {
     public static boolean trueInfinity;
     public static boolean noProjectileResistance;
     // compatibility
-    public static List<String> swordEnchantments;
-    public static List<String> axeEnchantments;
-    public static List<String> tridentEnchantments;
-    public static List<String> bowEnchantments;
-    public static List<String> crossbowEnchantments;
+    public static Set<Enchantment> swordEnchantments;
+    public static Set<Enchantment> axeEnchantments;
+    public static Set<Enchantment> tridentEnchantments;
+    public static Set<Enchantment> bowEnchantments;
+    public static Set<Enchantment> crossbowEnchantments;
+    public static Set<Item> swordBlacklist;
+    public static Set<Item> axeBlacklist;
+    public static Set<Item> tridentBlacklist;
+    public static Set<Item> bowBlacklist;
+    public static Set<Item> crossbowBlacklist;
     // curses
     public static boolean hideCurses;
     public static boolean disguiseItem;
@@ -39,7 +50,7 @@ public class ConfigBuildHandler {
     public static void setup(ForgeConfigSpec.Builder builder) {
         
         createCategory("general", builder, ConfigBuildHandler::setupGeneral);
-        createCategory("compatibility", builder, ConfigBuildHandler::setupCompatibility, "Changes made to this section of the config file require a restart to apply.", "Format for every entry is \"<namespace>:<path>\". Path may use asterisk as wildcard parameter.");
+        createCategory("compatibility", builder, ConfigBuildHandler::setupCompatibility, "Only the enchantments included by default are guaranteed to work. While any modded enchantments or other vanilla enchantments can work, they are highly unlikely to do so.", "The blacklists for each item group are supposed to disable items which can be enchanted, but where the enchantments do not function as expected.", "Format for every entry is \"<namespace>:<path>\". Path may use asterisk as wildcard parameter. Changes made to this section of the config file require a restart to apply.");
         createCategory("curses", builder, ConfigBuildHandler::setupCurses);
     }
 
@@ -55,12 +66,18 @@ public class ConfigBuildHandler {
 
     private static void setupCompatibility(ForgeConfigSpec.Builder builder) {
 
-        String compatibility = "Additional enchantments to be made applicable to ";
-        ConfigManager.registerEntry(builder.comment(compatibility + "swords.").define("Sword Enchantments", getEnchantmentList(Enchantments.IMPALING)), v -> swordEnchantments = v);
-        ConfigManager.registerEntry(builder.comment(compatibility + "axes.").define("Axe Enchantments", getEnchantmentList(Enchantments.SHARPNESS, Enchantments.SMITE, Enchantments.BANE_OF_ARTHROPODS, Enchantments.KNOCKBACK, Enchantments.FIRE_ASPECT, Enchantments.LOOTING, Enchantments.SWEEPING, Enchantments.IMPALING)), v -> axeEnchantments = v);
-        ConfigManager.registerEntry(builder.comment(compatibility + "tridents.").define("Trident Enchantments", getEnchantmentList(Enchantments.SHARPNESS, Enchantments.SMITE, Enchantments.BANE_OF_ARTHROPODS, Enchantments.KNOCKBACK, Enchantments.FIRE_ASPECT, Enchantments.LOOTING, Enchantments.SWEEPING, Enchantments.QUICK_CHARGE)), v -> tridentEnchantments = v);
-        ConfigManager.registerEntry(builder.comment(compatibility + "bows.").define("Bow Enchantments", getEnchantmentList(Enchantments.PIERCING, Enchantments.MULTISHOT, Enchantments.QUICK_CHARGE)), v -> bowEnchantments = v);
-        ConfigManager.registerEntry(builder.comment(compatibility + "crossbows.").define("Crossbow Enchantments", getEnchantmentList(Enchantments.FLAME, Enchantments.PUNCH, Enchantments.POWER, Enchantments.INFINITY)), v -> crossbowEnchantments = v);
+        String compatibility = "Additional enchantments to be made usable with ";
+        String blacklist = " to be disabled from receiving additional enchantments.";
+        ConfigManager.registerEntry(builder.comment(compatibility + "swords.").define("Sword Enchantments", getEnchantmentList(Enchantments.IMPALING)), v -> swordEnchantments = ENCHANTMENT_COLLECTION_BUILDER.buildEntrySet(v));
+        ConfigManager.registerEntry(builder.comment(compatibility + "axes.").define("Axe Enchantments", getEnchantmentList(Enchantments.SHARPNESS, Enchantments.SMITE, Enchantments.BANE_OF_ARTHROPODS, Enchantments.KNOCKBACK, Enchantments.FIRE_ASPECT, Enchantments.LOOTING, Enchantments.SWEEPING, Enchantments.IMPALING)), v -> axeEnchantments = ENCHANTMENT_COLLECTION_BUILDER.buildEntrySet(v));
+        ConfigManager.registerEntry(builder.comment(compatibility + "tridents.").define("Trident Enchantments", getEnchantmentList(Enchantments.SHARPNESS, Enchantments.SMITE, Enchantments.BANE_OF_ARTHROPODS, Enchantments.KNOCKBACK, Enchantments.FIRE_ASPECT, Enchantments.LOOTING, Enchantments.SWEEPING, Enchantments.QUICK_CHARGE)), v -> tridentEnchantments = ENCHANTMENT_COLLECTION_BUILDER.buildEntrySet(v));
+        ConfigManager.registerEntry(builder.comment(compatibility + "bows.").define("Bow Enchantments", getEnchantmentList(Enchantments.PIERCING, Enchantments.MULTISHOT, Enchantments.QUICK_CHARGE)), v -> bowEnchantments = ENCHANTMENT_COLLECTION_BUILDER.buildEntrySet(v));
+        ConfigManager.registerEntry(builder.comment(compatibility + "crossbows.").define("Crossbow Enchantments", getEnchantmentList(Enchantments.FLAME, Enchantments.PUNCH, Enchantments.POWER, Enchantments.INFINITY)), v -> crossbowEnchantments = ENCHANTMENT_COLLECTION_BUILDER.buildEntrySet(v));
+        ConfigManager.registerEntry(builder.comment("Swords" + blacklist).define("Sword Blacklist", new ArrayList<String>()), v -> swordBlacklist = ITEM_COLLECTION_BUILDER.buildEntrySet(v));
+        ConfigManager.registerEntry(builder.comment("Axes" + blacklist).define("Axe Blacklist", new ArrayList<String>()), v -> axeBlacklist = ITEM_COLLECTION_BUILDER.buildEntrySet(v));
+        ConfigManager.registerEntry(builder.comment("Tridents" + blacklist).define("Trident Blacklist", new ArrayList<String>()), v -> tridentBlacklist = ITEM_COLLECTION_BUILDER.buildEntrySet(v));
+        ConfigManager.registerEntry(builder.comment("Bows" + blacklist).define("Bow Blacklist", new ArrayList<String>()), v -> bowBlacklist = ITEM_COLLECTION_BUILDER.buildEntrySet(v));
+        ConfigManager.registerEntry(builder.comment("Crossbows" + blacklist).define("Crossbow Blacklist", new ArrayList<String>()), v -> crossbowBlacklist = ITEM_COLLECTION_BUILDER.buildEntrySet(v));
     }
 
     private static void setupCurses(ForgeConfigSpec.Builder builder) {

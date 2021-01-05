@@ -47,7 +47,7 @@ public class SneakyMagic {
         MinecraftForge.EVENT_BUS.register(new CompatibilityHandler());
         if (this.spec.isLoaded()) {
 
-            CompatibilityManager.load();
+            new CompatibilityManager().load();
         } else {
 
             LOGGER.error("Unable to register compatibility module: " + "Config spec not loaded");

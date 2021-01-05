@@ -1,10 +1,12 @@
 package com.fuzs.sneakymagic.config;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.config.ModConfig;
 
 import java.io.File;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -12,7 +14,11 @@ import java.util.function.Consumer;
 public class ConfigManager {
 
     private static final Set<ConfigEntry<? extends ForgeConfigSpec.ConfigValue<?>, ?>> CONFIG_ENTRIES = Sets.newHashSet();
+    private static final Map<Consumer<ModConfig.ModConfigEvent>, ConfigEventType> CONFIG_LISTENERS = Maps.newHashMap();
 
+    /**
+     * this is a utility class
+     */
     private ConfigManager() {
 
     }
@@ -22,36 +28,98 @@ public class ConfigManager {
 
         // no need to check modid or anything as this is only fired for the mod
         syncType(evt.getConfig().getType());
+        notifyListeners(evt);
     }
 
+    /**
+     * sync all config entries no matter which type
+     */
     public static void sync() {
 
         CONFIG_ENTRIES.forEach(ConfigEntry::sync);
     }
 
+    /**
+     * sync config entries for specific type of config
+     * @param type type of config to sync
+     */
     public static void syncType(ModConfig.Type type) {
 
         CONFIG_ENTRIES.stream().filter(configValue -> configValue.getType() == type).forEach(ConfigEntry::sync);
     }
 
+    /**
+     * register config entry on both client and server
+     * @param entry source config value object
+     * @param action action to perform when value changes (is reloaded)
+     * @param <S> config value of a certain type
+     * @param <T> type for value
+     */
     public static <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerEntry(S entry, Consumer<T> action) {
 
-        registerEntryForType(ModConfig.Type.COMMON, entry, action);
+        registerEntry(ModConfig.Type.COMMON, entry, action);
     }
 
+    /**
+     * register config entry on the client
+     * @param entry source config value object
+     * @param action action to perform when value changes (is reloaded)
+     * @param <S> config value of a certain type
+     * @param <T> type for value
+     */
     public static <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerClientEntry(S entry, Consumer<T> action) {
 
-        registerEntryForType(ModConfig.Type.CLIENT, entry, action);
+        registerEntry(ModConfig.Type.CLIENT, entry, action);
     }
 
+    /**
+     * register config entry on the server
+     * @param entry source config value object
+     * @param action action to perform when value changes (is reloaded)
+     * @param <S> config value of a certain type
+     * @param <T> type for value
+     */
     public static <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerServerEntry(S entry, Consumer<T> action) {
 
-        registerEntryForType(ModConfig.Type.SERVER, entry, action);
+        registerEntry(ModConfig.Type.SERVER, entry, action);
     }
 
-    private static <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerEntryForType(ModConfig.Type type, S entry, Consumer<T> action) {
+    /**
+     * register config entry
+     * @param type type of config to register for
+     * @param entry source config value object
+     * @param action action to perform when value changes (is reloaded)
+     * @param <S> config value of a certain type
+     * @param <T> type for value
+     */
+    private static <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerEntry(ModConfig.Type type, S entry, Consumer<T> action) {
 
         CONFIG_ENTRIES.add(new ConfigEntry<>(type, entry, action));
+    }
+
+    public static void addListener(Consumer<ModConfig.ModConfigEvent> listener) {
+
+        addListener(listener, ConfigEventType.BOTH);
+    }
+
+    public static void addLoadingListener(Consumer<ModConfig.ModConfigEvent> listener) {
+
+        addListener(listener, ConfigEventType.LOADING);
+    }
+
+    public static void addReloadingListener(Consumer<ModConfig.ModConfigEvent> listener) {
+
+        addListener(listener, ConfigEventType.RELOADING);
+    }
+
+    private static void addListener(Consumer<ModConfig.ModConfigEvent> listener, ConfigEventType type) {
+
+        CONFIG_LISTENERS.merge(listener, type, (type1, type2) -> type1 != type2 ? ConfigEventType.BOTH : type1);
+    }
+
+    private static void notifyListeners(ModConfig.ModConfigEvent evt) {
+
+        CONFIG_LISTENERS.entrySet().stream().filter(entry -> entry.getValue().isCorrectType(evt)).map(Map.Entry::getKey).forEach(action -> action.accept(evt));
     }
 
     /**
@@ -96,6 +164,22 @@ public class ConfigManager {
         void sync() {
 
             this.action.accept(this.entry.get());
+        }
+
+    }
+
+    private enum ConfigEventType {
+
+        LOADING, RELOADING, BOTH;
+
+        boolean isCorrectType(ModConfig.ModConfigEvent evt) {
+
+            if (evt instanceof ModConfig.Loading && this != RELOADING) {
+
+                return true;
+            }
+
+            return evt instanceof ModConfig.Reloading && this != LOADING;
         }
 
     }
