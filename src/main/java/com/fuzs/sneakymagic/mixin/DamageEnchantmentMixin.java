@@ -20,7 +20,7 @@ public abstract class DamageEnchantmentMixin extends Enchantment {
     @Inject(method = "canApplyTogether", at = @At("HEAD"), cancellable = true)
     public void canApplyTogether(Enchantment ench, CallbackInfoReturnable<Boolean> callbackInfo) {
 
-        if (ConfigBuildHandler.DAMAGE_FIX.get()) {
+        if (ConfigBuildHandler.damageFix) {
 
             if (ench instanceof DamageEnchantment) {
 

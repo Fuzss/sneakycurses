@@ -19,7 +19,7 @@ public class EnchantmentHandler {
     public void onLivingHurt(final LivingHurtEvent evt) {
 
         // immediately reset damage immunity after being hit by any projectile, fixes multishot
-        if (evt.getSource().isProjectile() && ConfigBuildHandler.NO_PROJECTILE_RESISTANCE.get()) {
+        if (evt.getSource().isProjectile() && ConfigBuildHandler.noProjectileResistance) {
 
             evt.getEntity().hurtResistantTime = 0;
         }
@@ -30,7 +30,7 @@ public class EnchantmentHandler {
     public void onArrowNock(final ArrowNockEvent evt) {
 
         // true infinity for bows
-        if (ConfigBuildHandler.TRUE_INFINITY.get() && EnchantmentHelper.getEnchantmentLevel(Enchantments.INFINITY, evt.getBow()) > 0) {
+        if (ConfigBuildHandler.trueInfinity && EnchantmentHelper.getEnchantmentLevel(Enchantments.INFINITY, evt.getBow()) > 0) {
 
             evt.getPlayer().setActiveHand(evt.getHand());
             evt.setAction(ActionResult.resultConsume(evt.getBow()));
@@ -43,7 +43,7 @@ public class EnchantmentHandler {
 
         // true infinity for crossbows
         ItemStack stack = evt.getPlayer().getHeldItem(evt.getHand());
-        if (ConfigBuildHandler.TRUE_INFINITY.get() && stack.getItem() instanceof CrossbowItem && EnchantmentHelper.getEnchantmentLevel(Enchantments.INFINITY, stack) > 0) {
+        if (ConfigBuildHandler.trueInfinity && stack.getItem() instanceof CrossbowItem && EnchantmentHelper.getEnchantmentLevel(Enchantments.INFINITY, stack) > 0) {
 
             if (!CrossbowItem.isCharged(stack)) {
 

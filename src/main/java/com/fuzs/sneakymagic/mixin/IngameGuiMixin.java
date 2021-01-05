@@ -28,15 +28,15 @@ public abstract class IngameGuiMixin extends AbstractGui {
     @Redirect(method = "func_238453_b_", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/text/IFormattableTextComponent;mergeStyle(Lnet/minecraft/util/text/TextFormatting;)Lnet/minecraft/util/text/IFormattableTextComponent;", ordinal = 0))
     public IFormattableTextComponent getCurseColor(IFormattableTextComponent component, TextFormatting format) {
 
-        if (this.highlightingItemStack.isEnchanted() || ConfigBuildHandler.AFFECT_BOOKS.get() && this.highlightingItemStack.getItem() == Items.ENCHANTED_BOOK) {
+        if (this.highlightingItemStack.isEnchanted() || ConfigBuildHandler.affectBooks && this.highlightingItemStack.getItem() == Items.ENCHANTED_BOOK) {
 
             // check if item is cursed
             Collection<Enchantment> enchantments = EnchantmentHelper.getEnchantments(this.highlightingItemStack).keySet();
             if (CurseMatcher.anyMatch(enchantments)) {
 
-                if (ConfigBuildHandler.DISGUISE_ITEM.get() && this.highlightingItemStack.getItem() == Items.ENCHANTED_BOOK && CurseMatcher.allMatch(enchantments) || ConfigBuildHandler.COLOR_NAME.get()) {
+                if (ConfigBuildHandler.disguiseItem && this.highlightingItemStack.getItem() == Items.ENCHANTED_BOOK && CurseMatcher.allMatch(enchantments) || ConfigBuildHandler.colorName) {
 
-                    if (ConfigBuildHandler.COLOR_NAME.get()) {
+                    if (ConfigBuildHandler.colorName) {
 
                         return component.mergeStyle(TextFormatting.RED);
                     } else {

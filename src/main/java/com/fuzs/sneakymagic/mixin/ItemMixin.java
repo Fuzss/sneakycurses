@@ -20,7 +20,7 @@ public abstract class ItemMixin extends ForgeRegistryEntry<Item> {
 
         if (stack.isEnchanted()) {
 
-            callbackInfo.setReturnValue(!ConfigBuildHandler.DISGUISE_ITEM.get() ||
+            callbackInfo.setReturnValue(!ConfigBuildHandler.disguiseItem ||
                     !CurseMatcher.allMatch(EnchantmentHelper.deserializeEnchantments(stack.getEnchantmentTagList()).keySet()));
         }
     }

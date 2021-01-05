@@ -23,7 +23,7 @@ public abstract class InfinityEnchantmentMixin extends Enchantment {
     @Inject(method = "canApplyTogether", at = @At("HEAD"), cancellable = true)
     public void canApplyTogether(Enchantment ench, CallbackInfoReturnable<Boolean> callbackInfo) {
 
-        if (ConfigBuildHandler.INFINITY_MENDING_FIX.get() && ench instanceof MendingEnchantment) {
+        if (ConfigBuildHandler.infinityMendingFix && ench instanceof MendingEnchantment) {
 
             callbackInfo.setReturnValue(super.canApplyTogether(ench));
         }

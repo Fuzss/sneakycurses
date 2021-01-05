@@ -20,7 +20,7 @@ public abstract class PiercingEnchantmentMixin extends Enchantment {
     @Inject(method = "canApplyTogether", at = @At("HEAD"), cancellable = true)
     public void canApplyTogether(Enchantment ench, CallbackInfoReturnable<Boolean> callbackInfo) {
 
-        if (ConfigBuildHandler.MULTISHOT_PIERCING_FIX.get() && ench instanceof MultishotEnchantment) {
+        if (ConfigBuildHandler.multishotPiercingFix && ench instanceof MultishotEnchantment) {
 
             callbackInfo.setReturnValue(super.canApplyTogether(ench));
         }

@@ -20,7 +20,7 @@ public abstract class ProtectionEnchantmentMixin extends Enchantment {
     @Inject(method = "canApplyTogether", at = @At("HEAD"), cancellable = true)
     public void canApplyTogether(Enchantment ench, CallbackInfoReturnable<Boolean> callbackInfo) {
 
-        if (ConfigBuildHandler.PROTECTION_FIX.get() && ench instanceof ProtectionEnchantment) {
+        if (ConfigBuildHandler.protectionFix && ench instanceof ProtectionEnchantment) {
 
             callbackInfo.setReturnValue(super.canApplyTogether(ench));
         }

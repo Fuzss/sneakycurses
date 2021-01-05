@@ -17,7 +17,8 @@ public class ConfigManager {
 
     }
 
-    public static void onModConfig(final ModConfig.Reloading evt) {
+    // fires on both "loading" and "reloading", "loading" phase is required for initial setup
+    public static void onModConfig(final ModConfig.ModConfigEvent evt) {
 
         // no need to check modid or anything as this is only fired for the mod
         syncType(evt.getConfig().getType());

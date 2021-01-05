@@ -22,7 +22,7 @@ public abstract class ImpalingEnchantmentMixin extends Enchantment {
     @Override
     public boolean canApplyTogether(@Nonnull Enchantment ench) {
 
-        if (!ConfigBuildHandler.DAMAGE_FIX.get()) {
+        if (!ConfigBuildHandler.damageFix) {
 
             return !(ench instanceof DamageEnchantment) && super.canApplyTogether(ench);
         }

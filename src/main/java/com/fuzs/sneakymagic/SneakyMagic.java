@@ -6,6 +6,7 @@ import com.fuzs.sneakymagic.common.CompatibilityManager;
 import com.fuzs.sneakymagic.common.handler.EnchantmentHandler;
 import com.fuzs.sneakymagic.config.ConfigBuildHandler;
 import com.fuzs.sneakymagic.config.ConfigManager;
+import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -24,6 +25,8 @@ public class SneakyMagic {
     public static final String NAME = "Sneaky Magic";
     public static final Logger LOGGER = LogManager.getLogger(SneakyMagic.NAME);
 
+    private final ForgeConfigSpec spec;
+
     public SneakyMagic() {
 
         // general setup
@@ -31,7 +34,10 @@ public class SneakyMagic {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onClientSetup);
 
         // config setup
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigBuildHandler.SPEC);
+        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        ConfigBuildHandler.setup(builder);
+        this.spec = builder.build();
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, this.spec);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(ConfigManager::onModConfig);
     }
 
@@ -39,7 +45,7 @@ public class SneakyMagic {
 
         MinecraftForge.EVENT_BUS.register(new EnchantmentHandler());
         MinecraftForge.EVENT_BUS.register(new CompatibilityHandler());
-        if (ConfigBuildHandler.SPEC.isLoaded()) {
+        if (this.spec.isLoaded()) {
 
             CompatibilityManager.load();
         } else {
