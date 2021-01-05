@@ -7,7 +7,6 @@ import com.google.common.collect.Maps;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentType;
 import net.minecraft.item.*;
-import net.minecraftforge.fml.config.ModConfig;
 
 import java.util.Locale;
 import java.util.Map;
@@ -21,11 +20,6 @@ public class CompatibilityManager {
     private final Map<Enchantment, Predicate<Item>> enchantmentPredicates = Maps.newHashMap();
 
     private int typeCounter;
-
-    public void onModConfig(final ModConfig.ModConfigEvent evt) {
-
-        this.load();
-    }
 
     public void load() {
 

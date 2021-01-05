@@ -1,5 +1,6 @@
 package com.fuzs.sneakymagic.config;
 
+import com.fuzs.sneakymagic.SneakyMagic;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -9,12 +10,13 @@ import java.io.File;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 @SuppressWarnings("unused")
 public class ConfigManager {
 
     private static final Set<ConfigEntry<? extends ForgeConfigSpec.ConfigValue<?>, ?>> CONFIG_ENTRIES = Sets.newHashSet();
-    private static final Map<Consumer<ModConfig.ModConfigEvent>, ConfigEventType> CONFIG_LISTENERS = Maps.newHashMap();
+    private static final Map<Runnable, ConfigEventType> CONFIG_LISTENERS = Maps.newHashMap();
 
     /**
      * this is a utility class
@@ -26,9 +28,15 @@ public class ConfigManager {
     // fires on both "loading" and "reloading", "loading" phase is required for initial setup
     public static void onModConfig(final ModConfig.ModConfigEvent evt) {
 
-        // no need to check modid or anything as this is only fired for the mod
-        syncType(evt.getConfig().getType());
-        notifyListeners(evt);
+        if (Builder.spec == null || !Builder.spec.isLoaded()) {
+
+            SneakyMagic.LOGGER.error("Unable to get values from config: " + "Config spec not loaded");
+        } else {
+
+            // no need to check modid or anything as this is only fired for the mod
+            syncType(evt.getConfig().getType());
+            notifyListeners(ConfigEventType.getType(evt));
+        }
     }
 
     /**
@@ -55,7 +63,7 @@ public class ConfigManager {
      * @param <S> config value of a certain type
      * @param <T> type for value
      */
-    public static <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerEntry(S entry, Consumer<T> action) {
+    public static <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerEntry(Function<ForgeConfigSpec.Builder, S> entry, Consumer<T> action) {
 
         registerEntry(ModConfig.Type.COMMON, entry, action);
     }
@@ -67,7 +75,7 @@ public class ConfigManager {
      * @param <S> config value of a certain type
      * @param <T> type for value
      */
-    public static <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerClientEntry(S entry, Consumer<T> action) {
+    public static <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerClientEntry(Function<ForgeConfigSpec.Builder, S> entry, Consumer<T> action) {
 
         registerEntry(ModConfig.Type.CLIENT, entry, action);
     }
@@ -79,47 +87,53 @@ public class ConfigManager {
      * @param <S> config value of a certain type
      * @param <T> type for value
      */
-    public static <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerServerEntry(S entry, Consumer<T> action) {
+    public static <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerServerEntry(Function<ForgeConfigSpec.Builder, S> entry, Consumer<T> action) {
 
         registerEntry(ModConfig.Type.SERVER, entry, action);
     }
 
     /**
      * register config entry
+     * @param <S> config value of a certain type
+     * @param <T> type for value
      * @param type type of config to register for
      * @param entry source config value object
      * @param action action to perform when value changes (is reloaded)
-     * @param <S> config value of a certain type
-     * @param <T> type for value
      */
-    private static <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerEntry(ModConfig.Type type, S entry, Consumer<T> action) {
+    private static <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerEntry(ModConfig.Type type, Function<ForgeConfigSpec.Builder, S> entry, Consumer<T> action) {
 
-        CONFIG_ENTRIES.add(new ConfigEntry<>(type, entry, action));
+        if (Builder.spec == null) {
+
+            CONFIG_ENTRIES.add(new ConfigEntry<>(type, entry.apply(Builder.BUILDER), action));
+        } else {
+
+            SneakyMagic.LOGGER.error("Unable to register config entry: " + "Config spec already built");
+        }
     }
 
-    public static void addListener(Consumer<ModConfig.ModConfigEvent> listener) {
+    public static void addListener(Runnable listener) {
 
         addListener(listener, ConfigEventType.BOTH);
     }
 
-    public static void addLoadingListener(Consumer<ModConfig.ModConfigEvent> listener) {
+    public static void addLoadingListener(Runnable listener) {
 
         addListener(listener, ConfigEventType.LOADING);
     }
 
-    public static void addReloadingListener(Consumer<ModConfig.ModConfigEvent> listener) {
+    public static void addReloadingListener(Runnable listener) {
 
         addListener(listener, ConfigEventType.RELOADING);
     }
 
-    private static void addListener(Consumer<ModConfig.ModConfigEvent> listener, ConfigEventType type) {
+    private static void addListener(Runnable listener, ConfigEventType type) {
 
         CONFIG_LISTENERS.merge(listener, type, (type1, type2) -> type1 != type2 ? ConfigEventType.BOTH : type1);
     }
 
-    private static void notifyListeners(ModConfig.ModConfigEvent evt) {
+    private static void notifyListeners(ConfigEventType type) {
 
-        CONFIG_LISTENERS.entrySet().stream().filter(entry -> entry.getValue().isCorrectType(evt)).map(Map.Entry::getKey).forEach(action -> action.accept(evt));
+        CONFIG_LISTENERS.entrySet().stream().filter(entry -> entry.getValue().matches(type)).map(Map.Entry::getKey).forEach(Runnable::run);
     }
 
     /**
@@ -168,18 +182,55 @@ public class ConfigManager {
 
     }
 
+    public static class Builder {
+
+        private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
+        private static ForgeConfigSpec spec;
+
+        public static ForgeConfigSpec getSpec() {
+
+            if (spec == null) {
+
+                spec = BUILDER.build();
+            }
+
+            return spec;
+        }
+
+        public static void createCategory(String name, Runnable options, String... comments) {
+
+            if (comments.length != 0) {
+
+                BUILDER.comment(comments);
+            }
+
+            BUILDER.push(name);
+            options.run();
+            BUILDER.pop();
+        }
+
+    }
+
     private enum ConfigEventType {
 
         LOADING, RELOADING, BOTH;
 
-        boolean isCorrectType(ModConfig.ModConfigEvent evt) {
+        boolean matches(ConfigEventType type) {
 
-            if (evt instanceof ModConfig.Loading && this != RELOADING) {
+            if (type == BOTH || this == BOTH) {
+
+                return true;
+            } else if (type == LOADING && this != RELOADING) {
 
                 return true;
             }
 
-            return evt instanceof ModConfig.Reloading && this != LOADING;
+            return type == RELOADING && this != LOADING;
+        }
+
+        static ConfigEventType getType(ModConfig.ModConfigEvent evt) {
+
+            return evt instanceof ModConfig.Loading ? LOADING : RELOADING;
         }
 
     }

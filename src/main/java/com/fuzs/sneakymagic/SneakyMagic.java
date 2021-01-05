@@ -25,8 +25,6 @@ public class SneakyMagic {
     public static final String NAME = "Sneaky Magic";
     public static final Logger LOGGER = LogManager.getLogger(SneakyMagic.NAME);
 
-    private final ForgeConfigSpec spec;
-
     public SneakyMagic() {
 
         // general setup
@@ -34,24 +32,16 @@ public class SneakyMagic {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onClientSetup);
 
         // config setup
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
-        ConfigBuildHandler.setup(builder);
-        this.spec = builder.build();
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, this.spec);
+        ConfigBuildHandler.setup();
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigManager.Builder.getSpec());
         FMLJavaModLoadingContext.get().getModEventBus().addListener(ConfigManager::onModConfig);
+        ConfigManager.addListener(new CompatibilityManager()::load);
     }
 
     private void onCommonSetup(final FMLCommonSetupEvent evt) {
 
         MinecraftForge.EVENT_BUS.register(new EnchantmentHandler());
         MinecraftForge.EVENT_BUS.register(new CompatibilityHandler());
-        if (this.spec.isLoaded()) {
-
-            new CompatibilityManager().load();
-        } else {
-
-            LOGGER.error("Unable to register compatibility module: " + "Config spec not loaded");
-        }
     }
 
     private void onClientSetup(final FMLClientSetupEvent evt) {
