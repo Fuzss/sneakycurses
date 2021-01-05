@@ -1,4 +1,4 @@
-package com.fuzs.sneakymagic.common;
+package com.fuzs.sneakymagic.common.handler;
 
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
@@ -32,7 +32,8 @@ public class CompatibilityHandler {
                 for (int i = 0; i < 2; i++) {
 
                     AbstractArrowEntity abstractarrowentity = arrowitem.createArrow(evt.getWorld(), itemstack, playerentity);
-                    abstractarrowentity.shoot(playerentity, playerentity.rotationPitch, playerentity.rotationYaw, 0.0F, velocity * 3.0F, 10.0F);
+                    // shoot
+                    abstractarrowentity.func_234612_a_(playerentity, playerentity.rotationPitch, playerentity.rotationYaw, 0.0F, velocity * 3.0F, 10.0F);
                     applyCommonEnchantments(abstractarrowentity, stack);
                     abstractarrowentity.pickupStatus = AbstractArrowEntity.PickupStatus.CREATIVE_ONLY;
                     evt.getWorld().addEntity(abstractarrowentity);
@@ -49,11 +50,12 @@ public class CompatibilityHandler {
         if (evt.getEntity() instanceof AbstractArrowEntity) {
 
             AbstractArrowEntity abstractarrowentity = (AbstractArrowEntity) evt.getEntity();
-            if (abstractarrowentity.getShooter() instanceof LivingEntity) {
+            if (abstractarrowentity.func_234616_v_() instanceof LivingEntity) {
 
-                LivingEntity livingEntity = (LivingEntity) abstractarrowentity.getShooter();
+                // getShooter
+                LivingEntity livingEntity = (LivingEntity) abstractarrowentity.func_234616_v_();
+                assert livingEntity != null;
                 ItemStack stack = livingEntity.getActiveItemStack();
-
                 if (stack.getItem() instanceof BowItem) {
 
                     // piercing enchantment for bows

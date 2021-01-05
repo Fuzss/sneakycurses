@@ -2,13 +2,13 @@ package com.fuzs.sneakymagic.common;
 
 import com.fuzs.sneakymagic.SneakyMagic;
 import com.fuzs.sneakymagic.config.ConfigBuildHandler;
-import com.fuzs.sneakymagic.config.StringListBuilder;
+import com.fuzs.sneakymagic.config.EntryCollectionBuilder;
+import com.fuzs.sneakymagic.mixin.accessor.IEnchantmentAccessor;
 import com.google.common.collect.Maps;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentType;
 import net.minecraft.item.*;
 import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
@@ -18,60 +18,37 @@ import java.util.function.Predicate;
 
 public class CompatibilityManager {
 
-    private final StringListBuilder<Enchantment> parser = new StringListBuilder<>(ForgeRegistries.ENCHANTMENTS);
-    // save this so it also requires a restart itself
-    private final boolean requireRestart = ConfigBuildHandler.REQUIRE_RESTART.get();
+    private static int typeCounter;
 
-    private final Map<ForgeConfigSpec.ConfigValue<List<String>>, Predicate<Item>> types = Maps.newHashMap();
-    private final Map<Enchantment, EnchantmentType> defaultTypes = Maps.newHashMap();
-    private int typeCounter;
+    public static void load() {
 
-    public CompatibilityManager() {
-
-        this.populate();
-        this.sync();
+        sync(populate());
     }
 
-    public void onModConfig(final ModConfig.ModConfigEvent evt) {
+    private static Map<ForgeConfigSpec.ConfigValue<List<String>>, Predicate<Item>> populate() {
 
-        if (evt.getConfig().getSpec() == ConfigBuildHandler.SPEC) {
+        final Map<ForgeConfigSpec.ConfigValue<List<String>>, Predicate<Item>> types = Maps.newHashMap();
 
-            if (!this.requireRestart) {
+        types.put(ConfigBuildHandler.SWORD_ENCHANTS, item -> item instanceof SwordItem);
+        types.put(ConfigBuildHandler.AXE_ENCHANTS, item -> item instanceof AxeItem);
+        types.put(ConfigBuildHandler.TRIDENT_ENCHANTS, item -> item instanceof TridentItem);
+        types.put(ConfigBuildHandler.BOW_ENCHANTS, item -> item instanceof BowItem);
+        types.put(ConfigBuildHandler.CROSSBOW_ENCHANTS, item -> item instanceof CrossbowItem);
 
-                this.sync();
-            }
-        }
+        return types;
     }
 
-    private void populate() {
+    private static void sync(Map<ForgeConfigSpec.ConfigValue<List<String>>, Predicate<Item>> types) {
 
-        this.types.put(ConfigBuildHandler.SWORD_ENCHANTS, item -> item instanceof SwordItem);
-        this.types.put(ConfigBuildHandler.AXE_ENCHANTS, item -> item instanceof AxeItem);
-        this.types.put(ConfigBuildHandler.TRIDENT_ENCHANTS, item -> item instanceof TridentItem);
-        this.types.put(ConfigBuildHandler.BOW_ENCHANTS, item -> item instanceof BowItem);
-        this.types.put(ConfigBuildHandler.CROSSBOW_ENCHANTS, item -> item instanceof CrossbowItem);
-    }
-
-    private void sync() {
-
-        // reset all types to default state
-        if (!this.requireRestart) {
-
-            this.defaultTypes.forEach((key, value) -> key.type = value);
-        }
-
-        this.types.forEach((key, value) -> this.parser.buildEntrySet(key.get()).forEach(ench -> {
+        final EntryCollectionBuilder<Enchantment> collectionBuilder = new EntryCollectionBuilder<>(ForgeRegistries.ENCHANTMENTS);
+        types.forEach((key, value) -> collectionBuilder.buildEntrySet(key.get()).forEach(enchantment -> {
 
             // absolutely have to save this in order to prevent a recursive loop and a StackOverflowError
             // probably necessary due to the way EnchantmentType#create behaves
-            final EnchantmentType type = ench.type;
-            // save default types for resetting later
-            if (!this.requireRestart) {
-
-                this.defaultTypes.putIfAbsent(ench, type);
-            }
-            ench.type = EnchantmentType.create(SneakyMagic.MODID.toUpperCase(Locale.ROOT) + "_TYPE_" + this.typeCounter++,
-                    item -> type != null && type.canEnchantItem(item) || value.test(item));
+            final EnchantmentType originalType = enchantment.type;
+            final EnchantmentType combinedType = EnchantmentType.create(SneakyMagic.MODID.toUpperCase(Locale.ROOT) + "_TYPE_" + typeCounter++,
+                    item -> originalType != null && originalType.canEnchantItem(item) || value.test(item));
+            ((IEnchantmentAccessor) enchantment).setType(combinedType);
         }));
     }
 

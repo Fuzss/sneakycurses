@@ -1,0 +1,25 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "compatibilityLevel": "JAVA_8",
+  "package": "com.fuzs.sneakymagic.mixin",
+  "refmap": "sneakymagic.refmap.json",
+  "mixins": [
+    "CrossbowItemMixin",
+    "InfinityEnchantmentMixin",
+    "MultishotEnchantmentMixin",
+    "PiercingEnchantmentMixin",
+    "ProtectionEnchantmentMixin",
+    "DamageEnchantmentMixin",
+    "ImpalingEnchantmentMixin",
+    "ItemMixin",
+    "PlayerEntityMixin",
+    "accessor.IEnchantmentAccessor"
+  ],
+  "client": [
+    "IngameGuiMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

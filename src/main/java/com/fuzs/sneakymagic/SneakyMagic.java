@@ -1,10 +1,11 @@
 package com.fuzs.sneakymagic;
 
-import com.fuzs.sneakymagic.client.CursedTooltipHandler;
-import com.fuzs.sneakymagic.common.CompatibilityHandler;
+import com.fuzs.sneakymagic.client.handler.CursedTooltipHandler;
+import com.fuzs.sneakymagic.common.handler.CompatibilityHandler;
 import com.fuzs.sneakymagic.common.CompatibilityManager;
-import com.fuzs.sneakymagic.common.EnchantmentHandler;
+import com.fuzs.sneakymagic.common.handler.EnchantmentHandler;
 import com.fuzs.sneakymagic.config.ConfigBuildHandler;
+import com.fuzs.sneakymagic.config.ConfigManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -30,15 +31,21 @@ public class SneakyMagic {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onClientSetup);
 
         // config setup
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigBuildHandler.SPEC, MODID + ".toml");
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigBuildHandler.SPEC);
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(ConfigManager::onModConfig);
     }
 
     private void onCommonSetup(final FMLCommonSetupEvent evt) {
 
-        // need this to run later than usual as it won't sync later on by default
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(new CompatibilityManager()::onModConfig);
         MinecraftForge.EVENT_BUS.register(new EnchantmentHandler());
         MinecraftForge.EVENT_BUS.register(new CompatibilityHandler());
+        if (ConfigBuildHandler.SPEC.isLoaded()) {
+
+            CompatibilityManager.load();
+        } else {
+
+            LOGGER.error("Unable to register compatibility module: " + "Config spec not loaded");
+        }
     }
 
     private void onClientSetup(final FMLClientSetupEvent evt) {
