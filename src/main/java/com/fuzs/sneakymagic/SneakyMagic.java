@@ -1,12 +1,12 @@
 package com.fuzs.sneakymagic;
 
 import com.fuzs.sneakymagic.client.handler.CursedTooltipHandler;
-import com.fuzs.sneakymagic.common.handler.CompatibilityHandler;
 import com.fuzs.sneakymagic.common.CompatibilityManager;
+import com.fuzs.sneakymagic.common.handler.CompatibilityHandler;
 import com.fuzs.sneakymagic.common.handler.EnchantmentHandler;
 import com.fuzs.sneakymagic.config.ConfigBuildHandler;
+import com.fuzs.sneakymagic.config.ConfigBuilder;
 import com.fuzs.sneakymagic.config.ConfigManager;
-import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -32,10 +32,10 @@ public class SneakyMagic {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onClientSetup);
 
         // config setup
-        ConfigBuildHandler.setup();
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigManager.Builder.getSpec());
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(ConfigManager::onModConfig);
-        ConfigManager.addListener(new CompatibilityManager()::load);
+        ConfigBuildHandler.setup(ModConfig.Type.COMMON);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigBuilder.getCommonSpec());
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(ConfigManager.get()::onModConfig);
+        ConfigManager.get().addListener(new CompatibilityManager()::load);
     }
 
     private void onCommonSetup(final FMLCommonSetupEvent evt) {

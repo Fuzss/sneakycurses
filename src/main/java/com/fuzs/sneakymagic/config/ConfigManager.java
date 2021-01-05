@@ -10,50 +10,64 @@ import java.io.File;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 @SuppressWarnings("unused")
 public class ConfigManager {
 
-    private static final Set<ConfigEntry<? extends ForgeConfigSpec.ConfigValue<?>, ?>> CONFIG_ENTRIES = Sets.newHashSet();
-    private static final Map<Runnable, ConfigEventType> CONFIG_LISTENERS = Maps.newHashMap();
+    /**
+     * singleton instance
+     */
+    private static ConfigManager instance;
 
     /**
-     * this is a utility class
+     * all config entries as a set
+     */
+    private final Set<ConfigEntry<? extends ForgeConfigSpec.ConfigValue<?>, ?>> configEntries = Sets.newHashSet();
+    /**
+     * listeners to call when a config is somehow loaded
+     */
+    private final Map<Runnable, ConfigLoadState> configListeners = Maps.newHashMap();
+
+    /**
+     * this class is a singleton
      */
     private ConfigManager() {
 
     }
 
-    // fires on both "loading" and "reloading", "loading" phase is required for initial setup
-    public static void onModConfig(final ModConfig.ModConfigEvent evt) {
+    /**
+     * fires on both "loading" and "reloading", "loading" phase is required for initial setup
+     * @param evt event provided by Forge
+     */
+    public void onModConfig(final ModConfig.ModConfigEvent evt) {
 
-        if (Builder.spec == null || !Builder.spec.isLoaded()) {
+        ModConfig.Type type = evt.getConfig().getType();
+        if (ConfigBuilder.isSpecNotBuilt(type) || ConfigBuilder.isSpecNotLoaded(type)) {
 
-            SneakyMagic.LOGGER.error("Unable to get values from config: " + "Config spec not loaded");
+            SneakyMagic.LOGGER.error("Unable to get values from config: " + "Config spec not present");
         } else {
 
             // no need to check modid or anything as this is only fired for the mod
-            syncType(evt.getConfig().getType());
-            notifyListeners(ConfigEventType.getType(evt));
+            this.syncType(type);
+            this.notifyListeners(ConfigLoadState.getState(evt));
         }
     }
 
     /**
      * sync all config entries no matter which type
      */
-    public static void sync() {
+    public void sync() {
 
-        CONFIG_ENTRIES.forEach(ConfigEntry::sync);
+        this.configEntries.forEach(ConfigEntry::sync);
     }
 
     /**
      * sync config entries for specific type of config
      * @param type type of config to sync
      */
-    public static void syncType(ModConfig.Type type) {
+    private void syncType(ModConfig.Type type) {
 
-        CONFIG_ENTRIES.stream().filter(configValue -> configValue.getType() == type).forEach(ConfigEntry::sync);
+        this.configEntries.stream().filter(configValue -> configValue.getType() == type).forEach(ConfigEntry::sync);
     }
 
     /**
@@ -63,9 +77,9 @@ public class ConfigManager {
      * @param <S> config value of a certain type
      * @param <T> type for value
      */
-    public static <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerEntry(Function<ForgeConfigSpec.Builder, S> entry, Consumer<T> action) {
+    public <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerCommonEntry(S entry, Consumer<T> action) {
 
-        registerEntry(ModConfig.Type.COMMON, entry, action);
+        this.registerEntry(ModConfig.Type.COMMON, entry, action);
     }
 
     /**
@@ -75,9 +89,9 @@ public class ConfigManager {
      * @param <S> config value of a certain type
      * @param <T> type for value
      */
-    public static <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerClientEntry(Function<ForgeConfigSpec.Builder, S> entry, Consumer<T> action) {
+    public <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerClientEntry(S entry, Consumer<T> action) {
 
-        registerEntry(ModConfig.Type.CLIENT, entry, action);
+        this.registerEntry(ModConfig.Type.CLIENT, entry, action);
     }
 
     /**
@@ -87,53 +101,89 @@ public class ConfigManager {
      * @param <S> config value of a certain type
      * @param <T> type for value
      */
-    public static <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerServerEntry(Function<ForgeConfigSpec.Builder, S> entry, Consumer<T> action) {
+    public <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerServerEntry(S entry, Consumer<T> action) {
 
-        registerEntry(ModConfig.Type.SERVER, entry, action);
+        this.registerEntry(ModConfig.Type.SERVER, entry, action);
     }
 
     /**
-     * register config entry
-     * @param <S> config value of a certain type
-     * @param <T> type for value
+     * register config entry for given type
      * @param type type of config to register for
      * @param entry source config value object
      * @param action action to perform when value changes (is reloaded)
+     * @param <S> config value of a certain type
+     * @param <T> type for value
      */
-    private static <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerEntry(ModConfig.Type type, Function<ForgeConfigSpec.Builder, S> entry, Consumer<T> action) {
+    private <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerEntry(ModConfig.Type type, S entry, Consumer<T> action) {
 
-        if (Builder.spec == null) {
+        this.configEntries.add(new ConfigEntry<>(type, entry, action));
+    }
 
-            CONFIG_ENTRIES.add(new ConfigEntry<>(type, entry.apply(Builder.BUILDER), action));
+    /**
+     * register config entry for active type
+     * @param <S> config value of a certain type
+     * @param <T> type for value
+     * @param entry source config value object
+     * @param action action to perform when value changes (is reloaded)
+     */
+    public <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerEntry(S entry, Consumer<T> action) {
+
+        if (ConfigBuilder.getActiveType() == null) {
+
+            SneakyMagic.LOGGER.error("Unable to register config entry: " + "Active builder is null");
+        } else if (ConfigBuilder.isSpecNotBuilt(ConfigBuilder.getActiveType())) {
+
+            this.configEntries.add(new ConfigEntry<>(ConfigBuilder.getActiveType(), entry, action));
         } else {
 
             SneakyMagic.LOGGER.error("Unable to register config entry: " + "Config spec already built");
         }
     }
 
-    public static void addListener(Runnable listener) {
+    /**
+     * add a listener for when the config is loaded and reloaded
+     * @param listener listener to add
+     */
+    public void addListener(Runnable listener) {
 
-        addListener(listener, ConfigEventType.BOTH);
+        this.addListener(listener, ConfigLoadState.BOTH);
     }
 
-    public static void addLoadingListener(Runnable listener) {
+    /**
+     * add a listener for when the config is loaded
+     * @param listener listener to add
+     */
+    public void addLoadingListener(Runnable listener) {
 
-        addListener(listener, ConfigEventType.LOADING);
+        this.addListener(listener, ConfigLoadState.LOADING);
     }
 
-    public static void addReloadingListener(Runnable listener) {
+    /**
+     * add a listener for when the config is reloaded
+     * @param listener listener to add
+     */
+    public void addReloadingListener(Runnable listener) {
 
-        addListener(listener, ConfigEventType.RELOADING);
+        this.addListener(listener, ConfigLoadState.RELOADING);
     }
 
-    private static void addListener(Runnable listener, ConfigEventType type) {
+    /**
+     * add a listener for when the config is somehow loaded
+     * @param listener listener to add
+     * @param state load states when to call this listener
+     */
+    private void addListener(Runnable listener, ConfigLoadState state) {
 
-        CONFIG_LISTENERS.merge(listener, type, (type1, type2) -> type1 != type2 ? ConfigEventType.BOTH : type1);
+        this.configListeners.merge(listener, state, (state1, state2) -> state1 != state2 ? ConfigLoadState.BOTH : state1);
     }
 
-    private static void notifyListeners(ConfigEventType type) {
+    /**
+     * call listeners for state as the config has somehow been loaded
+     * @param state config load state
+     */
+    private void notifyListeners(ConfigLoadState state) {
 
-        CONFIG_LISTENERS.entrySet().stream().filter(entry -> entry.getValue().matches(type)).map(Map.Entry::getKey).forEach(Runnable::run);
+        this.configListeners.entrySet().stream().filter(entry -> entry.getValue().matches(state)).map(Map.Entry::getKey).forEach(Runnable::run);
     }
 
     /**
@@ -157,12 +207,42 @@ public class ConfigManager {
         return modId + File.separator + getConfigName(type, modId);
     }
 
+    /**
+     * @return instance of this
+     */
+    public static ConfigManager get() {
+
+        if (instance == null) {
+
+            instance = new ConfigManager();
+        }
+
+        return instance;
+    }
+
+    /**
+     * internal storage for registered config entries
+     * @param <S> config value of a certain type
+     * @param <T> type for value
+     */
     private static class ConfigEntry<S extends ForgeConfigSpec.ConfigValue<T>, T> {
 
+        /**
+         * config type of this entry
+         */
         final ModConfig.Type type;
+        /**
+         * config value entry
+         */
         final S entry;
+        /**
+         * action to perform when the entry is updated
+         */
         final Consumer<T> action;
 
+        /**
+         * new entry storage
+         */
         ConfigEntry(ModConfig.Type type, S entry, Consumer<T> action) {
 
             this.type = type;
@@ -170,11 +250,18 @@ public class ConfigManager {
             this.action = action;
         }
 
+        /**
+         * get type for filtering purposes
+         * @return type of this
+         */
         ModConfig.Type getType() {
 
             return this.type;
         }
 
+        /**
+         * get value from config value and supply it to consumer
+         */
         void sync() {
 
             this.action.accept(this.entry.get());
@@ -182,53 +269,37 @@ public class ConfigManager {
 
     }
 
-    public static class Builder {
-
-        private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
-        private static ForgeConfigSpec spec;
-
-        public static ForgeConfigSpec getSpec() {
-
-            if (spec == null) {
-
-                spec = BUILDER.build();
-            }
-
-            return spec;
-        }
-
-        public static void createCategory(String name, Runnable options, String... comments) {
-
-            if (comments.length != 0) {
-
-                BUILDER.comment(comments);
-            }
-
-            BUILDER.push(name);
-            options.run();
-            BUILDER.pop();
-        }
-
-    }
-
-    private enum ConfigEventType {
+    /**
+     * state for when to trigger listeners
+     */
+    private enum ConfigLoadState {
 
         LOADING, RELOADING, BOTH;
 
-        boolean matches(ConfigEventType type) {
+        /**
+         * check if two states are compatible
+         * @param state state to match with
+         * @return are states compatible
+         */
+        boolean matches(ConfigLoadState state) {
 
-            if (type == BOTH || this == BOTH) {
+            if (state == BOTH || this == BOTH) {
 
                 return true;
-            } else if (type == LOADING && this != RELOADING) {
+            } else if (state == LOADING && this != RELOADING) {
 
                 return true;
             }
 
-            return type == RELOADING && this != LOADING;
+            return state == RELOADING && this != LOADING;
         }
 
-        static ConfigEventType getType(ModConfig.ModConfigEvent evt) {
+        /**
+         * get state for an event object
+         * @param evt event to get state for
+         * @return state for event
+         */
+        static ConfigLoadState getState(ModConfig.ModConfigEvent evt) {
 
             return evt instanceof ModConfig.Loading ? LOADING : RELOADING;
         }
