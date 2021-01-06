@@ -67,10 +67,6 @@ minecraft {
 repositories {
 
     mavenLocal()
-    // unofficial mcp mappings
-    maven { url = "http://dogforce-games.com/maven/" }
-    // yarn mappings
-    maven { url = "https://maven.tterrag.com/" }
 }
 
 dependencies {
