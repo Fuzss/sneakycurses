@@ -12,66 +12,63 @@ import java.util.stream.Stream;
 @SuppressWarnings("unused")
 public class ConfigBuilder {
 
-    private static final EnumMap<ModConfig.Type, ForgeConfigSpec.Builder> BUILDERS = Stream.of(ModConfig.Type.values()).collect(Collectors.toMap(Function.identity(), key -> new ForgeConfigSpec.Builder(), (key1, key2) -> key1, () -> new EnumMap<>(ModConfig.Type.class)));
-    private static final EnumMap<ModConfig.Type, ForgeConfigSpec> SPECS = new EnumMap<>(ModConfig.Type.class);
+    private final EnumMap<ModConfig.Type, ForgeConfigSpec> specs = new EnumMap<>(ModConfig.Type.class);
+    private final EnumMap<ModConfig.Type, ForgeConfigSpec.Builder> builders = Stream.of(ModConfig.Type.values())
+            .collect(Collectors.toMap(Function.identity(), key -> new ForgeConfigSpec.Builder(), (key1, key2) -> key1, () -> new EnumMap<>(ModConfig.Type.class)));
 
-    private static ModConfig.Type activeType;
+    private ModConfig.Type activeType;
 
-    private ConfigBuilder() {
+    public ForgeConfigSpec getCommonSpec() {
 
+        return this.getSpec(ModConfig.Type.COMMON);
     }
 
-    public static ForgeConfigSpec getCommonSpec() {
+    public ForgeConfigSpec getClientSpec() {
 
-        return getSpec(ModConfig.Type.COMMON);
+        return this.getSpec(ModConfig.Type.CLIENT);
     }
 
-    public static ForgeConfigSpec getClientSpec() {
+    public ForgeConfigSpec getServerSpec() {
 
-        return getSpec(ModConfig.Type.CLIENT);
+        return this.getSpec(ModConfig.Type.SERVER);
     }
 
-    public static ForgeConfigSpec getServerSpec() {
+    private ForgeConfigSpec getSpec(ModConfig.Type type) {
 
-        return getSpec(ModConfig.Type.SERVER);
+        return this.specs.computeIfAbsent(type, key -> getBuilder(key).build());
     }
 
-    private static ForgeConfigSpec getSpec(ModConfig.Type type) {
+    public boolean isSpecNotBuilt(ModConfig.Type type) {
 
-        return SPECS.computeIfAbsent(type, key -> getBuilder(key).build());
+        return !this.specs.containsKey(type);
     }
 
-    public static boolean isSpecNotBuilt(ModConfig.Type type) {
+    public boolean isSpecNotLoaded(ModConfig.Type type) {
 
-        return !SPECS.containsKey(type);
+        return !this.specs.get(type).isLoaded();
     }
 
-    public static boolean isSpecNotLoaded(ModConfig.Type type) {
+    public boolean addSpec(ForgeConfigSpec spec, ModConfig.Type type) {
 
-        return SPECS.get(type).isLoaded();
-    }
+        if (this.isSpecNotBuilt(type)) {
 
-    public static boolean addSpec(ForgeConfigSpec spec, ModConfig.Type type) {
-
-        if (isSpecNotBuilt(type)) {
-
-            SPECS.put(type, spec);
+            this.specs.put(type, spec);
             return true;
         }
 
         return false;
     }
 
-    private static ForgeConfigSpec.Builder getBuilder(ModConfig.Type type) {
+    private ForgeConfigSpec.Builder getBuilder(ModConfig.Type type) {
 
-        return BUILDERS.get(type);
+        return builders.get(type);
     }
 
-    public static void createCategory(String name, Consumer<ForgeConfigSpec.Builder> options, ModConfig.Type type, String... comments) {
+    public void createCategory(String name, Consumer<ForgeConfigSpec.Builder> options, ModConfig.Type type, String... comments) {
 
-        activeType = type;
+        this.activeType = type;
 
-        ForgeConfigSpec.Builder builder = BUILDERS.get(type);
+        ForgeConfigSpec.Builder builder = builders.get(type);
         if (comments.length != 0) {
 
             builder.comment(comments);
@@ -81,12 +78,12 @@ public class ConfigBuilder {
         options.accept(builder);
         builder.pop();
 
-        activeType = null;
+        this.activeType = null;
     }
 
-    public static ModConfig.Type getActiveType() {
+    public ModConfig.Type getActiveType() {
 
-        return activeType;
+        return this.activeType;
     }
 
 }

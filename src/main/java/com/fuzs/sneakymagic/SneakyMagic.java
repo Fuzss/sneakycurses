@@ -5,7 +5,6 @@ import com.fuzs.sneakymagic.common.CompatibilityManager;
 import com.fuzs.sneakymagic.common.handler.CompatibilityHandler;
 import com.fuzs.sneakymagic.common.handler.EnchantmentHandler;
 import com.fuzs.sneakymagic.config.ConfigBuildHandler;
-import com.fuzs.sneakymagic.config.ConfigBuilder;
 import com.fuzs.sneakymagic.config.ConfigManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -33,7 +32,7 @@ public class SneakyMagic {
 
         // config setup
         ConfigBuildHandler.setup(ModConfig.Type.COMMON);
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigBuilder.getCommonSpec());
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigManager.builder().getCommonSpec());
         FMLJavaModLoadingContext.get().getModEventBus().addListener(ConfigManager.get()::onModConfig);
         ConfigManager.get().addListener(new CompatibilityManager()::load);
     }

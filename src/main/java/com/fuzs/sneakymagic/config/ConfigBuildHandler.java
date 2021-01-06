@@ -49,9 +49,9 @@ public class ConfigBuildHandler {
     
     public static void setup(ModConfig.Type type) {
         
-        ConfigBuilder.createCategory("general", ConfigBuildHandler::setupGeneral, type);
-        ConfigBuilder.createCategory("compatibility", ConfigBuildHandler::setupCompatibility, type, "Only the enchantments included by default are guaranteed to work. While any modded enchantments or other vanilla enchantments can work, they are highly unlikely to do so.", "The blacklists for each item group are supposed to disable items which can be enchanted, but where the enchantments do not function as expected.", "Format for every entry is \"<namespace>:<path>\". Path may use asterisk as wildcard parameter. Changes made to this section of the config file require a restart to apply.");
-        ConfigBuilder.createCategory("curses", ConfigBuildHandler::setupCurses, type);
+        ConfigManager.builder().createCategory("general", ConfigBuildHandler::setupGeneral, type);
+        ConfigManager.builder().createCategory("compatibility", ConfigBuildHandler::setupCompatibility, type, "Only the enchantments included by default are guaranteed to work. While any modded enchantments or other vanilla enchantments can work, they are highly unlikely to do so.", "The blacklists for each item group are supposed to disable items which can be enchanted, but where the enchantments do not function as expected.", "Format for every entry is \"<namespace>:<path>\". Path may use asterisk as wildcard parameter. Changes made to this section of the config file require a restart to apply.");
+        ConfigManager.builder().createCategory("curses", ConfigBuildHandler::setupCurses, type);
     }
 
     private static void setupGeneral(ForgeConfigSpec.Builder builder) {

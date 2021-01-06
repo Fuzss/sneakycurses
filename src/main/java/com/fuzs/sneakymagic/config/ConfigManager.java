@@ -4,12 +4,14 @@ import com.fuzs.sneakymagic.SneakyMagic;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
 
 import java.io.File;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
 public class ConfigManager {
@@ -19,6 +21,10 @@ public class ConfigManager {
      */
     private static ConfigManager instance;
 
+    /**
+     * config build helpers for each mod separately since they store the forge builders and specs
+     */
+    private final Map<String, ConfigBuilder> configBuilders = Maps.newHashMap();
     /**
      * all config entries as a set
      */
@@ -41,14 +47,14 @@ public class ConfigManager {
      */
     public void onModConfig(final ModConfig.ModConfigEvent evt) {
 
+        String modid = evt.getConfig().getModId();
         ModConfig.Type type = evt.getConfig().getType();
-        if (ConfigBuilder.isSpecNotBuilt(type) || ConfigBuilder.isSpecNotLoaded(type)) {
+        if (this.getBuilder(modid).isSpecNotBuilt(type) || this.getBuilder(modid).isSpecNotLoaded(type)) {
 
-            SneakyMagic.LOGGER.error("Unable to get values from config: " + "Config spec not present");
+            SneakyMagic.LOGGER.error("Unable to get values from config during " + (evt instanceof ModConfig.Loading ? "loading" : "reloading") + " phase: " + "Config spec not present");
         } else {
 
-            // no need to check modid or anything as this is only fired for the mod
-            this.syncType(type);
+            this.syncType(modid, type);
             this.notifyListeners(ConfigLoadState.getState(evt));
         }
     }
@@ -56,18 +62,27 @@ public class ConfigManager {
     /**
      * sync all config entries no matter which type
      */
-    public void sync() {
+    public void sync(String modid) {
 
-        this.configEntries.forEach(ConfigEntry::sync);
+        this.getEntriesForMod(modid).forEach(ConfigEntry::sync);
     }
 
     /**
      * sync config entries for specific type of config
      * @param type type of config to sync
      */
-    private void syncType(ModConfig.Type type) {
+    private void syncType(String modid, ModConfig.Type type) {
 
-        this.configEntries.stream().filter(configValue -> configValue.getType() == type).forEach(ConfigEntry::sync);
+        this.getEntriesForMod(modid).filter(configValue -> configValue.getType() == type).forEach(ConfigEntry::sync);
+    }
+
+    /**
+     * @param modid mod to get entries for
+     * @return stream of entries only for this mod
+     */
+    private Stream<ConfigEntry<? extends ForgeConfigSpec.ConfigValue<?>, ?>> getEntriesForMod(String modid) {
+
+        return this.configEntries.stream().filter(entry -> entry.getModId().equals(modid));
     }
 
     /**
@@ -116,7 +131,7 @@ public class ConfigManager {
      */
     private <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerEntry(ModConfig.Type type, S entry, Consumer<T> action) {
 
-        this.configEntries.add(new ConfigEntry<>(type, entry, action));
+        this.configEntries.add(new ConfigEntry<>(type, entry, action, this.getActiveNamespace()));
     }
 
     /**
@@ -128,12 +143,13 @@ public class ConfigManager {
      */
     public <S extends ForgeConfigSpec.ConfigValue<T>, T> void registerEntry(S entry, Consumer<T> action) {
 
-        if (ConfigBuilder.getActiveType() == null) {
+        ModConfig.Type activeType = this.getBuilder().getActiveType();
+        if (activeType == null) {
 
             SneakyMagic.LOGGER.error("Unable to register config entry: " + "Active builder is null");
-        } else if (ConfigBuilder.isSpecNotBuilt(ConfigBuilder.getActiveType())) {
+        } else if (this.getBuilder().isSpecNotBuilt(activeType)) {
 
-            this.configEntries.add(new ConfigEntry<>(ConfigBuilder.getActiveType(), entry, action));
+            this.configEntries.add(new ConfigEntry<>(activeType, entry, action, this.getActiveNamespace()));
         } else {
 
             SneakyMagic.LOGGER.error("Unable to register config entry: " + "Config spec already built");
@@ -208,6 +224,34 @@ public class ConfigManager {
     }
 
     /**
+     * get active modid so entries can still be associated with the mod
+     * @return active modid
+     */
+    private String getActiveNamespace() {
+
+        return ModLoadingContext.get().getActiveNamespace();
+    }
+
+    /**
+     * get builder for active mod, create if not present
+     * @return builder for active mod
+     */
+    private ConfigBuilder getBuilder() {
+
+        return this.getBuilder(this.getActiveNamespace());
+    }
+
+    /**
+     * get builder for a given mod, create if not present
+     * @param modid modid to get builder for
+     * @return builder for active mod
+     */
+    private ConfigBuilder getBuilder(String modid) {
+
+        return this.configBuilders.computeIfAbsent(modid, key -> new ConfigBuilder());
+    }
+
+    /**
      * @return instance of this
      */
     public static ConfigManager get() {
@@ -218,6 +262,15 @@ public class ConfigManager {
         }
 
         return instance;
+    }
+
+    /**
+     * get builder directly
+     * @return builder for active mod
+     */
+    public static ConfigBuilder builder() {
+
+        return get().getBuilder();
     }
 
     /**
@@ -239,15 +292,20 @@ public class ConfigManager {
          * action to perform when the entry is updated
          */
         final Consumer<T> action;
+        /**
+         * source mod this entry belongs to
+         */
+        final String modid;
 
         /**
          * new entry storage
          */
-        ConfigEntry(ModConfig.Type type, S entry, Consumer<T> action) {
+        ConfigEntry(ModConfig.Type type, S entry, Consumer<T> action, String modid) {
 
             this.type = type;
             this.entry = entry;
             this.action = action;
+            this.modid = modid;
         }
 
         /**
@@ -257,6 +315,15 @@ public class ConfigManager {
         ModConfig.Type getType() {
 
             return this.type;
+        }
+
+        /**
+         * get modid for filtering purposes
+         * @return modid associated with this
+         */
+        public String getModId() {
+
+            return this.modid;
         }
 
         /**
