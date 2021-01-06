@@ -1,6 +1,7 @@
 package com.fuzs.sneakymagic.mixin;
 
 import com.fuzs.sneakymagic.config.ConfigBuildHandler;
+import com.fuzs.sneakymagic.mixin.accessor.IItemAccessor;
 import com.fuzs.sneakymagic.util.CurseMatcher;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.IngameGui;
@@ -34,15 +35,10 @@ public abstract class IngameGuiMixin extends AbstractGui {
             Collection<Enchantment> enchantments = EnchantmentHelper.getEnchantments(this.highlightingItemStack).keySet();
             if (CurseMatcher.anyMatch(enchantments)) {
 
-                if (ConfigBuildHandler.disguiseItem && this.highlightingItemStack.getItem() == Items.ENCHANTED_BOOK && CurseMatcher.allMatch(enchantments) || ConfigBuildHandler.colorName) {
+                boolean disguise = ConfigBuildHandler.disguiseItem && this.highlightingItemStack.getItem() != Items.ENCHANTED_BOOK && CurseMatcher.allMatch(enchantments);
+                if (disguise || ConfigBuildHandler.colorName) {
 
-                    if (ConfigBuildHandler.colorName) {
-
-                        return component.mergeStyle(TextFormatting.RED);
-                    } else {
-
-                        return component;
-                    }
+                    return component.mergeStyle(disguise ? ((IItemAccessor) this.highlightingItemStack.getItem()).getRarity().color : TextFormatting.RED);
                 }
             }
         }

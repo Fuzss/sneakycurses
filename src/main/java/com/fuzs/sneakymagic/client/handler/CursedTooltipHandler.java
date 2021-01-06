@@ -1,6 +1,7 @@
 package com.fuzs.sneakymagic.client.handler;
 
 import com.fuzs.sneakymagic.config.ConfigBuildHandler;
+import com.fuzs.sneakymagic.mixin.accessor.IItemAccessor;
 import com.fuzs.sneakymagic.util.CurseMatcher;
 import com.google.common.collect.Lists;
 import net.minecraft.client.gui.screen.Screen;
@@ -50,23 +51,15 @@ public class CursedTooltipHandler {
 
     private void modifyItemName(List<ITextComponent> tooltip, ItemStack stack, Collection<Enchantment> enchantments) {
 
-        if (ConfigBuildHandler.disguiseItem && stack.getItem() == Items.ENCHANTED_BOOK && CurseMatcher.allMatch(enchantments) || ConfigBuildHandler.colorName) {
+        boolean disguise = ConfigBuildHandler.disguiseItem && stack.getItem() != Items.ENCHANTED_BOOK && CurseMatcher.allMatch(enchantments);
+        if (disguise || ConfigBuildHandler.colorName) {
 
             Optional<StringTextComponent> nameComponent = tooltip.stream()
                     .filter(component -> component instanceof StringTextComponent)
                     .filter(component -> component.getUnformattedComponentText().contains(stack.getDisplayName().getUnformattedComponentText()))
                     .findFirst().map(component -> ((StringTextComponent) component));
 
-            nameComponent.ifPresent(component -> {
-
-                if (ConfigBuildHandler.colorName) {
-
-                    component.mergeStyle(TextFormatting.RED);
-                } else {
-
-                    component.modifyStyle(style -> style.setColor(null));
-                }
-            });
+            nameComponent.ifPresent(component -> component.mergeStyle(disguise ? ((IItemAccessor) stack.getItem()).getRarity().color : TextFormatting.RED));
         }
     }
 

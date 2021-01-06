@@ -14,7 +14,8 @@
     "ImpalingEnchantmentMixin",
     "ItemMixin",
     "PlayerEntityMixin",
-    "accessor.IEnchantmentAccessor"
+    "accessor.IEnchantmentAccessor",
+    "accessor.IItemAccessor"
   ],
   "client": [
     "IngameGuiMixin"
