@@ -1,6 +1,6 @@
 package com.fuzs.sneakymagic.mixin;
 
-import com.fuzs.sneakymagic.common.handler.CompatibilityHandler;
+import com.fuzs.sneakymagic.common.element.CompatibilityElement;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
@@ -34,7 +34,11 @@ public abstract class CrossbowItemMixin extends ShootableItem {
     private static AbstractArrowEntity createEnchantedArrow(World worldIn, LivingEntity shooter, ItemStack crossbow, ItemStack ammo) {
 
         AbstractArrowEntity abstractarrowentity = createArrow(worldIn, shooter, crossbow, ammo);
-        CompatibilityHandler.applyCrossbowEnchantments(abstractarrowentity, crossbow);
+        CompatibilityElement.applyCommonEnchantments(abstractarrowentity, crossbow);
+        if (EnchantmentHelper.getEnchantmentLevel(Enchantments.INFINITY, crossbow) > 0) {
+
+            abstractarrowentity.pickupStatus = AbstractArrowEntity.PickupStatus.CREATIVE_ONLY;
+        }
 
         return abstractarrowentity;
     }

@@ -1,6 +1,7 @@
 package com.fuzs.sneakymagic.mixin;
 
-import com.fuzs.sneakymagic.config.ConfigBuildHandler;
+import com.fuzs.sneakymagic.common.SneakyMagicElements;
+import com.fuzs.sneakymagic.common.element.ExclusivenessElement;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentType;
 import net.minecraft.enchantment.InfinityEnchantment;
@@ -23,7 +24,8 @@ public abstract class InfinityEnchantmentMixin extends Enchantment {
     @Inject(method = "canApplyTogether", at = @At("HEAD"), cancellable = true)
     public void canApplyTogether(Enchantment ench, CallbackInfoReturnable<Boolean> callbackInfo) {
 
-        if (ConfigBuildHandler.infinityMendingFix && ench instanceof MendingEnchantment) {
+        ExclusivenessElement element = SneakyMagicElements.getAs(SneakyMagicElements.ENCHANTMENT_EXCLUSIVENESS);
+        if (element.isEnabled() && element.infinityMendingFix && ench instanceof MendingEnchantment) {
 
             callbackInfo.setReturnValue(super.canApplyTogether(ench));
         }

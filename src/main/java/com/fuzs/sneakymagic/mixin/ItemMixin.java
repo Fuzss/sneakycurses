@@ -1,7 +1,7 @@
 package com.fuzs.sneakymagic.mixin;
 
 import com.fuzs.sneakymagic.config.ConfigBuildHandler;
-import com.fuzs.sneakymagic.util.CurseMatcher;
+import com.fuzs.sneakymagic.common.util.CurseMatcher;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;

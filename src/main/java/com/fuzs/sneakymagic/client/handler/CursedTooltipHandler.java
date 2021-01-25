@@ -2,7 +2,7 @@ package com.fuzs.sneakymagic.client.handler;
 
 import com.fuzs.sneakymagic.config.ConfigBuildHandler;
 import com.fuzs.sneakymagic.mixin.accessor.IItemAccessor;
-import com.fuzs.sneakymagic.util.CurseMatcher;
+import com.fuzs.sneakymagic.common.util.CurseMatcher;
 import com.google.common.collect.Lists;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.enchantment.Enchantment;

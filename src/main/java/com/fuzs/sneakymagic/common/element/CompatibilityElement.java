@@ -1,21 +1,49 @@
-package com.fuzs.sneakymagic.common.handler;
+package com.fuzs.sneakymagic.common.element;
 
+import com.fuzs.puzzleslib_sm.config.deserialize.EntryCollectionBuilder;
+import com.fuzs.puzzleslib_sm.element.AbstractElement;
+import com.fuzs.puzzleslib_sm.element.side.ICommonElement;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.AbstractArrowEntity;
 import net.minecraft.item.*;
+import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.player.ArrowLooseEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-public class CompatibilityHandler {
+public class CompatibilityElement extends AbstractElement implements ICommonElement {
 
-    @SuppressWarnings("unused")
-    @SubscribeEvent
-    public void onArrowLoose(final ArrowLooseEvent evt) {
+    @Override
+    public String getDescription() {
+
+        return "Apply handy buffs and improvements to a few enchantments.";
+    }
+
+    @Override
+    public void setupCommon() {
+
+        this.addListener(this::onArrowLoose);
+        this.addListener(this::onEntityJoinWorld);
+        this.addListener(this::onItemUseTick);
+    }
+
+    @Override
+    public void setupCommonConfig(ForgeConfigSpec.Builder builder) {
+
+    }
+
+    @Override
+    public String[] getCommonDescription() {
+
+        return new String[]{"Only enchantments included by default are guaranteed to work. While any modded enchantments or other vanilla enchantments can work, they are highly unlikely to do so.",
+                "The blacklists for each item group are supposed to disable items which can be enchanted, but where the enchantments do not function as expected.",
+                EntryCollectionBuilder.CONFIG_STRING};
+    }
+
+    private void onArrowLoose(final ArrowLooseEvent evt) {
 
         // multishot enchantment for bows
         ItemStack stack = evt.getBow();
@@ -26,8 +54,7 @@ public class CompatibilityHandler {
 
                 PlayerEntity playerentity = evt.getPlayer();
                 ItemStack itemstack = playerentity.findAmmo(stack);
-                boolean flag1 = playerentity.abilities.isCreativeMode || (itemstack.getItem() instanceof ArrowItem && ((ArrowItem)itemstack.getItem()).isInfinite(itemstack, stack, playerentity));
-                ArrowItem arrowitem = (ArrowItem)(itemstack.getItem() instanceof ArrowItem ? itemstack.getItem() : Items.ARROW);
+                ArrowItem arrowitem = (ArrowItem) (itemstack.getItem() instanceof ArrowItem ? itemstack.getItem() : Items.ARROW);
 
                 for (int i = 0; i < 2; i++) {
 
@@ -38,14 +65,11 @@ public class CompatibilityHandler {
                     abstractarrowentity.pickupStatus = AbstractArrowEntity.PickupStatus.CREATIVE_ONLY;
                     evt.getWorld().addEntity(abstractarrowentity);
                 }
-
             }
         }
     }
 
-    @SuppressWarnings("unused")
-    @SubscribeEvent
-    public void onEntityJoinWorld(final EntityJoinWorldEvent evt) {
+    private void onEntityJoinWorld(final EntityJoinWorldEvent evt) {
 
         if (evt.getEntity() instanceof AbstractArrowEntity) {
 
@@ -59,15 +83,13 @@ public class CompatibilityHandler {
                 if (stack.getItem() instanceof BowItem) {
 
                     // piercing enchantment for bows
-                    this.applyPiercingEnchantment(abstractarrowentity, stack);
+                    applyPiercingEnchantment(abstractarrowentity, stack);
                 }
             }
         }
     }
 
-    @SuppressWarnings("unused")
-    @SubscribeEvent
-    public void onItemUseTick(final LivingEntityUseItemEvent.Tick evt) {
+    private void onItemUseTick(final LivingEntityUseItemEvent.Tick evt) {
 
         Item item = evt.getItem().getItem();
         int duration = evt.getItem().getUseDuration() - evt.getDuration();
@@ -79,7 +101,7 @@ public class CompatibilityHandler {
         }
     }
 
-    private void applyPiercingEnchantment(AbstractArrowEntity abstractarrowentity, ItemStack stack) {
+    private static void applyPiercingEnchantment(AbstractArrowEntity abstractarrowentity, ItemStack stack) {
 
         int i = EnchantmentHelper.getEnchantmentLevel(Enchantments.PIERCING, stack);
         if (i > 0) {
@@ -88,12 +110,12 @@ public class CompatibilityHandler {
         }
     }
 
-    private static void applyCommonEnchantments(AbstractArrowEntity abstractarrowentity, ItemStack stack) {
+    public static void applyCommonEnchantments(AbstractArrowEntity abstractarrowentity, ItemStack stack) {
 
         int j = EnchantmentHelper.getEnchantmentLevel(Enchantments.POWER, stack);
         if (j > 0) {
 
-            abstractarrowentity.setDamage(abstractarrowentity.getDamage() + (double) j * 0.5D + 0.5D);
+            abstractarrowentity.setDamage(abstractarrowentity.getDamage() + (double) j * 0.5 + 0.5);
         }
 
         int k = EnchantmentHelper.getEnchantmentLevel(Enchantments.PUNCH, stack);
@@ -105,15 +127,6 @@ public class CompatibilityHandler {
         if (EnchantmentHelper.getEnchantmentLevel(Enchantments.FLAME, stack) > 0) {
 
             abstractarrowentity.setFire(100);
-        }
-    }
-
-    public static void applyCrossbowEnchantments(AbstractArrowEntity abstractarrowentity, ItemStack stack) {
-
-        applyCommonEnchantments(abstractarrowentity, stack);
-        if (EnchantmentHelper.getEnchantmentLevel(Enchantments.INFINITY, stack) > 0) {
-
-            abstractarrowentity.pickupStatus = AbstractArrowEntity.PickupStatus.CREATIVE_ONLY;
         }
     }
 

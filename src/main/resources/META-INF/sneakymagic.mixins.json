@@ -18,7 +18,7 @@
     "accessor.IItemAccessor"
   ],
   "client": [
-    "IngameGuiMixin"
+    "client.IngameGuiMixin"
   ],
   "injectors": {
     "defaultRequire": 1

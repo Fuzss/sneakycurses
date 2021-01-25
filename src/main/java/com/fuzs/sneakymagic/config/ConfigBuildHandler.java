@@ -21,13 +21,6 @@ public class ConfigBuildHandler {
     private static final EntryCollectionBuilder<Enchantment> ENCHANTMENT_COLLECTION_BUILDER = new EntryCollectionBuilder<>(ForgeRegistries.ENCHANTMENTS);
     private static final EntryCollectionBuilder<Item> ITEM_COLLECTION_BUILDER = new EntryCollectionBuilder<>(ForgeRegistries.ITEMS);
 
-    // general
-    public static boolean infinityMendingFix;
-    public static boolean multishotPiercingFix;
-    public static boolean protectionFix;
-    public static boolean damageFix;
-    public static boolean trueInfinity;
-    public static boolean noProjectileResistance;
     // compatibility
     public static Set<Enchantment> swordEnchantments;
     public static Set<Enchantment> axeEnchantments;
@@ -48,20 +41,10 @@ public class ConfigBuildHandler {
     public static boolean affectBooks;
     
     public static void setup(ModConfig.Type type) {
-        
-        ConfigManager.builder().createCategory("general", ConfigBuildHandler::setupGeneral, type);
+
+        // exclusiveness, compatibility, sneaky curses, tweaks
         ConfigManager.builder().createCategory("compatibility", ConfigBuildHandler::setupCompatibility, type, "Only enchantments included by default are guaranteed to work. While any modded enchantments or other vanilla enchantments can work, they are highly unlikely to do so.", "The blacklists for each item group are supposed to disable items which can be enchanted, but where the enchantments do not function as expected.", "Format for every entry is \"<namespace>:<path>\". Path may use asterisk as wildcard parameter.");
         ConfigManager.builder().createCategory("curses", ConfigBuildHandler::setupCurses, type);
-    }
-
-    private static void setupGeneral(ForgeConfigSpec.Builder builder) {
-
-        ConfigManager.get().registerEntry(builder.comment("Allows infinity and mending to be applied at the same time.").define("Infinity Mending Fix", true), v -> infinityMendingFix = v);
-        ConfigManager.get().registerEntry(builder.comment("Allows multishot and piercing to be applied at the same time.").define("Multishot Piercing Fix", true), v -> multishotPiercingFix = v);
-        ConfigManager.get().registerEntry(builder.comment("Allows different types of protection to be applied at the same time, just like in early versions of Minecraft 1.14.").define("Protection Fix", false), v -> protectionFix = v);
-        ConfigManager.get().registerEntry(builder.comment("Allows different types of damage enchantments to be applied at the same time.").define("Damage Fix", false), v -> damageFix = v);
-        ConfigManager.get().registerEntry(builder.comment("Infinity enchantment no longer requires a single arrow to be present in the player inventory.").define("True Infinity", true), v -> trueInfinity = v);
-        ConfigManager.get().registerEntry(builder.comment("Disables damage immunity when hit by a projectile. Makes it possible for entities to be hit by multiple projectiles at once.").define("No Projectile Immunity", true), v -> noProjectileResistance = v);
     }
 
     private static void setupCompatibility(ForgeConfigSpec.Builder builder) {

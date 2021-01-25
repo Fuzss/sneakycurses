@@ -1,7 +1,11 @@
 package com.fuzs.sneakymagic.mixin;
 
-import com.fuzs.sneakymagic.config.ConfigBuildHandler;
-import net.minecraft.enchantment.*;
+import com.fuzs.sneakymagic.common.SneakyMagicElements;
+import com.fuzs.sneakymagic.common.element.ExclusivenessElement;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentType;
+import net.minecraft.enchantment.MultishotEnchantment;
+import net.minecraft.enchantment.PiercingEnchantment;
 import net.minecraft.inventory.EquipmentSlotType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,7 +24,8 @@ public abstract class MultishotEnchantmentMixin extends Enchantment {
     @Inject(method = "canApplyTogether", at = @At("HEAD"), cancellable = true)
     public void canApplyTogether(Enchantment ench, CallbackInfoReturnable<Boolean> callbackInfo) {
 
-        if (ConfigBuildHandler.multishotPiercingFix && ench instanceof PiercingEnchantment) {
+        ExclusivenessElement element = SneakyMagicElements.getAs(SneakyMagicElements.ENCHANTMENT_EXCLUSIVENESS);
+        if (element.isEnabled() && element.multishotPiercingFix && ench instanceof PiercingEnchantment) {
 
             callbackInfo.setReturnValue(super.canApplyTogether(ench));
         }
