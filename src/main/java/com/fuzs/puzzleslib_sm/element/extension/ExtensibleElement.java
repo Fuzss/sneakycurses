@@ -10,7 +10,7 @@ import java.util.function.Function;
 
 public abstract class ExtensibleElement<T extends ElementExtension<?> & ISidedElement> extends AbstractElement implements ICommonElement {
 
-    protected final T extension;
+    public final T extension;
 
     public ExtensibleElement(Function<ExtensibleElement<?>, T> extension, Dist dist) {
 
