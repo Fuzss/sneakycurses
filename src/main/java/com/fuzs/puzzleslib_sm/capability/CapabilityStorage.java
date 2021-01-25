@@ -6,6 +6,10 @@ import net.minecraft.util.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.INBTSerializable;
 
+/**
+ * serializer for capability, has to be provided when registering
+ * @param <T> capability class
+ */
 public class CapabilityStorage<T> implements Capability.IStorage<T> {
 
     @Override
@@ -19,13 +23,13 @@ public class CapabilityStorage<T> implements Capability.IStorage<T> {
         return null;
     }
 
-    @Override
     @SuppressWarnings("unchecked")
+    @Override
     public void readNBT(Capability<T> capability, T instance, Direction side, INBT nbt) {
 
-        if (nbt instanceof CompoundNBT) {
+        if (instance instanceof INBTSerializable && nbt instanceof CompoundNBT) {
 
-            ((INBTSerializable<INBT>) instance).deserializeNBT(nbt);
+            ((INBTSerializable<CompoundNBT>) instance).deserializeNBT((CompoundNBT) nbt);
         }
     }
 

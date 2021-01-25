@@ -10,11 +10,25 @@ import net.minecraftforge.common.util.LazyOptional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * dispatcher for this serializable capability
+ * @param <T> capability class
+ */
 public class CapabilityDispatcher<T extends INBTSerializable<CompoundNBT>> implements ICapabilitySerializable<CompoundNBT> {
 
+    /**
+     * capability wrapper for object
+     */
     private final Capability<T> capability;
+    /**
+     * capability object
+     */
     private final T storage;
 
+    /**
+     * @param storage object
+     * @param capability wrapper
+     */
     public CapabilityDispatcher(T storage, Capability<T> capability) {
 
         this.storage = storage;

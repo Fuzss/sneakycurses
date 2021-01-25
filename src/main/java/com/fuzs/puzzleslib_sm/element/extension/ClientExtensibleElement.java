@@ -6,8 +6,15 @@ import net.minecraftforge.common.ForgeConfigSpec;
 
 import java.util.function.Function;
 
+/**
+ * an element that can be extended to the client
+ * @param <T> extension class
+ */
 public abstract class ClientExtensibleElement<T extends ElementExtension<?> & IClientElement> extends ExtensibleElement<T> implements IClientElement {
 
+    /**
+     * @param extension provider for extension
+     */
     public ClientExtensibleElement(Function<ExtensibleElement<?>, T> extension) {
 
         super(extension, Dist.CLIENT);

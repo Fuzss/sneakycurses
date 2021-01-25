@@ -6,8 +6,15 @@ import net.minecraftforge.common.ForgeConfigSpec;
 
 import java.util.function.Function;
 
+/**
+ * an element that can be extended to the server
+ * @param <T> extension class
+ */
 public abstract class ServerExtensibleElement<T extends ElementExtension<?> & IServerElement> extends ExtensibleElement<T> implements IServerElement {
 
+    /**
+     * @param extension provider for extension
+     */
     public ServerExtensibleElement(Function<ExtensibleElement<?>, T> extension) {
 
         super(extension, Dist.DEDICATED_SERVER);
