@@ -1,7 +1,6 @@
 package com.fuzs.puzzleslib_sm.element.extension;
 
-import com.fuzs.puzzleslib_sm.element.AbstractElement;
-import com.fuzs.puzzleslib_sm.element.IEventListener;
+import com.fuzs.puzzleslib_sm.element.EventListener;
 import net.minecraftforge.eventbus.api.Event;
 
 import java.util.List;
@@ -9,7 +8,7 @@ import java.util.List;
 /**
  * abstract template for sided elements complementing a common element
  */
-public abstract class ElementExtension<T extends ExtensibleElement<?>> implements IEventListener {
+public abstract class ElementExtension<T extends ExtensibleElement<?>> extends EventListener {
 
     /**
      * common element this belongs to
@@ -28,13 +27,13 @@ public abstract class ElementExtension<T extends ExtensibleElement<?>> implement
     /**
      * @return common parent for this
      */
-    public T getParent() {
+    public final T getParent() {
 
         return this.parent;
     }
 
     @Override
-    public List<AbstractElement.EventStorage<? extends Event>> getEvents() {
+    public final List<EventStorage<? extends Event>> getEvents() {
 
         return this.getParent().getEvents();
     }

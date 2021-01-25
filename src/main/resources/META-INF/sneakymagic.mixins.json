@@ -5,6 +5,7 @@
   "package": "com.fuzs.sneakymagic.mixin",
   "refmap": "sneakymagic.refmap.json",
   "mixins": [
+    "BowItemMixin",
     "CrossbowItemMixin",
     "InfinityEnchantmentMixin",
     "MultishotEnchantmentMixin",
@@ -12,12 +13,13 @@
     "ProtectionEnchantmentMixin",
     "DamageEnchantmentMixin",
     "ImpalingEnchantmentMixin",
-    "ItemMixin",
     "PlayerEntityMixin",
+    "accessor.IItemAccessor",
     "accessor.IEnchantmentAccessor",
-    "accessor.IItemAccessor"
+    "accessor.IAbstractArrowEntityAccessor"
   ],
   "client": [
+    "client.ItemMixin",
     "client.IngameGuiMixin"
   ],
   "injectors": {

@@ -11,19 +11,19 @@ import java.util.function.Consumer;
 /**
  * add ability to listen to Forge events
  */
-public interface IEventListener {
+public abstract class EventListener {
 
     /**
      * @return event storage list
      */
-    List<EventStorage<? extends Event>> getEvents();
+    protected abstract List<EventStorage<? extends Event>> getEvents();
 
     /**
      * Add a consumer listener with {@link EventPriority} set to {@link EventPriority#NORMAL}
      * @param consumer Callback to invoke when a matching event is received
      * @param <T> The {@link Event} subclass to listen for
      */
-    default <T extends Event> void addListener(Consumer<T> consumer) {
+    protected final <T extends Event> void addListener(Consumer<T> consumer) {
 
         this.addListener(consumer, EventPriority.NORMAL);
     }
@@ -34,7 +34,7 @@ public interface IEventListener {
      * @param receiveCancelled Indicate if this listener should receive events that have been {@link Cancelable} cancelled
      * @param <T> The {@link Event} subclass to listen for
      */
-    default <T extends Event> void addListener(Consumer<T> consumer, boolean receiveCancelled) {
+    protected final <T extends Event> void addListener(Consumer<T> consumer, boolean receiveCancelled) {
 
         this.addListener(consumer, EventPriority.NORMAL, receiveCancelled);
     }
@@ -45,7 +45,7 @@ public interface IEventListener {
      * @param priority {@link EventPriority} for this listener
      * @param <T> The {@link Event} subclass to listen for
      */
-    default <T extends Event> void addListener(Consumer<T> consumer, EventPriority priority) {
+    protected final <T extends Event> void addListener(Consumer<T> consumer, EventPriority priority) {
 
         this.addListener(consumer, priority, false);
     }
@@ -57,7 +57,7 @@ public interface IEventListener {
      * @param receiveCancelled Indicate if this listener should receive events that have been {@link Cancelable} cancelled
      * @param <T> The {@link Event} subclass to listen for
      */
-    default <T extends Event> void addListener(Consumer<T> consumer, EventPriority priority, boolean receiveCancelled) {
+    protected final <T extends Event> void addListener(Consumer<T> consumer, EventPriority priority, boolean receiveCancelled) {
 
         this.getEvents().add(new EventStorage<>(consumer, priority, receiveCancelled));
     }
@@ -66,7 +66,7 @@ public interface IEventListener {
      * storage for {@link net.minecraftforge.eventbus.api.Event} so we can register and unregister them as needed
      * @param <T> type of event
      */
-    class EventStorage<T extends Event> {
+    protected static class EventStorage<T extends Event> {
 
         /**
          * Callback to invoke when a matching event is received

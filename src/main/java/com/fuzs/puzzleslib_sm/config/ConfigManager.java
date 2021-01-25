@@ -37,11 +37,11 @@ public class ConfigManager {
     /**
      * all config entries as a set
      */
-    private final Map<String, ConfigEntry<? extends ForgeConfigSpec.ConfigValue<?>, ?, ?>> configEntries = Maps.newHashMap();
+    private final Map<String, ConfigValueEntry<? extends ForgeConfigSpec.ConfigValue<?>, ?, ?>> configEntries = Maps.newHashMap();
     /**
      * listeners to call when a config is somehow loaded
      */
-    private final Map<Runnable, ConfigLoadState> configListeners = Maps.newHashMap();
+    private final Map<Runnable, ConfigLoading> configListeners = Maps.newHashMap();
 
     /**
      * this class is a singleton
@@ -73,7 +73,7 @@ public class ConfigManager {
         } else {
 
             this.syncType(modid, type);
-            this.notifyListeners(ConfigLoadState.getState(evt));
+            this.notifyListeners(ConfigLoading.getState(evt));
             if (evt instanceof ModConfig.Reloading) {
 
                 PuzzlesLib.LOGGER.info("Reloading " + type.extension() + " config for " + modid);
@@ -86,7 +86,7 @@ public class ConfigManager {
      */
     public void sync(String modid) {
 
-        this.getEntriesForMod(modid).forEach(ConfigEntry::sync);
+        this.getEntriesForMod(modid).forEach(ConfigValueEntry::sync);
     }
 
     /**
@@ -95,14 +95,14 @@ public class ConfigManager {
      */
     private void syncType(String modid, ModConfig.Type type) {
 
-        this.getEntriesForMod(modid).filter(configValue -> configValue.getType() == type).forEach(ConfigEntry::sync);
+        this.getEntriesForMod(modid).filter(configValue -> configValue.getType() == type).forEach(ConfigValueEntry::sync);
     }
 
     /**
      * @param modid mod to get entries for
      * @return stream of entries only for this mod
      */
-    private Stream<ConfigEntry<? extends ForgeConfigSpec.ConfigValue<?>, ?, ?>> getEntriesForMod(String modid) {
+    private Stream<ConfigValueEntry<? extends ForgeConfigSpec.ConfigValue<?>, ?, ?>> getEntriesForMod(String modid) {
 
         return this.configEntries.values().stream().filter(entry -> entry.getModId().equals(modid));
     }
@@ -122,7 +122,7 @@ public class ConfigManager {
      */
     public Object getValueFromPath(String path) {
 
-        Optional<Object> optional = Optional.ofNullable(this.configEntries.get(path)).map(ConfigEntry::getValue);
+        Optional<Object> optional = Optional.ofNullable(this.configEntries.get(path)).map(ConfigValueEntry::getValue);
         if (optional.isPresent()) {
 
             return optional.get();
@@ -216,7 +216,7 @@ public class ConfigManager {
      */
     private <S extends ForgeConfigSpec.ConfigValue<T>, T, R> void registerEntry(ModConfig.Type type, S entry, Consumer<R> action, Function<T, R> transformer) {
 
-        this.configEntries.put(String.join(".", entry.getPath()), new ConfigEntry<>(type, entry, action, transformer, this.getActiveNamespace()));
+        this.configEntries.put(String.join(".", entry.getPath()), new ConfigValueEntry<>(type, entry, action, transformer, this.getActiveNamespace()));
     }
 
     /**
@@ -225,7 +225,7 @@ public class ConfigManager {
      */
     public void addListener(Runnable listener) {
 
-        this.addListener(listener, ConfigLoadState.BOTH);
+        this.addListener(listener, ConfigLoading.BOTH);
     }
 
     /**
@@ -234,7 +234,7 @@ public class ConfigManager {
      */
     public void addLoadingListener(Runnable listener) {
 
-        this.addListener(listener, ConfigLoadState.LOADING);
+        this.addListener(listener, ConfigLoading.LOADING);
     }
 
     /**
@@ -243,7 +243,7 @@ public class ConfigManager {
      */
     public void addReloadingListener(Runnable listener) {
 
-        this.addListener(listener, ConfigLoadState.RELOADING);
+        this.addListener(listener, ConfigLoading.RELOADING);
     }
 
     /**
@@ -251,16 +251,16 @@ public class ConfigManager {
      * @param listener listener to add
      * @param state load states when to call this listener
      */
-    private void addListener(Runnable listener, ConfigLoadState state) {
+    private void addListener(Runnable listener, ConfigLoading state) {
 
-        this.configListeners.merge(listener, state, (state1, state2) -> state1 != state2 ? ConfigLoadState.BOTH : state1);
+        this.configListeners.merge(listener, state, (state1, state2) -> state1 != state2 ? ConfigLoading.BOTH : state1);
     }
 
     /**
      * call listeners for state as the config has somehow been loaded
      * @param state config load state
      */
-    private void notifyListeners(ConfigLoadState state) {
+    private void notifyListeners(ConfigLoading state) {
 
         this.configListeners.entrySet().stream().filter(entry -> entry.getValue().matches(state)).map(Map.Entry::getKey).forEach(Runnable::run);
     }
@@ -352,85 +352,9 @@ public class ConfigManager {
     }
 
     /**
-     * internal storage for registered config entries
-     * @param <S> config value of a certain type
-     * @param <T> type for value
-     */
-    private static class ConfigEntry<S extends ForgeConfigSpec.ConfigValue<T>, T, R> {
-
-        /**
-         * config type of this entry
-         */
-        final ModConfig.Type type;
-        /**
-         * config value entry
-         */
-        final S entry;
-        /**
-         * action to perform when the entry is updated
-         */
-        final Consumer<R> action;
-        /**
-         * transformation to apply when returning value, usually {@link Function#identity}
-         */
-        final Function<T, R> transformer;
-        /**
-         * source mod this entry belongs to
-         */
-        final String modid;
-
-        /**
-         * new entry storage
-         */
-        ConfigEntry(ModConfig.Type type, S entry, Consumer<R> action, Function<T, R> transformer, String modid) {
-
-            this.type = type;
-            this.entry = entry;
-            this.action = action;
-            this.transformer = transformer;
-            this.modid = modid;
-        }
-
-        /**
-         * get type for filtering purposes
-         * @return type of this
-         */
-        ModConfig.Type getType() {
-
-            return this.type;
-        }
-
-        /**
-         * get modid for filtering purposes
-         * @return modid associated with this
-         */
-        String getModId() {
-
-            return this.modid;
-        }
-
-        /**
-         * @return current value from entry
-         */
-        R getValue() {
-
-            return this.transformer.apply(this.entry.get());
-        }
-
-        /**
-         * get value from config value and supply it to consumer
-         */
-        void sync() {
-
-            this.action.accept(this.getValue());
-        }
-
-    }
-
-    /**
      * state for when to trigger listeners
      */
-    private enum ConfigLoadState {
+    private enum ConfigLoading {
 
         LOADING, RELOADING, BOTH;
 
@@ -439,7 +363,7 @@ public class ConfigManager {
          * @param state state to match with
          * @return are states compatible
          */
-        boolean matches(ConfigLoadState state) {
+        boolean matches(ConfigLoading state) {
 
             if (state == BOTH || this == BOTH) {
 
@@ -457,7 +381,7 @@ public class ConfigManager {
          * @param evt event to get state for
          * @return state for event
          */
-        static ConfigLoadState getState(ModConfig.ModConfigEvent evt) {
+        static ConfigLoading getState(ModConfig.ModConfigEvent evt) {
 
             return evt instanceof ModConfig.Loading ? LOADING : RELOADING;
         }

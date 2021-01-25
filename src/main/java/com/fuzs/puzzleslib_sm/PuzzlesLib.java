@@ -25,17 +25,17 @@ public class PuzzlesLib {
 
     protected void onCommonSetup(final FMLCommonSetupEvent evt) {
 
-        ElementRegistry.load();
+        ElementRegistry.load(evt);
     }
 
     protected void onClientSetup(final FMLClientSetupEvent evt) {
 
-        ElementRegistry.loadClient();
+        ElementRegistry.load(evt);
     }
 
     protected void onServerSetup(final FMLDedicatedServerSetupEvent evt) {
 
-        ElementRegistry.loadServer();
+        ElementRegistry.load(evt);
     }
 
 }

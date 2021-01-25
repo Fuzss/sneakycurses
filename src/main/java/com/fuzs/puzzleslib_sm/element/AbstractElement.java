@@ -9,6 +9,11 @@ import com.google.common.collect.Lists;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLDedicatedServerSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.ParallelDispatchEvent;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 import org.apache.commons.lang3.StringUtils;
@@ -25,7 +30,7 @@ import java.util.stream.Stream;
  * all features a mod adds are structured into elements which are then registered, this is an abstract version
  */
 @SuppressWarnings("unused")
-public abstract class AbstractElement implements IConfigurableElement, IEventListener {
+public abstract class AbstractElement extends EventListener implements IConfigurableElement {
 
     /**
      * all events registered by this element
@@ -39,7 +44,7 @@ public abstract class AbstractElement implements IConfigurableElement, IEventLis
     /**
      * @return name of this set in elements registry
      */
-    private final String getRegistryName() {
+    private String getRegistryName() {
 
         return ElementRegistry.getRegistryName(this).getPath();
     }
@@ -80,18 +85,18 @@ public abstract class AbstractElement implements IConfigurableElement, IEventLis
      * setup config for all sides
      * @param elementId id of this element for config section
      */
-    protected void setupConfig(String elementId) {
+    private void setupConfig(String elementId) {
 
-        Consumer<ICommonElement> commonSetup = element -> ConfigManager.builder().create(elementId, element::setupCommonConfig, ModConfig.Type.COMMON, element.getCommonDescription());
-        Consumer<IClientElement> clientSetup = element -> ConfigManager.builder().create(elementId, element::setupClientConfig, ModConfig.Type.CLIENT, element.getClientDescription());
-        Consumer<IServerElement> serverSetup = element -> ConfigManager.builder().create(elementId, element::setupServerConfig, ModConfig.Type.SERVER, element.getServerDescription());
-        this.setupAllSides(commonSetup, clientSetup, serverSetup);
+        Consumer<ICommonElement> commonConfig = element -> ConfigManager.builder().create(elementId, element::setupCommonConfig, ModConfig.Type.COMMON, element.getCommonDescription());
+        Consumer<IClientElement> clientConfig = element -> ConfigManager.builder().create(elementId, element::setupClientConfig, ModConfig.Type.CLIENT, element.getClientDescription());
+        Consumer<IServerElement> serverConfig = element -> ConfigManager.builder().create(elementId, element::setupServerConfig, ModConfig.Type.SERVER, element.getServerDescription());
+        this.setupAllSides(commonConfig, clientConfig, serverConfig);
     }
 
     /**
      * setup events for all sides
      */
-    protected void setupEvents() {
+    private void setupEvents() {
 
         this.setupAllSides(ICommonElement::setupCommon, IClientElement::setupClient, IServerElement::setupServer);
     }
@@ -108,23 +113,52 @@ public abstract class AbstractElement implements IConfigurableElement, IEventLis
             commonSetup.accept(((ICommonElement) this));
         }
 
-        if (this instanceof IClientElement) {
+        if (FMLEnvironment.dist.isClient() && this instanceof IClientElement) {
 
             clientSetup.accept(((IClientElement) this));
         }
 
-        if (this instanceof IServerElement) {
+        if (FMLEnvironment.dist.isDedicatedServer() && this instanceof IServerElement) {
 
             serverSetup.accept(((IServerElement) this));
         }
     }
 
     /**
-     * register Forge events from internal storage
+     * register Forge events from internal storage and call sided load methods
+     * no need to check physical side as the setup event won't be called anyways
      */
-    public final void load() {
+    public final void load(ParallelDispatchEvent evt) {
 
-        this.reload(true);
+        this.loadEvents(evt);
+        if (evt instanceof FMLCommonSetupEvent && this instanceof ICommonElement) {
+
+            ((ICommonElement) this).loadCommon();
+        } else if (evt instanceof FMLClientSetupEvent && this instanceof IClientElement) {
+
+            ((IClientElement) this).loadClient();
+        } else if (evt instanceof FMLDedicatedServerSetupEvent && this instanceof IServerElement) {
+
+            ((IServerElement) this).loadServer();
+        }
+    }
+
+    /**
+     * initial registering for events
+     * @param evt setup event this is called from
+     */
+    private void loadEvents(ParallelDispatchEvent evt) {
+
+        if (this instanceof ICommonElement) {
+
+            if (evt instanceof FMLCommonSetupEvent) {
+
+                this.reload(true);
+            }
+        } else if (evt instanceof FMLClientSetupEvent || evt instanceof FMLDedicatedServerSetupEvent) {
+
+            this.reload(true);
+        }
     }
 
     /**
@@ -173,7 +207,7 @@ public abstract class AbstractElement implements IConfigurableElement, IEventLis
     }
 
     @Override
-    public List<EventStorage<? extends Event>> getEvents() {
+    public final List<EventStorage<? extends Event>> getEvents() {
 
         return this.events;
     }

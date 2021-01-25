@@ -1,7 +1,8 @@
-package com.fuzs.sneakymagic.common;
+package com.fuzs.sneakymagic.common.util;
 
 import com.fuzs.sneakymagic.SneakyMagic;
-import com.fuzs.sneakymagic.config.ConfigBuildHandler;
+import com.fuzs.sneakymagic.common.SneakyMagicElements;
+import com.fuzs.sneakymagic.common.element.CompatibilityElement;
 import com.fuzs.sneakymagic.mixin.accessor.IEnchantmentAccessor;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -17,23 +18,32 @@ import java.util.stream.Stream;
 
 public class CompatibilityManager {
 
+    private final CompatibilityElement parent;
     private final Map<Enchantment, ConfigEnchantmentType> types = Maps.newHashMap();
+
+    public CompatibilityManager(CompatibilityElement parent) {
+        
+        this.parent = parent;
+    }
 
     public void load() {
 
-        Map<Set<Enchantment>, TypePredicate> configMap = this.createConfigMap();
-        this.addPredicates(configMap);
-        this.setEnchantmentTypes();
+        if (this.parent.isEnabled()) {
+
+            Map<Set<Enchantment>, TypePredicate> configMap = this.createConfigMap();
+            this.addPredicates(configMap);
+            this.setEnchantmentTypes();
+        }
     }
 
     private Map<Set<Enchantment>, TypePredicate> createConfigMap() {
 
         final Map<Set<Enchantment>, TypePredicate> predicates = Maps.newHashMap();
-        predicates.put(ConfigBuildHandler.swordEnchantments, TypePredicate.SWORD);
-        predicates.put(ConfigBuildHandler.axeEnchantments, TypePredicate.AXE);
-        predicates.put(ConfigBuildHandler.tridentEnchantments, TypePredicate.TRIDENT);
-        predicates.put(ConfigBuildHandler.bowEnchantments, TypePredicate.BOW);
-        predicates.put(ConfigBuildHandler.crossbowEnchantments, TypePredicate.CROSSBOW);
+        predicates.put(this.parent.swordEnchantments, TypePredicate.SWORD);
+        predicates.put(this.parent.axeEnchantments, TypePredicate.AXE);
+        predicates.put(this.parent.tridentEnchantments, TypePredicate.TRIDENT);
+        predicates.put(this.parent.bowEnchantments, TypePredicate.BOW);
+        predicates.put(this.parent.crossbowEnchantments, TypePredicate.CROSSBOW);
 
         return predicates;
     }
@@ -108,11 +118,11 @@ public class CompatibilityManager {
 
     private enum TypePredicate {
 
-        SWORD(item -> item instanceof SwordItem && !ConfigBuildHandler.swordBlacklist.contains(item)),
-        AXE(item -> item instanceof AxeItem && !ConfigBuildHandler.axeBlacklist.contains(item)),
-        TRIDENT(item -> item instanceof TridentItem && !ConfigBuildHandler.tridentBlacklist.contains(item)),
-        BOW(item -> item instanceof BowItem && !ConfigBuildHandler.bowBlacklist.contains(item)),
-        CROSSBOW(item -> item instanceof CrossbowItem && !ConfigBuildHandler.crossbowBlacklist.contains(item));
+        SWORD(item -> item instanceof SwordItem && !((CompatibilityElement) SneakyMagicElements.ENCHANTMENT_COMPATIBILITY).swordBlacklist.contains(item)),
+        AXE(item -> item instanceof AxeItem && !((CompatibilityElement) SneakyMagicElements.ENCHANTMENT_COMPATIBILITY).axeBlacklist.contains(item)),
+        TRIDENT(item -> item instanceof TridentItem && !((CompatibilityElement) SneakyMagicElements.ENCHANTMENT_COMPATIBILITY).tridentBlacklist.contains(item)),
+        BOW(item -> item instanceof BowItem && !((CompatibilityElement) SneakyMagicElements.ENCHANTMENT_COMPATIBILITY).bowBlacklist.contains(item)),
+        CROSSBOW(item -> item instanceof CrossbowItem && !((CompatibilityElement) SneakyMagicElements.ENCHANTMENT_COMPATIBILITY).crossbowBlacklist.contains(item));
 
         private final Predicate<Item> delegate;
 

@@ -1,6 +1,7 @@
 package com.fuzs.sneakymagic.mixin.client;
 
-import com.fuzs.sneakymagic.config.ConfigBuildHandler;
+import com.fuzs.sneakymagic.client.element.CursesElement;
+import com.fuzs.sneakymagic.common.SneakyMagicElements;
 import com.fuzs.sneakymagic.mixin.accessor.IItemAccessor;
 import com.fuzs.sneakymagic.common.util.CurseMatcher;
 import net.minecraft.client.gui.AbstractGui;
@@ -29,16 +30,20 @@ public abstract class IngameGuiMixin extends AbstractGui {
     @Redirect(method = "func_238453_b_", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/text/IFormattableTextComponent;mergeStyle(Lnet/minecraft/util/text/TextFormatting;)Lnet/minecraft/util/text/IFormattableTextComponent;", ordinal = 0))
     public IFormattableTextComponent getCurseColor(IFormattableTextComponent component, TextFormatting format) {
 
-        if (this.highlightingItemStack.isEnchanted() || ConfigBuildHandler.affectBooks && this.highlightingItemStack.getItem() == Items.ENCHANTED_BOOK) {
+        CursesElement element = SneakyMagicElements.getAs(SneakyMagicElements.SNEAKY_CURSES);
+        if (element.isEnabled()) {
 
-            // check if item is cursed
-            Collection<Enchantment> enchantments = EnchantmentHelper.getEnchantments(this.highlightingItemStack).keySet();
-            if (CurseMatcher.anyMatch(enchantments)) {
+            if (this.highlightingItemStack.isEnchanted() || element.affectBooks && this.highlightingItemStack.getItem() == Items.ENCHANTED_BOOK) {
 
-                boolean disguise = ConfigBuildHandler.disguiseItem && this.highlightingItemStack.getItem() != Items.ENCHANTED_BOOK && CurseMatcher.allMatch(enchantments);
-                if (disguise || ConfigBuildHandler.colorName) {
+                // check if item is cursed
+                Collection<Enchantment> enchantments = EnchantmentHelper.getEnchantments(this.highlightingItemStack).keySet();
+                if (CurseMatcher.anyMatch(enchantments)) {
 
-                    return component.mergeStyle(disguise ? ((IItemAccessor) this.highlightingItemStack.getItem()).getRarity().color : TextFormatting.RED);
+                    boolean disguise = element.disguiseItem && this.highlightingItemStack.getItem() != Items.ENCHANTED_BOOK && CurseMatcher.allMatch(enchantments);
+                    if (disguise || element.colorName) {
+
+                        return component.mergeStyle(disguise ? ((IItemAccessor) this.highlightingItemStack.getItem()).getRarity().color : TextFormatting.RED);
+                    }
                 }
             }
         }

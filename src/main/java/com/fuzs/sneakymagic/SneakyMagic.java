@@ -20,7 +20,6 @@ public class SneakyMagic extends PuzzlesLib {
         super();
         SneakyMagicElements.setup(MODID);
         ConfigManager.get().load();
-//        ConfigManager.get().addListener(new CompatibilityManager()::load);
     }
 
 }

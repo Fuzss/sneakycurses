@@ -4,6 +4,7 @@ import com.fuzs.puzzleslib_sm.element.AbstractElement;
 import com.fuzs.puzzleslib_sm.element.ElementRegistry;
 import com.fuzs.puzzleslib_sm.element.side.ISidedElement;
 import com.fuzs.sneakymagic.SneakyMagic;
+import com.fuzs.sneakymagic.client.element.CursesElement;
 import com.fuzs.sneakymagic.common.element.CompatibilityElement;
 import com.fuzs.sneakymagic.common.element.ExclusivenessElement;
 import com.fuzs.sneakymagic.common.element.TweaksElement;
@@ -17,6 +18,7 @@ public class SneakyMagicElements extends ElementRegistry {
     public static final AbstractElement ENCHANTMENT_EXCLUSIVENESS = register("enchantment_exclusiveness", ExclusivenessElement::new);
     public static final AbstractElement ENCHANTMENT_TWEAKS = register("enchantment_tweaks", TweaksElement::new);
     public static final AbstractElement ENCHANTMENT_COMPATIBILITY = register("enchantment_compatibility", CompatibilityElement::new);
+    public static final AbstractElement SNEAKY_CURSES = register("sneaky_curses", CursesElement::new, Dist.CLIENT);
 
     /**
      * create overload so this class and its elements are loaded

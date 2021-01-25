@@ -10,6 +10,7 @@ import com.google.common.collect.HashBiMap;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.lifecycle.ParallelDispatchEvent;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import javax.annotation.Nullable;
@@ -48,6 +49,10 @@ public abstract class ElementRegistry {
         if (dist == FMLEnvironment.dist) {
 
             AbstractElement element = supplier.get();
+
+            assert element instanceof ICommonElement || FMLEnvironment.dist.isClient() || element instanceof IServerElement : "Unable to register element: " + "Trying to register client element for server side";
+            assert element instanceof ICommonElement || FMLEnvironment.dist.isDedicatedServer() || element instanceof IClientElement : "Unable to register element: " + "Trying to register server element for client side";
+
             ELEMENTS.put(new ResourceLocation(namespace, key), element);
             return element;
         }
@@ -171,40 +176,14 @@ public abstract class ElementRegistry {
     }
 
     /**
-     * execute on common load and register events
+     * execute load for common and both sides, also register events
+     * which sided elements to load is defined by provided event instance
      * loads all elements, no matter which mod they're from
+     * @param evt event type
      */
-    public static void load() {
+    public static void load(ParallelDispatchEvent evt) {
 
-        ELEMENTS.values().forEach(AbstractElement::load);
-        ELEMENTS.values().stream()
-                .filter(element -> element instanceof ICommonElement)
-                .map(element -> (ICommonElement) element)
-                .forEach(ICommonElement::loadCommon);
-    }
-
-    /**
-     * execute on client load
-     * loads all elements, no matter which mod they're from
-     */
-    public static void loadClient() {
-
-        ELEMENTS.values().stream()
-                .filter(element -> element instanceof IClientElement)
-                .map(element -> (IClientElement) element)
-                .forEach(IClientElement::loadClient);
-    }
-
-    /**
-     * execute on server load
-     * loads all elements, no matter which mod they're from
-     */
-    public static void loadServer() {
-
-        ELEMENTS.values().stream()
-                .filter(element -> element instanceof IServerElement)
-                .map(element -> (IServerElement) element)
-                .forEach(IServerElement::loadServer);
+        ELEMENTS.values().forEach(element -> element.load(evt));
     }
 
 }

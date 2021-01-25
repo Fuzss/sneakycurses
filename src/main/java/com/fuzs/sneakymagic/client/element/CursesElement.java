@@ -1,8 +1,9 @@
-package com.fuzs.sneakymagic.client.handler;
+package com.fuzs.sneakymagic.client.element;
 
-import com.fuzs.sneakymagic.config.ConfigBuildHandler;
-import com.fuzs.sneakymagic.mixin.accessor.IItemAccessor;
+import com.fuzs.puzzleslib_sm.element.AbstractElement;
+import com.fuzs.puzzleslib_sm.element.side.IClientElement;
 import com.fuzs.sneakymagic.common.util.CurseMatcher;
+import com.fuzs.sneakymagic.mixin.accessor.IItemAccessor;
 import com.google.common.collect.Lists;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.enchantment.Enchantment;
@@ -14,28 +15,55 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
-@OnlyIn(Dist.CLIENT)
-public class CursedTooltipHandler {
+public class CursesElement extends AbstractElement implements IClientElement {
+    
+    private boolean hideCurses;
+    public boolean disguiseItem;
+    private boolean shiftShows;
+    public boolean colorName;
+    private boolean disguiseTag;
+    public boolean affectBooks;
+    
+    @Override
+    public String getDescription() {
 
-    @SuppressWarnings("unused")
-    @SubscribeEvent
-    public void onItemTooltip(final ItemTooltipEvent evt) {
+        return "Makes curse enchantments no longer show right away, making it a lot harder to know when an item is cursed.";
+    }
+
+    @Override
+    public void setupClient() {
+        
+        this.addListener(this::onItemTooltip);
+    }
+
+    @Override
+    public void setupClientConfig(ForgeConfigSpec.Builder builder) {
+
+        addToConfig(builder.comment("Hide curse enchantments from the item tooltip.").define("Hide Curses", true), v -> hideCurses = v);
+        addToConfig(builder.comment("Hide enchantment glint and remove aqua color from name in case the item is solely enchanted with curses.").define("Disguise Item", true), v -> disguiseItem = v);
+        addToConfig(builder.comment("Temporarily disable effects of the \"curses\" module when a shift key is pressed.").define("Shift Shows Curses", true), v -> shiftShows = v);
+        addToConfig(builder.comment("Cursed items have a red name tag instead of an aqua one.").define("Color Item Name", true), v -> colorName = v);
+        addToConfig(builder.comment("Remove one nbt tag entry in case the item is only enchanted with curses.").define("Disguise NBT Tag", false), v -> disguiseTag = v);
+        addToConfig(builder.comment("Prevent curses from showing on enchanted books if they also hold other enchantments.").define("Affect Books", false), v -> affectBooks = v);
+    }
+
+    private void onItemTooltip(final ItemTooltipEvent evt) {
 
         List<ITextComponent> tooltip = evt.getToolTip();
         ItemStack stack = evt.getItemStack();
-        if (!stack.isEmpty() && (stack.isEnchanted() || ConfigBuildHandler.affectBooks && stack.getItem() == Items.ENCHANTED_BOOK)) {
+        if (!stack.isEmpty() && (stack.isEnchanted() || this.affectBooks && stack.getItem() == Items.ENCHANTED_BOOK)) {
 
             // check if item is cursed
             Collection<Enchantment> enchantments = EnchantmentHelper.getEnchantments(stack).keySet();
-            if (CurseMatcher.anyMatch(enchantments) && (!ConfigBuildHandler.shiftShows || !Screen.hasShiftDown()) && stack.hasTag()) {
+            if (CurseMatcher.anyMatch(enchantments) && (!this.shiftShows || !Screen.hasShiftDown()) && stack.hasTag()) {
 
                 CompoundNBT tag = stack.getTag();
                 this.modifyItemName(tooltip, stack, enchantments);
@@ -51,8 +79,8 @@ public class CursedTooltipHandler {
 
     private void modifyItemName(List<ITextComponent> tooltip, ItemStack stack, Collection<Enchantment> enchantments) {
 
-        boolean disguise = ConfigBuildHandler.disguiseItem && stack.getItem() != Items.ENCHANTED_BOOK && CurseMatcher.allMatch(enchantments);
-        if (disguise || ConfigBuildHandler.colorName) {
+        boolean disguise = this.disguiseItem && stack.getItem() != Items.ENCHANTED_BOOK && CurseMatcher.allMatch(enchantments);
+        if (disguise || this.colorName) {
 
             Optional<StringTextComponent> nameComponent = tooltip.stream()
                     .filter(component -> component instanceof StringTextComponent)
@@ -66,7 +94,7 @@ public class CursedTooltipHandler {
     private void modifyCurses(List<ITextComponent> tooltip, ItemStack stack, Collection<Enchantment> enchantments, @Nonnull CompoundNBT tag) {
 
         boolean isHidingEnchantments = tag.contains("HideFlags", 99) && (tag.getInt("HideFlags") & ItemStack.TooltipDisplayFlags.ENCHANTMENTS.func_242397_a()) == 0;
-        if (ConfigBuildHandler.hideCurses && (!isHidingEnchantments || stack.getItem() == Items.ENCHANTED_BOOK)) {
+        if (this.hideCurses && (!isHidingEnchantments || stack.getItem() == Items.ENCHANTED_BOOK)) {
 
             if (stack.getItem() != Items.ENCHANTED_BOOK || !CurseMatcher.allMatch(enchantments)) {
 
@@ -77,7 +105,7 @@ public class CursedTooltipHandler {
 
     private void modifyNbtTag(List<ITextComponent> tooltip, Collection<Enchantment> enchantments, @Nonnull CompoundNBT tag) {
 
-        if (ConfigBuildHandler.disguiseTag && CurseMatcher.allMatch(enchantments)) {
+        if (this.disguiseTag && CurseMatcher.allMatch(enchantments)) {
 
             int index = tooltip.indexOf(new TranslationTextComponent("item.nbt_tags", tag.keySet().size()).mergeStyle(TextFormatting.DARK_GRAY));
             if (index != -1) {
@@ -102,5 +130,5 @@ public class CursedTooltipHandler {
 
         return curses;
     }
-
+    
 }
