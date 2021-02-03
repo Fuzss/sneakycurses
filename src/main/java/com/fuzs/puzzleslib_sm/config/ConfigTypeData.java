@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 /**
  * internal storage for builders, specs and file names
  */
-class ConfigTypeEntry {
+class ConfigTypeData {
 
     /**
      * type extension for config name
@@ -32,7 +32,7 @@ class ConfigTypeEntry {
     /**
      * @param type type of config for file name
      */
-    ConfigTypeEntry(ModConfig.Type type) {
+    ConfigTypeData(ModConfig.Type type) {
 
         this.type = type.extension();
     }

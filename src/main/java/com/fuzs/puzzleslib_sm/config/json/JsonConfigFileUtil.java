@@ -13,12 +13,12 @@ import java.util.function.Consumer;
 /**
  * handles loading and saving of json config files
  */
-public class JSONConfigUtil {
+public class JsonConfigFileUtil {
 
     /**
-     * gson builder instance
+     * gson builder instance, no html escaping to allow "<" and ">"
      */
-    public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    public static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
     /**
      * load a json file in the main config directory, create a file if absent
@@ -80,7 +80,7 @@ public class JSONConfigUtil {
      */
     public static void copyToFile(String jsonName, File jsonFile) {
 
-        try (InputStream stream = JSONConfigUtil.class.getResourceAsStream(jsonName)) {
+        try (InputStream stream = JsonConfigFileUtil.class.getResourceAsStream(jsonName)) {
 
             jsonFile.createNewFile();
             byte[] buffer = new byte[16384];
@@ -143,7 +143,7 @@ public class JSONConfigUtil {
      * @param jsonName file to get
      * @return file
      */
-    private static File getFilePath(String jsonName) {
+    public static File getFilePath(String jsonName) {
 
         return new File(FMLPaths.CONFIGDIR.get().toFile(), jsonName);
     }
@@ -154,7 +154,7 @@ public class JSONConfigUtil {
      * @param modId config directory name
      * @return file
      */
-    private static File getFolderPath(String jsonName, String modId) {
+    public static File getFolderPath(String jsonName, String modId) {
 
         return new File(FMLPaths.CONFIGDIR.get().toFile(), modId + File.separator + jsonName);
     }

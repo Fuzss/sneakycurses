@@ -1,6 +1,7 @@
 package com.fuzs.puzzleslib_sm.capability;
 
 import com.google.common.base.CaseFormat;
+import com.google.common.collect.ArrayListMultimap;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -13,6 +14,8 @@ import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.registries.IForgeRegistryEntry;
 
 import javax.annotation.Nonnull;
 import java.util.concurrent.Callable;
@@ -20,8 +23,9 @@ import java.util.concurrent.Callable;
 /**
  * helper object for registering and attaching mod capabilities, needs to be extended by every mod individually
  */
-@SuppressWarnings("unused")
 public abstract class CapabilityController {
+
+    private final ArrayListMultimap<Class<?>, ICapabilityProvider> defers = ArrayListMultimap.create();
 
     /**
      * create new object just for registering and adding listeners
@@ -29,7 +33,7 @@ public abstract class CapabilityController {
     public CapabilityController() {
 
         this.register();
-        this.addListeners();
+        MinecraftForge.EVENT_BUS.register(this);
     }
 
     /**
@@ -38,23 +42,14 @@ public abstract class CapabilityController {
     protected abstract void register();
 
     /**
-     * add listeners internally
+     * attack capabilities to an object
+     * @param evt capabilities event
      */
-    private void addListeners() {
+    @SuppressWarnings("unused")
+    @SubscribeEvent
+    public void onAttachCapabilities(final AttachCapabilitiesEvent<?> evt) {
 
-        MinecraftForge.EVENT_BUS.addGenericListener(ItemStack.class, this::onAttachItemStackCapabilities);
-        MinecraftForge.EVENT_BUS.addGenericListener(Entity.class, this::onAttachEntityCapabilities);
-        MinecraftForge.EVENT_BUS.addGenericListener(TileEntity.class, this::onAttachTileEntityCapabilities);
-        MinecraftForge.EVENT_BUS.addGenericListener(World.class, this::onAttachWorldCapabilities);
-        MinecraftForge.EVENT_BUS.addGenericListener(Chunk.class, this::onAttachChunkCapabilities);
-    }
-
-    /**
-     * attack capabilities to item stack
-     * @param evt event for item stack
-     */
-    protected void onAttachItemStackCapabilities(final AttachCapabilitiesEvent<ItemStack> evt) {
-
+        evt.getObject()
     }
 
     /**
@@ -63,6 +58,7 @@ public abstract class CapabilityController {
      */
     protected void onAttachEntityCapabilities(final AttachCapabilitiesEvent<Entity> evt) {
 
+        evt.addCapability();
     }
 
     /**

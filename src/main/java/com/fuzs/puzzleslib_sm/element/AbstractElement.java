@@ -1,6 +1,7 @@
 package com.fuzs.puzzleslib_sm.element;
 
 import com.fuzs.puzzleslib_sm.config.ConfigManager;
+import com.fuzs.puzzleslib_sm.element.registry.ElementRegistry;
 import com.fuzs.puzzleslib_sm.element.side.IClientElement;
 import com.fuzs.puzzleslib_sm.element.side.ICommonElement;
 import com.fuzs.puzzleslib_sm.element.side.IServerElement;
@@ -33,7 +34,7 @@ public abstract class AbstractElement extends EventListener implements IConfigur
     /**
      * is this element enabled (are events registered)
      */
-    private boolean enabled;
+    private boolean enabled = this.getDefaultState();
 
     /**
      * @return name of this set in elements registry
@@ -125,15 +126,18 @@ public abstract class AbstractElement extends EventListener implements IConfigur
     public final void load(ParallelDispatchEvent evt) {
 
         this.loadEvents(evt);
-        if (evt instanceof FMLCommonSetupEvent && this instanceof ICommonElement) {
+        if (this.isEnabled()) {
 
-            ((ICommonElement) this).loadCommon();
-        } else if (evt instanceof FMLClientSetupEvent && this instanceof IClientElement) {
+            if (evt instanceof FMLCommonSetupEvent && this instanceof ICommonElement) {
 
-            ((IClientElement) this).loadClient();
-        } else if (evt instanceof FMLDedicatedServerSetupEvent && this instanceof IServerElement) {
+                ((ICommonElement) this).loadCommon();
+            } else if (evt instanceof FMLClientSetupEvent && this instanceof IClientElement) {
 
-            ((IServerElement) this).loadServer();
+                ((IClientElement) this).loadClient();
+            } else if (evt instanceof FMLDedicatedServerSetupEvent && this instanceof IServerElement) {
+
+                ((IServerElement) this).loadServer();
+            }
         }
     }
 

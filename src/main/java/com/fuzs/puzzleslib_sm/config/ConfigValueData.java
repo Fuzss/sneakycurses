@@ -12,7 +12,7 @@ import java.util.function.Function;
  * @param <S> config value of a certain type
  * @param <T> type for value
  */
-class ConfigValueEntry<S extends ForgeConfigSpec.ConfigValue<T>, T, R> {
+class ConfigValueData<S extends ForgeConfigSpec.ConfigValue<T>, T, R> {
 
     /**
      * config type of this entry
@@ -38,7 +38,7 @@ class ConfigValueEntry<S extends ForgeConfigSpec.ConfigValue<T>, T, R> {
     /**
      * new entry storage
      */
-    ConfigValueEntry(ModConfig.Type type, S entry, Consumer<R> action, Function<T, R> transformer, String modid) {
+    ConfigValueData(ModConfig.Type type, S entry, Consumer<R> action, Function<T, R> transformer, String modid) {
 
         this.type = type;
         this.entry = entry;

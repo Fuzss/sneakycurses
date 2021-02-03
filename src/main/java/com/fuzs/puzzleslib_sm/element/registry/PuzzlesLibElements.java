@@ -1,24 +1,18 @@
-package com.fuzs.sneakymagic.common;
+package com.fuzs.puzzleslib_sm.element.registry;
 
+import com.fuzs.puzzleslib_sm.PuzzlesLib;
 import com.fuzs.puzzleslib_sm.element.AbstractElement;
-import com.fuzs.puzzleslib_sm.element.registry.ElementRegistry;
 import com.fuzs.puzzleslib_sm.element.side.ISidedElement;
-import com.fuzs.sneakymagic.SneakyMagic;
-import com.fuzs.sneakymagic.client.element.CursesElement;
-import com.fuzs.sneakymagic.common.element.CompatibilityElement;
-import com.fuzs.sneakymagic.common.element.ExclusivenessElement;
-import com.fuzs.sneakymagic.common.element.TweaksElement;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import java.util.function.Supplier;
 
-public class SneakyMagicElements extends ElementRegistry {
-
-    public static final AbstractElement ENCHANTMENT_EXCLUSIVENESS = register("enchantment_exclusiveness", ExclusivenessElement::new);
-    public static final AbstractElement ENCHANTMENT_TWEAKS = register("enchantment_tweaks", TweaksElement::new);
-    public static final AbstractElement ENCHANTMENT_COMPATIBILITY = register("enchantment_compatibility", CompatibilityElement::new);
-    public static final AbstractElement SNEAKY_CURSES = register("sneaky_curses", CursesElement::new, Dist.CLIENT);
+/**
+ * just a template, copy this for every mod and change mod id
+ */
+@SuppressWarnings("unused")
+public class PuzzlesLibElements extends ElementRegistry {
 
     /**
      * create overload so this class and its elements are loaded
@@ -37,7 +31,7 @@ public class SneakyMagicElements extends ElementRegistry {
      */
     private static <T extends AbstractElement & ISidedElement> AbstractElement register(String key, Supplier<T> supplier) {
 
-        return register(SneakyMagic.MODID, key, supplier, FMLEnvironment.dist);
+        return register(key, supplier, FMLEnvironment.dist);
     }
 
     /**
@@ -50,7 +44,7 @@ public class SneakyMagicElements extends ElementRegistry {
      */
     private static <T extends AbstractElement & ISidedElement> AbstractElement register(String key, Supplier<T> supplier, Dist dist) {
 
-        return register(SneakyMagic.MODID, key, supplier, dist);
+        return register(PuzzlesLib.MODID, key, supplier, dist);
     }
 
 }

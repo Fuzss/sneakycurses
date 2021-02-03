@@ -37,7 +37,7 @@ public class ConfigManager {
     /**
      * all config entries as a set
      */
-    private final Map<String, ConfigValueEntry<? extends ForgeConfigSpec.ConfigValue<?>, ?, ?>> configEntries = Maps.newHashMap();
+    private final Map<String, ConfigValueData<? extends ForgeConfigSpec.ConfigValue<?>, ?, ?>> configEntries = Maps.newHashMap();
     /**
      * listeners to call when a config is somehow loaded
      */
@@ -86,7 +86,7 @@ public class ConfigManager {
      */
     public void sync(String modid) {
 
-        this.getEntriesForMod(modid).forEach(ConfigValueEntry::sync);
+        this.getEntriesForMod(modid).forEach(ConfigValueData::sync);
     }
 
     /**
@@ -95,14 +95,14 @@ public class ConfigManager {
      */
     private void syncType(String modid, ModConfig.Type type) {
 
-        this.getEntriesForMod(modid).filter(configValue -> configValue.getType() == type).forEach(ConfigValueEntry::sync);
+        this.getEntriesForMod(modid).filter(configValue -> configValue.getType() == type).forEach(ConfigValueData::sync);
     }
 
     /**
      * @param modid mod to get entries for
      * @return stream of entries only for this mod
      */
-    private Stream<ConfigValueEntry<? extends ForgeConfigSpec.ConfigValue<?>, ?, ?>> getEntriesForMod(String modid) {
+    private Stream<ConfigValueData<? extends ForgeConfigSpec.ConfigValue<?>, ?, ?>> getEntriesForMod(String modid) {
 
         return this.configEntries.values().stream().filter(entry -> entry.getModId().equals(modid));
     }
@@ -122,7 +122,7 @@ public class ConfigManager {
      */
     public Object getValueFromPath(String path) {
 
-        Optional<Object> optional = Optional.ofNullable(this.configEntries.get(path)).map(ConfigValueEntry::getValue);
+        Optional<Object> optional = Optional.ofNullable(this.configEntries.get(path)).map(ConfigValueData::getValue);
         if (optional.isPresent()) {
 
             return optional.get();
@@ -216,7 +216,7 @@ public class ConfigManager {
      */
     private <S extends ForgeConfigSpec.ConfigValue<T>, T, R> void registerEntry(ModConfig.Type type, S entry, Consumer<R> action, Function<T, R> transformer) {
 
-        this.configEntries.put(String.join(".", entry.getPath()), new ConfigValueEntry<>(type, entry, action, transformer, this.getActiveNamespace()));
+        this.configEntries.put(String.join(".", entry.getPath()), new ConfigValueData<>(type, entry, action, transformer, this.getActiveNamespace()));
     }
 
     /**

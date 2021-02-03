@@ -35,18 +35,30 @@ public class StringEntryReader<T extends IForgeRegistryEntry<T>> {
      */
     protected final List<T> getEntriesFromRegistry(String source) {
 
-        List<T> foundEntries = Lists.newArrayList();
+        return getEntriesFromRegistry(source, this.activeRegistry);
+    }
+
+    /**
+     * takes a string and finds all matching resource locations, can be multiples since wildcards are supported
+     * @param source string to generate resource location from
+     * @param activeRegistry registry to work with
+     * @return list of matches
+     * @param <R> content type of registry
+     */
+    public static <R extends IForgeRegistryEntry<R>> List<R> getEntriesFromRegistry(String source, IForgeRegistry<R> activeRegistry) {
+
+        List<R> foundEntries = Lists.newArrayList();
         if (source.contains("*")) {
 
             // an asterisk is present, so attempt to find entries including a wildcard
-            foundEntries.addAll(this.getWildcardEntries(source));
+            foundEntries.addAll(getWildcardEntries(source, activeRegistry));
         } else {
 
             Optional<ResourceLocation> location = Optional.ofNullable(ResourceLocation.tryCreate(source));
             if (location.isPresent()) {
 
                 // when it's present there can't be a wildcard parameter
-                Optional<T> entry = this.getEntryFromRegistry(location.get());
+                Optional<R> entry = getEntryFromRegistry(location.get(), activeRegistry);
                 entry.ifPresent(foundEntries::add);
             } else {
 
@@ -60,13 +72,15 @@ public class StringEntryReader<T extends IForgeRegistryEntry<T>> {
     /**
      * finds the location in the active registry, otherwise the optional is empty
      * @param location location to get entry for
+     * @param activeRegistry registry to work with
      * @return optional entry if found
+     * @param <R> content type of registry
      */
-    private Optional<T> getEntryFromRegistry(ResourceLocation location) {
+    private static <R extends IForgeRegistryEntry<R>> Optional<R> getEntryFromRegistry(ResourceLocation location, IForgeRegistry<R> activeRegistry) {
 
-        if (this.activeRegistry.containsKey(location)) {
+        if (activeRegistry.containsKey(location)) {
 
-            return Optional.ofNullable(this.activeRegistry.getValue(location));
+            return Optional.ofNullable(activeRegistry.getValue(location));
         } else {
 
             log(location.toString(), "Entry not found");
@@ -78,9 +92,11 @@ public class StringEntryReader<T extends IForgeRegistryEntry<T>> {
     /**
      * split string into namespace and key to be further processed
      * @param source string to get entries for
+     * @param activeRegistry registry to work with
      * @return all the entries found
+     * @param <R> content type of registry
      */
-    private List<T> getWildcardEntries(String source) {
+    private static <R extends IForgeRegistryEntry<R>> List<R> getWildcardEntries(String source, IForgeRegistry<R> activeRegistry) {
 
         String[] s = source.split(":");
         switch (s.length) {
@@ -88,10 +104,10 @@ public class StringEntryReader<T extends IForgeRegistryEntry<T>> {
             case 1:
 
                 // no colon found, so this must be an entry from Minecraft
-                return this.getListFromRegistry("minecraft", s[0]);
+                return getListFromRegistry("minecraft", s[0], activeRegistry);
             case 2:
 
-                return this.getListFromRegistry(s[0], s[1]);
+                return getListFromRegistry(s[0], s[1], activeRegistry);
             default:
 
                 log(source, "Invalid resource location format");
@@ -103,12 +119,14 @@ public class StringEntryReader<T extends IForgeRegistryEntry<T>> {
      * create list with entries from given namespace matching given wildcard path
      * @param namespace namespace to check
      * @param path path string including wildcard
+     * @param activeRegistry registry to work with
      * @return all entries found
+     * @param <R> content type of registry
      */
-    private List<T> getListFromRegistry(String namespace, String path) {
+    private static <R extends IForgeRegistryEntry<R>> List<R> getListFromRegistry(String namespace, String path, IForgeRegistry<R> activeRegistry) {
 
         String regexPath = path.replace("*", "[a-z0-9/._-]*");
-        List<T> entries = this.activeRegistry.getEntries().stream()
+        List<R> entries = activeRegistry.getEntries().stream()
                 .filter(entry -> entry.getKey().getRegistryName().getNamespace().equals(namespace))
                 .filter(entry -> entry.getKey().getRegistryName().getPath().matches(regexPath))
                 .map(Map.Entry::getValue).collect(Collectors.toList());

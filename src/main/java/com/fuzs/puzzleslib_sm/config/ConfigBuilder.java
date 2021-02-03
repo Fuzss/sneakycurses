@@ -18,8 +18,8 @@ public class ConfigBuilder {
     /**
      * enum map of config type entries for storing and managing builders, specs and file names for every type
      */
-    private final EnumMap<ModConfig.Type, ConfigTypeEntry> configTypeEntries = Stream.of(ModConfig.Type.values())
-            .collect(Collectors.toMap(Function.identity(), ConfigTypeEntry::new, (key1, key2) -> key1, () -> new EnumMap<>(ModConfig.Type.class)));
+    private final EnumMap<ModConfig.Type, ConfigTypeData> configTypeEntries = Stream.of(ModConfig.Type.values())
+            .collect(Collectors.toMap(Function.identity(), ConfigTypeData::new, (key1, key2) -> key1, () -> new EnumMap<>(ModConfig.Type.class)));
 
     /**
      * config type of category currently being built
@@ -49,7 +49,7 @@ public class ConfigBuilder {
     }
 
     /**
-     * has the spec for this type been built yet (has {@link ConfigTypeEntry#getSpec} been called)
+     * has the spec for this type been built yet (has {@link ConfigTypeData#getSpec} been called)
      * @param type type to check
      * @return has spec not been built
      */
@@ -101,7 +101,7 @@ public class ConfigBuilder {
 
         for (ModConfig.Type type : ModConfig.Type.values()) {
 
-            ConfigTypeEntry typeEntry = this.configTypeEntries.get(type);
+            ConfigTypeData typeEntry = this.configTypeEntries.get(type);
             if (typeEntry.canBuildSpec()) {
 
                 context.registerConfig(type, typeEntry.getSpec(), typeEntry.getName(context));
