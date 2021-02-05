@@ -6,7 +6,10 @@
   "refmap": "sneakymagic.refmap.json",
   "mixins": [
     "BowItemMixin",
+    "ElytraItemMixin",
+    "TridentItemMixin",
     "CrossbowItemMixin",
+    "TridentEntityMixin",
     "InfinityEnchantmentMixin",
     "MultishotEnchantmentMixin",
     "PiercingEnchantmentMixin",

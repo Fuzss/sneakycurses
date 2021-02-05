@@ -1,7 +1,7 @@
 package com.fuzs.sneakymagic.mixin;
 
 import com.fuzs.sneakymagic.common.SneakyMagicElements;
-import com.fuzs.sneakymagic.common.element.TweaksElement;
+import com.fuzs.sneakymagic.common.element.ImprovementsElement;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.EntityType;
@@ -29,7 +29,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
     public Item getFakeSword(ItemStack itemStack) {
 
         // make sweeping edge work not just on swords, therefore this simply needs to be any instance of SwordItem
-        TweaksElement element = SneakyMagicElements.getAs(SneakyMagicElements.ENCHANTMENT_TWEAKS);
+        ImprovementsElement element = SneakyMagicElements.getAs(SneakyMagicElements.ENCHANTMENT_IMPROVEMENTS);
         if (Enchantments.SWEEPING.canApply(itemStack) && (!element.isEnabled() || !element.requireSweepingEdge || EnchantmentHelper.getSweepingDamageRatio(this) != 0.0F)) {
 
             return Items.IRON_SWORD;

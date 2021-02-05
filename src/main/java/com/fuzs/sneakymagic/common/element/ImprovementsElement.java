@@ -13,7 +13,7 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.ArrowNockEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
-public class TweaksElement extends AbstractElement implements ICommonElement {
+public class ImprovementsElement extends AbstractElement implements ICommonElement {
     
     private boolean trueInfinity;
     private boolean noProjectileResistance;

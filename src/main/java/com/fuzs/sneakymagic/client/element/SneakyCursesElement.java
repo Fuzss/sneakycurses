@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-public class CursesElement extends AbstractElement implements IClientElement {
+public class SneakyCursesElement extends AbstractElement implements IClientElement {
     
     private boolean hideCurses;
     public boolean disguiseItem;

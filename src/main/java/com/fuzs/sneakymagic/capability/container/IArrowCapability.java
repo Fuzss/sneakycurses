@@ -5,8 +5,8 @@ import net.minecraftforge.common.util.INBTSerializable;
 
 public interface IArrowCapability extends INBTSerializable<CompoundNBT> {
 
-    void setLooting(int level);
+    void setPlunderingLevel(byte level);
 
-    int getLooting();
+    byte getPlunderingLevel();
 
 }

@@ -1,40 +1,41 @@
 package com.fuzs.sneakymagic.capability.container;
 
+import com.fuzs.puzzleslib_sm.util.INamespaceLocator;
 import net.minecraft.nbt.CompoundNBT;
 
 public class ArrowCapability implements IArrowCapability {
 
-    private int looting;
+    private byte plundering;
 
     @Override
-    public void setLooting(int level) {
+    public void setPlunderingLevel(byte level) {
 
-        this.looting = level;
+        this.plundering = level;
     }
 
     @Override
-    public int getLooting() {
+    public byte getPlunderingLevel() {
 
-        return this.looting;
+        return this.plundering;
     }
 
     @Override
     public CompoundNBT serializeNBT() {
 
         CompoundNBT nbt = new CompoundNBT();
-        nbt.putInt(getName(), this.looting);
+        nbt.putByte(INamespaceLocator.format(getName()), this.plundering);
         return nbt;
     }
 
     @Override
     public void deserializeNBT(CompoundNBT nbt) {
 
-        this.looting = nbt.getInt(getName());
+        this.plundering = nbt.getByte(INamespaceLocator.format(getName()));
     }
 
     public static String getName() {
 
-        return "ArrowEnchantments";
+        return "plundering";
     }
 
 }

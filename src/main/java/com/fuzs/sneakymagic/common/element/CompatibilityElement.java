@@ -1,11 +1,15 @@
 package com.fuzs.sneakymagic.common.element;
 
+import com.fuzs.puzzleslib_sm.PuzzlesLib;
+import com.fuzs.puzzleslib_sm.capability.CapabilityController;
+import com.fuzs.puzzleslib_sm.capability.CapabilityDispatcher;
 import com.fuzs.puzzleslib_sm.config.ConfigManager;
 import com.fuzs.puzzleslib_sm.config.deserialize.EntryCollectionBuilder;
 import com.fuzs.puzzleslib_sm.element.AbstractElement;
 import com.fuzs.puzzleslib_sm.element.side.ICommonElement;
-import com.fuzs.puzzleslib_sm.registry.RegistryManager;
 import com.fuzs.sneakymagic.SneakyMagic;
+import com.fuzs.sneakymagic.capability.container.ArrowCapability;
+import com.fuzs.sneakymagic.capability.container.IArrowCapability;
 import com.fuzs.sneakymagic.common.util.CompatibilityManager;
 import com.fuzs.sneakymagic.mixin.accessor.IAbstractArrowEntityAccessor;
 import net.minecraft.enchantment.*;
@@ -13,10 +17,11 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.AbstractArrowEntity;
 import net.minecraft.entity.projectile.TridentEntity;
-import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.*;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.living.LootingLevelEvent;
 import net.minecraftforge.event.entity.player.ArrowLooseEvent;
@@ -34,6 +39,9 @@ public class CompatibilityElement extends AbstractElement implements ICommonElem
 
     @ObjectHolder(SneakyMagic.MODID + ":" + "plundering")
     public static final Enchantment PLUNDERING = null;
+
+    @CapabilityInject(IArrowCapability.class)
+    public static final Capability<ArrowCapability> ARROW_ENCHANTMENTS = null;
     
     public Set<Enchantment> swordEnchantments;
     public Set<Enchantment> axeEnchantments;
@@ -55,7 +63,8 @@ public class CompatibilityElement extends AbstractElement implements ICommonElem
     @Override
     public void setupCommon() {
 
-        RegistryManager.get().register("plundering", new LootBonusEnchantment(Enchantment.Rarity.RARE, EnchantmentType.create("SHOOTABLE", item -> item instanceof BowItem || item instanceof CrossbowItem)) {});
+        EnchantmentType shootable = EnchantmentType.create("SHOOTABLE", item -> item instanceof BowItem || item instanceof CrossbowItem);
+        PuzzlesLib.getRegistryManager().register("plundering", new LootBonusEnchantment(Enchantment.Rarity.RARE, shootable) {});
         this.addListener(this::onArrowLoose);
         this.addListener(this::onItemUseTick);
         this.addListener(this::onLootingLevel);
@@ -66,6 +75,15 @@ public class CompatibilityElement extends AbstractElement implements ICommonElem
 
         // register after config has been loaded once
         ConfigManager.get().addListener(new CompatibilityManager(this)::load);
+        PuzzlesLib.getCapabilityController().addEntityCapability(new ResourceLocation(SneakyMagic.MODID, ArrowCapability.getName()), IArrowCapability.class, ArrowCapability::new, entity -> {
+
+            if (entity instanceof AbstractArrowEntity) {
+
+                return new CapabilityDispatcher<>(new ArrowCapability(), ARROW_ENCHANTMENTS);
+            }
+
+            return null;
+        });
     }
 
     @Override
@@ -75,7 +93,7 @@ public class CompatibilityElement extends AbstractElement implements ICommonElem
         String blacklist = " to be disabled from receiving additional enchantments.";
         addToConfig(builder.comment(compatibility + "swords.").define("Sword Enchantments", getEnchantmentList(Enchantments.IMPALING)), v -> this.swordEnchantments = deserializeToSet(v, ForgeRegistries.ENCHANTMENTS));
         addToConfig(builder.comment(compatibility + "axes.").define("Axe Enchantments", getEnchantmentList(Enchantments.SHARPNESS, Enchantments.SMITE, Enchantments.BANE_OF_ARTHROPODS, Enchantments.KNOCKBACK, Enchantments.FIRE_ASPECT, Enchantments.LOOTING, Enchantments.SWEEPING, Enchantments.IMPALING)), v -> this.axeEnchantments = deserializeToSet(v, ForgeRegistries.ENCHANTMENTS));
-        addToConfig(builder.comment(compatibility + "tridents.").define("Trident Enchantments", getEnchantmentList(Enchantments.SHARPNESS, Enchantments.SMITE, Enchantments.BANE_OF_ARTHROPODS, Enchantments.KNOCKBACK, Enchantments.FIRE_ASPECT, Enchantments.LOOTING, Enchantments.SWEEPING, Enchantments.QUICK_CHARGE)), v -> this.tridentEnchantments = deserializeToSet(v, ForgeRegistries.ENCHANTMENTS));
+        addToConfig(builder.comment(compatibility + "tridents.").define("Trident Enchantments", getEnchantmentList(Enchantments.SHARPNESS, Enchantments.SMITE, Enchantments.BANE_OF_ARTHROPODS, Enchantments.KNOCKBACK, Enchantments.FIRE_ASPECT, Enchantments.LOOTING, Enchantments.SWEEPING, Enchantments.QUICK_CHARGE, Enchantments.PIERCING)), v -> this.tridentEnchantments = deserializeToSet(v, ForgeRegistries.ENCHANTMENTS));
         addToConfig(builder.comment(compatibility + "bows.").define("Bow Enchantments", getEnchantmentList(Enchantments.PIERCING, Enchantments.MULTISHOT, Enchantments.QUICK_CHARGE)), v -> this.bowEnchantments = deserializeToSet(v, ForgeRegistries.ENCHANTMENTS));
         addToConfig(builder.comment(compatibility + "crossbows.").define("Crossbow Enchantments", getEnchantmentList(Enchantments.FLAME, Enchantments.PUNCH, Enchantments.POWER, Enchantments.INFINITY)), v -> this.crossbowEnchantments = deserializeToSet(v, ForgeRegistries.ENCHANTMENTS));
         addToConfig(builder.comment("Swords" + blacklist).define("Sword Blacklist", new ArrayList<String>()), v -> this.swordBlacklist = deserializeToSet(v, ForgeRegistries.ITEMS));
@@ -122,6 +140,7 @@ public class CompatibilityElement extends AbstractElement implements ICommonElem
                     abstractarrowentity.func_234612_a_(playerentity, playerentity.rotationPitch, playerentity.rotationYaw - 10.0F + i * 20.0F, 0.0F, velocity * 3.0F, 1.0F);
                     applyCommonEnchantments(abstractarrowentity, stack);
                     applyPiercingEnchantment(abstractarrowentity, stack);
+                    applyPlunderingEnchantment(abstractarrowentity, stack);
                     abstractarrowentity.pickupStatus = AbstractArrowEntity.PickupStatus.CREATIVE_ONLY;
                     evt.getWorld().addEntity(abstractarrowentity);
                 }
@@ -136,8 +155,8 @@ public class CompatibilityElement extends AbstractElement implements ICommonElem
         if (item instanceof BowItem && duration < 20 || item instanceof TridentItem && duration < 10) {
 
             // quick charge enchantment for bows and tridents
-            int i = EnchantmentHelper.getEnchantmentLevel(Enchantments.QUICK_CHARGE, evt.getItem());
-            evt.setDuration(evt.getDuration() - i);
+            int quickChargeLevel = EnchantmentHelper.getEnchantmentLevel(Enchantments.QUICK_CHARGE, evt.getItem());
+            evt.setDuration(evt.getDuration() - quickChargeLevel);
         }
     }
 
@@ -149,30 +168,33 @@ public class CompatibilityElement extends AbstractElement implements ICommonElem
             if (source instanceof TridentEntity) {
 
                 ItemStack trident = ((IAbstractArrowEntityAccessor) source).callGetArrowStack();
-                int level = EnchantmentHelper.getEnchantmentLevel(Enchantments.LOOTING, trident);
-                if (level > 0) {
+                int lootLevel = EnchantmentHelper.getEnchantmentLevel(Enchantments.LOOTING, trident);
+                if (lootLevel > 0) {
 
-                    evt.setLootingLevel(level);
+                    evt.setLootingLevel(lootLevel);
                 }
             } else {
 
-
+                // overwrite anything set by vanilla, even when enchantment is not present
+                evt.setLootingLevel(CapabilityController.getCapability(source, ARROW_ENCHANTMENTS)
+                        .map(ArrowCapability::getPlunderingLevel)
+                        .orElse((byte) 0));
             }
         }
     }
 
     public static void applyCommonEnchantments(AbstractArrowEntity abstractarrowentity, ItemStack stack) {
 
-        int j = EnchantmentHelper.getEnchantmentLevel(Enchantments.POWER, stack);
-        if (j > 0) {
+        int powerLevel = EnchantmentHelper.getEnchantmentLevel(Enchantments.POWER, stack);
+        if (powerLevel > 0) {
 
-            abstractarrowentity.setDamage(abstractarrowentity.getDamage() + (double) j * 0.5 + 0.5);
+            abstractarrowentity.setDamage(abstractarrowentity.getDamage() + (double) powerLevel * 0.5 + 0.5);
         }
 
-        int k = EnchantmentHelper.getEnchantmentLevel(Enchantments.PUNCH, stack);
-        if (k > 0) {
+        int punchLevel = EnchantmentHelper.getEnchantmentLevel(Enchantments.PUNCH, stack);
+        if (punchLevel > 0) {
 
-            abstractarrowentity.setKnockbackStrength(k);
+            abstractarrowentity.setKnockbackStrength(punchLevel);
         }
 
         if (EnchantmentHelper.getEnchantmentLevel(Enchantments.FLAME, stack) > 0) {
@@ -183,10 +205,21 @@ public class CompatibilityElement extends AbstractElement implements ICommonElem
 
     public static void applyPiercingEnchantment(AbstractArrowEntity abstractarrowentity, ItemStack stack) {
 
-        int i = EnchantmentHelper.getEnchantmentLevel(Enchantments.PIERCING, stack);
-        if (i > 0) {
+        int pierceLevel = EnchantmentHelper.getEnchantmentLevel(Enchantments.PIERCING, stack);
+        if (pierceLevel > 0) {
 
-            abstractarrowentity.setPierceLevel((byte) i);
+            abstractarrowentity.setPierceLevel((byte) pierceLevel);
+        }
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    public static void applyPlunderingEnchantment(AbstractArrowEntity abstractarrowentity, ItemStack stack) {
+
+        int plunderLevel = EnchantmentHelper.getEnchantmentLevel(PLUNDERING, stack);
+        if (plunderLevel > 0) {
+
+            CapabilityController.getCapability(abstractarrowentity, ARROW_ENCHANTMENTS)
+                    .ifPresent(cap -> cap.setPlunderingLevel((byte) plunderLevel));
         }
     }
 

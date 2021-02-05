@@ -17,6 +17,7 @@ public abstract class BowItemMixin {
 
         arrow = bow.customArrow(arrow);
         CompatibilityElement.applyPiercingEnchantment(arrow, stack);
+        CompatibilityElement.applyPlunderingEnchantment(arrow, stack);
 
         return arrow;
     }

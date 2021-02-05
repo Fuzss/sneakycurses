@@ -1,5 +1,6 @@
 package com.fuzs.puzzleslib_sm.config;
 
+import com.fuzs.puzzleslib_sm.util.INamespaceLocator;
 import com.fuzs.puzzleslib_sm.PuzzlesLib;
 import com.google.common.collect.Maps;
 import net.minecraft.util.ResourceLocation;
@@ -23,7 +24,7 @@ import java.util.stream.Stream;
  * main config manager for this mod
  */
 @SuppressWarnings("unused")
-public class ConfigManager {
+public class ConfigManager implements INamespaceLocator {
 
     /**
      * singleton instance
@@ -299,15 +300,6 @@ public class ConfigManager {
                 .filter(Objects::nonNull)
                 .map(ResourceLocation::toString)
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * get active modid so entries can still be associated with the mod
-     * @return active modid
-     */
-    private String getActiveNamespace() {
-
-        return ModLoadingContext.get().getActiveNamespace();
     }
 
     /**

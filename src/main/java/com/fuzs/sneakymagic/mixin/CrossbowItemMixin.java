@@ -35,6 +35,7 @@ public abstract class CrossbowItemMixin extends ShootableItem {
 
         AbstractArrowEntity abstractarrowentity = createArrow(worldIn, shooter, crossbow, ammo);
         CompatibilityElement.applyCommonEnchantments(abstractarrowentity, crossbow);
+        CompatibilityElement.applyPlunderingEnchantment(abstractarrowentity, crossbow);
         if (EnchantmentHelper.getEnchantmentLevel(Enchantments.INFINITY, crossbow) > 0) {
 
             abstractarrowentity.pickupStatus = AbstractArrowEntity.PickupStatus.CREATIVE_ONLY;

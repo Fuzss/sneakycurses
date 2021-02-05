@@ -15,15 +15,10 @@ import net.minecraftforge.fml.network.simple.SimpleChannel;
 import java.util.function.Supplier;
 
 /**
- * handler for network communications of this mod
+ * handler for network communications of all mods
  */
 @SuppressWarnings("unused")
 public class NetworkHandler {
-
-    /**
-     * singleton instance
-     */
-    private static final NetworkHandler INSTANCE = new NetworkHandler();
 
     /**
      * protocol version for testing client-server compatibility of this mod
@@ -39,13 +34,6 @@ public class NetworkHandler {
      * message index
      */
     private int discriminator;
-
-    /**
-     * this is a singleton
-     */
-    private NetworkHandler() {
-
-    }
 
     /**
      * register a message for a side
@@ -106,14 +94,6 @@ public class NetworkHandler {
     public void sendToDimension(IMessage message, RegistryKey<World> dimension) {
 
         MAIN_CHANNEL.send(PacketDistributor.DIMENSION.with(() -> dimension), message);
-    }
-
-    /**
-     * @return this instance
-     */
-    public static NetworkHandler get() {
-
-        return INSTANCE;
     }
 
 }

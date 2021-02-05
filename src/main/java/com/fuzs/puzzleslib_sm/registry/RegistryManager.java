@@ -1,29 +1,64 @@
 package com.fuzs.puzzleslib_sm.registry;
 
+import com.fuzs.puzzleslib_sm.util.INamespaceLocator;
 import com.google.common.collect.ArrayListMultimap;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
-import java.util.HashMap;
-import java.util.Map;
+/**
+ * handles registering to forge registries
+ */
+public class RegistryManager implements INamespaceLocator {
 
-public class RegistryManager {
-    
-    private static RegistryManager instance;
+    /**
+     * internal storage for collecting and registering registry entries
+     */
+    private final ArrayListMultimap<Class<?>, IForgeRegistryEntry<?>> registryEntries = ArrayListMultimap.create();
 
-    private final Map<String, RegistryData> registryData = new HashMap<>();
+    /**
+     * add listener for {@link RegistryEvent}
+     */
+    public RegistryManager() {
+
+        FMLJavaModLoadingContext.get().getModEventBus().register(this);
+    }
 
     @SuppressWarnings("unused")
     @SubscribeEvent
-    public void onRegisterEntry(RegistryEvent.Register<?> evt) {
+    public void onRegistryRegister(RegistryEvent.Register<?> evt) {
 
-        this.registryData.values().forEach(data -> data.register(evt.getRegistry()));
+        this.addAllToRegistry(evt.getRegistry());
     }
 
+    /**
+     * add all entries for registry type to registry
+     * @param registry active registry
+     * @param <T> type of registry entry
+     */
+    @SuppressWarnings("unchecked")
+    private <T extends IForgeRegistryEntry<T>> void addAllToRegistry(IForgeRegistry<T> registry) {
+
+        Class<T> type = registry.getRegistrySuperType();
+        if (this.registryEntries.containsKey(type)) {
+
+            for (IForgeRegistryEntry<?> entry : this.registryEntries.get(type)) {
+
+                registry.register((T) entry);
+            }
+
+            this.registryEntries.removeAll(type);
+        }
+    }
+
+    /**
+     * register any type of registry entry with a path
+     * @param path path for new entry
+     * @param entry entry to register
+     */
     public void register(String path, IForgeRegistryEntry<?> entry) {
 
         if (entry == null) {
@@ -32,69 +67,7 @@ public class RegistryManager {
         }
 
         entry.setRegistryName(new ResourceLocation(this.getActiveNamespace(), path));
-        this.getActiveData().put(entry.getRegistryType(), entry);
-    }
-
-    /**
-     * get active modid so entries can still be associated with the mod
-     * @return active modid
-     */
-    private String getActiveNamespace() {
-
-        return ModLoadingContext.get().getActiveNamespace();
-    }
-
-    private RegistryData getActiveData() {
-
-        return this.getRegistryData(this.getActiveNamespace());
-    }
-
-    private RegistryData getRegistryData(String modid) {
-
-        RegistryData data = this.registryData.get(modid);
-        if (data == null) {
-
-            data = new RegistryData();
-            this.registryData.put(modid, data);
-        }
-
-        return data;
-    }
-
-    public static RegistryManager get() {
-
-        if (instance == null) {
-
-            instance = new RegistryManager();
-        }
-
-        return instance;
-    }
-    
-    static class RegistryData {
-
-        private final ArrayListMultimap<Class<?>, IForgeRegistryEntry<?>> defers = ArrayListMultimap.create();
-
-        @SuppressWarnings("unchecked")
-        <T extends IForgeRegistryEntry<T>> void register(IForgeRegistry<T> registry) {
-
-            Class<T> type = registry.getRegistrySuperType();
-            if (this.defers.containsKey(type)) {
-
-                for (IForgeRegistryEntry<?> entry : this.defers.get(type)) {
-
-                    registry.register((T) entry);
-                }
-
-                this.defers.removeAll(type);
-            }
-        }
-
-        void put(Class<?> clazz, IForgeRegistryEntry<?> entry) {
-
-            this.defers.put(clazz, entry);
-        }
-
+        this.registryEntries.put(entry.getRegistryType(), entry);
     }
 
 }
