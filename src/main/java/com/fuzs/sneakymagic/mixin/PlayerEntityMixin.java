@@ -4,6 +4,8 @@ import com.fuzs.sneakymagic.common.SneakyMagicElements;
 import com.fuzs.sneakymagic.common.element.ImprovementsElement;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.CreatureAttribute;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -36,6 +38,12 @@ public abstract class PlayerEntityMixin extends LivingEntity {
         }
 
         return Items.IRON_PICKAXE;
+    }
+
+    @Redirect(method = "attackTargetEntityWithCurrentItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/enchantment/EnchantmentHelper;getModifierForCreature(Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/CreatureAttribute;)F", ordinal = 0))
+    public float getModifierForCreature(ItemStack stack, CreatureAttribute creatureAttribute, Entity targetEntity) {
+
+        return ImprovementsElement.getModifierForCreature(stack, creatureAttribute, (LivingEntity) targetEntity);
     }
 
 }

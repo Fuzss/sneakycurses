@@ -1,12 +1,16 @@
 package com.fuzs.sneakymagic.mixin;
 
+import com.fuzs.sneakymagic.common.SneakyMagicElements;
+import com.fuzs.sneakymagic.common.element.ImprovementsElement;
 import com.fuzs.sneakymagic.mixin.accessor.IAbstractArrowEntityAccessor;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.CreatureAttribute;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.AbstractArrowEntity;
 import net.minecraft.entity.projectile.TridentEntity;
 import net.minecraft.item.ItemStack;
@@ -17,6 +21,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @SuppressWarnings("unused")
@@ -32,6 +37,27 @@ public abstract class TridentEntityMixin extends AbstractArrowEntity {
 
         super(type, worldIn);
     }
+
+    @Inject(method = "tick", at = @At("HEAD"))
+    public void tick(CallbackInfo callbackInfo) {
+
+        ImprovementsElement element = SneakyMagicElements.getAs(SneakyMagicElements.ENCHANTMENT_IMPROVEMENTS);
+        if (element.isEnabled() && element.returnTridentFromVoid) {
+
+            Entity entity = this.func_234616_v_();
+            if (this.getPosY() < -64.0 && entity instanceof PlayerEntity && EnchantmentHelper.getLoyaltyModifier(this.thrownStack) > 0 && this.shouldReturnToThrower()) {
+
+                this.setNoClip(true);
+                this.onCollideWithPlayer((PlayerEntity) entity);
+            }
+        }
+    }
+
+    @Shadow
+    public abstract Entity func_234616_v_();
+
+    @Shadow
+    abstract boolean shouldReturnToThrower();
 
     @Inject(method = "onEntityHit", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/projectile/TridentEntity;dealtDamage:Z", shift = At.Shift.AFTER))
     protected void onEntityHit(EntityRayTraceResult rayTraceResult, CallbackInfo callbackInfo) {
@@ -66,6 +92,13 @@ public abstract class TridentEntityMixin extends AbstractArrowEntity {
                 this.dealtDamage = false;
             }
         }
+    }
+
+    @Redirect(method = "onEntityHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/enchantment/EnchantmentHelper;getModifierForCreature(Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/CreatureAttribute;)F"))
+    public float getModifierForCreature(ItemStack stack, CreatureAttribute creatureAttribute, EntityRayTraceResult rayTraceResult) {
+
+        LivingEntity livingentity = (LivingEntity) rayTraceResult.getEntity();
+        return ImprovementsElement.getModifierForCreature(stack, creatureAttribute, livingentity);
     }
 
 }

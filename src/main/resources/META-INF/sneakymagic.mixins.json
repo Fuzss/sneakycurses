@@ -5,6 +5,7 @@
   "package": "com.fuzs.sneakymagic.mixin",
   "refmap": "sneakymagic.refmap.json",
   "mixins": [
+    "AxeItemMixin",
     "BowItemMixin",
     "ElytraItemMixin",
     "TridentItemMixin",
@@ -16,6 +17,7 @@
     "ProtectionEnchantmentMixin",
     "DamageEnchantmentMixin",
     "ImpalingEnchantmentMixin",
+    "MobEntityMixin",
     "PlayerEntityMixin",
     "accessor.IItemAccessor",
     "accessor.IEnchantmentAccessor",

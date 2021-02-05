@@ -2,8 +2,11 @@ package com.fuzs.sneakymagic.common.element;
 
 import com.fuzs.puzzleslib_sm.element.AbstractElement;
 import com.fuzs.puzzleslib_sm.element.side.ICommonElement;
+import com.fuzs.sneakymagic.common.SneakyMagicElements;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.CreatureAttribute;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.CrossbowItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
@@ -18,6 +21,9 @@ public class ImprovementsElement extends AbstractElement implements ICommonEleme
     private boolean trueInfinity;
     private boolean noProjectileResistance;
     public boolean requireSweepingEdge;
+    private boolean boostImpaling;
+    public boolean returnTridentFromVoid;
+    public boolean noAxePenalty;
     
     @Override
     public String getDescription() {
@@ -39,6 +45,9 @@ public class ImprovementsElement extends AbstractElement implements ICommonEleme
         addToConfig(builder.comment("Infinity enchantment no longer requires a single arrow to be present in the player inventory.").define("True Infinity", true), v -> this.trueInfinity = v);
         addToConfig(builder.comment("Disables damage immunity when hit by a projectile. Makes it possible for entities to be hit by multiple projectiles at once.").define("No Projectile Immunity", true), v -> this.noProjectileResistance = v);
         addToConfig(builder.comment("Is the sweeping edge enchantment required to perform a sweep attack.").define("Require Sweeping Edge", false), v -> this.requireSweepingEdge = v);
+        addToConfig(builder.comment("Makes the impaling enchantment apply to any creature in contact with rain or water.").define("Boost Impaling", true), v -> this.boostImpaling = v);
+        addToConfig(builder.comment("Tridents enchanted with loyalty will return when thrown into the void.").define("Return Trident From Void", true), v -> this.returnTridentFromVoid = v);
+        addToConfig(builder.comment("Prevent axes from receiving additional damage when attack an entity to make them work as proper weapons.").define("No Axe Penalty", true), v -> this.noAxePenalty = v);
     }
 
     private void onLivingHurt(final LivingHurtEvent evt) {
@@ -74,6 +83,21 @@ public class ImprovementsElement extends AbstractElement implements ICommonEleme
                 evt.setCanceled(true);
             }
         }
+    }
+
+    public static float getModifierForCreature(ItemStack stack, CreatureAttribute creatureAttribute, LivingEntity livingentity) {
+
+        ImprovementsElement element = SneakyMagicElements.getAs(SneakyMagicElements.ENCHANTMENT_IMPROVEMENTS);
+        if (element.isEnabled() && element.boostImpaling) {
+
+            int impaleLevel = EnchantmentHelper.getEnchantmentLevel(Enchantments.IMPALING, stack);
+            if (impaleLevel > 0 && livingentity.isInWaterRainOrBubbleColumn()) {
+
+                creatureAttribute = CreatureAttribute.WATER;
+            }
+        }
+
+        return EnchantmentHelper.getModifierForCreature(stack, creatureAttribute);
     }
 
 }

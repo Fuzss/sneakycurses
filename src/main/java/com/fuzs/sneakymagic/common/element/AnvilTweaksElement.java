@@ -72,7 +72,7 @@ public class AnvilTweaksElement extends AbstractElement implements ICommonElemen
 
                     world.setBlockState(blockPosIn, blockState, 2);
                     // play repair sound
-//                    world.playEvent(Constants.WorldEvents.ANVIL_USE_SOUND, blockPosIn, 0);
+                    world.playEvent(Constants.WorldEvents.ANVIL_USE_SOUND, blockPosIn, 0);
                     // show block breaking particles for anvil
                     world.playEvent(Constants.WorldEvents.BREAK_BLOCK_EFFECTS, blockPosIn, Block.getStateId(blockState));
                 } else if (world instanceof ServerWorld) {
