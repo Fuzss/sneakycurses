@@ -7,8 +7,6 @@
   "mixins": [
     "AxeItemMixin",
     "BowItemMixin",
-    "ElytraItemMixin",
-    "TridentItemMixin",
     "CrossbowItemMixin",
     "TridentEntityMixin",
     "InfinityEnchantmentMixin",
@@ -17,6 +15,7 @@
     "ProtectionEnchantmentMixin",
     "DamageEnchantmentMixin",
     "ImpalingEnchantmentMixin",
+    "RepairContainerMixin",
     "MobEntityMixin",
     "PlayerEntityMixin",
     "accessor.IItemAccessor",
