@@ -66,7 +66,7 @@ public class SneakyCursesElement extends AbstractElement implements IClientEleme
             if (CurseMatcher.anyMatch(enchantments) && (!this.shiftShows || !Screen.hasShiftDown()) && stack.hasTag()) {
 
                 CompoundNBT tag = stack.getTag();
-                this.modifyItemName(tooltip, stack, enchantments);
+                this.modifyItemName(tooltip, stack);
                 assert tag != null;
                 this.modifyCurses(tooltip, stack, enchantments, tag);
                 if (evt.getFlags().isAdvanced()) {
@@ -77,17 +77,17 @@ public class SneakyCursesElement extends AbstractElement implements IClientEleme
         }
     }
 
-    private void modifyItemName(List<ITextComponent> tooltip, ItemStack stack, Collection<Enchantment> enchantments) {
+    private void modifyItemName(List<ITextComponent> tooltip, ItemStack stack) {
 
-        boolean disguise = this.disguiseItem && stack.getItem() != Items.ENCHANTED_BOOK && CurseMatcher.allMatch(enchantments);
-        if (disguise || this.colorName) {
+        if (this.colorName) {
 
             Optional<StringTextComponent> nameComponent = tooltip.stream()
                     .filter(component -> component instanceof StringTextComponent)
                     .filter(component -> component.getUnformattedComponentText().contains(stack.getDisplayName().getUnformattedComponentText()))
                     .findFirst().map(component -> ((StringTextComponent) component));
 
-            nameComponent.ifPresent(component -> component.mergeStyle(disguise ? ((IItemAccessor) stack.getItem()).getRarity().color : TextFormatting.RED));
+            boolean handleBook = !this.affectBooks && stack.getItem() == Items.ENCHANTED_BOOK;
+            nameComponent.ifPresent(component -> component.mergeStyle(handleBook ? ((IItemAccessor) stack.getItem()).getRarity().color : TextFormatting.RED));
         }
     }
 

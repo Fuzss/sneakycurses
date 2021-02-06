@@ -37,13 +37,10 @@ public abstract class IngameGuiMixin extends AbstractGui {
 
                 // check if item is cursed
                 Collection<Enchantment> enchantments = EnchantmentHelper.getEnchantments(this.highlightingItemStack).keySet();
-                if (CurseMatcher.anyMatch(enchantments)) {
+                if (element.colorName && CurseMatcher.anyMatch(enchantments)) {
 
-                    boolean disguise = element.disguiseItem && this.highlightingItemStack.getItem() != Items.ENCHANTED_BOOK && CurseMatcher.allMatch(enchantments);
-                    if (disguise || element.colorName) {
-
-                        return component.mergeStyle(disguise ? ((IItemAccessor) this.highlightingItemStack.getItem()).getRarity().color : TextFormatting.RED);
-                    }
+                    boolean handleEnchantedBook = !element.affectBooks && this.highlightingItemStack.getItem() == Items.ENCHANTED_BOOK;
+                    return component.mergeStyle(handleEnchantedBook ? ((IItemAccessor) this.highlightingItemStack.getItem()).getRarity().color : TextFormatting.RED);
                 }
             }
         }

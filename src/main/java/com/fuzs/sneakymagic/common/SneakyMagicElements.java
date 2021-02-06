@@ -5,10 +5,7 @@ import com.fuzs.puzzleslib_sm.element.registry.ElementRegistry;
 import com.fuzs.puzzleslib_sm.element.side.ISidedElement;
 import com.fuzs.sneakymagic.SneakyMagic;
 import com.fuzs.sneakymagic.client.element.SneakyCursesElement;
-import com.fuzs.sneakymagic.common.element.AnvilTweaksElement;
-import com.fuzs.sneakymagic.common.element.CompatibilityElement;
-import com.fuzs.sneakymagic.common.element.ExclusivenessElement;
-import com.fuzs.sneakymagic.common.element.ImprovementsElement;
+import com.fuzs.sneakymagic.common.element.*;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 
@@ -21,6 +18,7 @@ public class SneakyMagicElements extends ElementRegistry {
     public static final AbstractElement ENCHANTMENT_COMPATIBILITY = register("enchantment_compatibility", CompatibilityElement::new);
     public static final AbstractElement SNEAKY_CURSES = register("sneaky_curses", SneakyCursesElement::new, Dist.CLIENT);
     public static final AbstractElement ANVIL_TWEAKS = register("anvil_tweaks", AnvilTweaksElement::new);
+    public static final AbstractElement EASY_ENCHANTING = register("easy_enchanting", EasyEnchantingElement::new);
 
     /**
      * create overload so this class and its elements are loaded

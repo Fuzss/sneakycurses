@@ -19,13 +19,15 @@
     "ImpalingEnchantmentMixin",
     "MobEntityMixin",
     "PlayerEntityMixin",
+    "EnchantmentContainerMixin",
     "accessor.IItemAccessor",
     "accessor.IEnchantmentAccessor",
     "accessor.IAbstractArrowEntityAccessor"
   ],
   "client": [
     "client.ItemMixin",
-    "client.IngameGuiMixin"
+    "client.IngameGuiMixin",
+    "client.EnchantmentScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1

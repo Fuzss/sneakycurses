@@ -54,9 +54,6 @@ public abstract class TridentEntityMixin extends AbstractArrowEntity {
     }
 
     @Shadow
-    public abstract Entity func_234616_v_();
-
-    @Shadow
     abstract boolean shouldReturnToThrower();
 
     @Inject(method = "onEntityHit", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/projectile/TridentEntity;dealtDamage:Z", shift = At.Shift.AFTER))
