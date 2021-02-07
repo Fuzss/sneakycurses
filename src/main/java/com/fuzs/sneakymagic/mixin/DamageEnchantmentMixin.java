@@ -1,7 +1,7 @@
 package com.fuzs.sneakymagic.mixin;
 
-import com.fuzs.sneakymagic.common.SneakyMagicElements;
-import com.fuzs.sneakymagic.common.element.ExclusivenessElement;
+import com.fuzs.sneakymagic.SneakyMagicElements;
+import com.fuzs.sneakymagic.element.ExclusivenessElement;
 import net.minecraft.enchantment.DamageEnchantment;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentType;
@@ -11,8 +11,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.Optional;
 
 @SuppressWarnings("unused")
 @Mixin(DamageEnchantment.class)

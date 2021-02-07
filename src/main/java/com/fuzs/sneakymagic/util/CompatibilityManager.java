@@ -1,8 +1,8 @@
-package com.fuzs.sneakymagic.common.util;
+package com.fuzs.sneakymagic.util;
 
 import com.fuzs.sneakymagic.SneakyMagic;
-import com.fuzs.sneakymagic.common.SneakyMagicElements;
-import com.fuzs.sneakymagic.common.element.CompatibilityElement;
+import com.fuzs.sneakymagic.SneakyMagicElements;
+import com.fuzs.sneakymagic.element.CompatibilityElement;
 import com.fuzs.sneakymagic.mixin.accessor.IEnchantmentAccessor;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;

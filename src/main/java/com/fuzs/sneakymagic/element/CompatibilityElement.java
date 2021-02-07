@@ -1,4 +1,4 @@
-package com.fuzs.sneakymagic.common.element;
+package com.fuzs.sneakymagic.element;
 
 import com.fuzs.puzzleslib_sm.PuzzlesLib;
 import com.fuzs.puzzleslib_sm.capability.CapabilityController;
@@ -10,7 +10,7 @@ import com.fuzs.puzzleslib_sm.element.side.ICommonElement;
 import com.fuzs.sneakymagic.SneakyMagic;
 import com.fuzs.sneakymagic.capability.container.ArrowCapability;
 import com.fuzs.sneakymagic.capability.container.IArrowCapability;
-import com.fuzs.sneakymagic.common.util.CompatibilityManager;
+import com.fuzs.sneakymagic.util.CompatibilityManager;
 import com.fuzs.sneakymagic.mixin.accessor.IAbstractArrowEntityAccessor;
 import net.minecraft.enchantment.*;
 import net.minecraft.entity.Entity;

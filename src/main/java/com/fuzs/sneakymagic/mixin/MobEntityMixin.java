@@ -1,6 +1,6 @@
 package com.fuzs.sneakymagic.mixin;
 
-import com.fuzs.sneakymagic.common.element.ImprovementsElement;
+import com.fuzs.sneakymagic.element.ImprovementsElement;
 import net.minecraft.entity.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;

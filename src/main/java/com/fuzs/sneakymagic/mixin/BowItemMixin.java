@@ -1,6 +1,6 @@
 package com.fuzs.sneakymagic.mixin;
 
-import com.fuzs.sneakymagic.common.element.CompatibilityElement;
+import com.fuzs.sneakymagic.element.CompatibilityElement;
 import net.minecraft.entity.projectile.AbstractArrowEntity;
 import net.minecraft.item.BowItem;
 import net.minecraft.item.ItemStack;

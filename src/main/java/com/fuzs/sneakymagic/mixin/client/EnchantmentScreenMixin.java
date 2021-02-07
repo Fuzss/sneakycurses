@@ -1,7 +1,7 @@
 package com.fuzs.sneakymagic.mixin.client;
 
-import com.fuzs.sneakymagic.common.SneakyMagicElements;
-import com.fuzs.sneakymagic.common.element.EasyEnchantingElement;
+import com.fuzs.sneakymagic.SneakyMagicElements;
+import com.fuzs.sneakymagic.element.EasyEnchantingElement;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.gui.screen.EnchantmentScreen;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
@@ -54,8 +54,29 @@ public abstract class EnchantmentScreenMixin extends ContainerScreen<Enchantment
             return list.add((ITextComponent) component);
         }
 
+        this.updateEnchantmentData();
+        this.addEnchantingClues(list, mouseX, mouseY);
+
+        return !list.isEmpty();
+    }
+
+    @Unique
+    private void addEnchantingClues(List<ITextComponent> toAddTo, int mouseX, int mouseY) {
+
+        int slot = this.getEnchantingSlot(mouseX, mouseY);
+        boolean isBook = this.lastStack.getItem() == Items.BOOK;
+        toAddTo.add(new StringTextComponent("").append(isBook ? new ItemStack(Items.ENCHANTED_BOOK).getDisplayName() : this.lastStack.getDisplayName()).mergeStyle(EasyEnchantingElement.getFutureRarity(this.lastStack).color));
+        for (EnchantmentData data : this.slotEnchantments.get(slot)) {
+
+            toAddTo.add((new TranslationTextComponent("container.enchant.clue", data.enchantment == null ? "" : data.enchantment.getDisplayName(data.enchantmentLevel))).mergeStyle(TextFormatting.WHITE));
+        }
+    }
+
+    @Unique
+    private void updateEnchantmentData() {
+
         Slot slotIn = this.container.inventorySlots.get(0);
-        if (slotIn.getStack() != this.lastStack) {
+        if (this.lastStack == null || !ItemStack.areItemStacksEqual(slotIn.getStack(), this.lastStack)) {
 
             this.lastStack = slotIn.getStack();
             this.slotEnchantments.clear();
@@ -65,16 +86,6 @@ public abstract class EnchantmentScreenMixin extends ContainerScreen<Enchantment
                 this.slotEnchantments.add(this.getEnchantmentList(slotIn.getStack(), i, availableLevels));
             }
         }
-
-        int slot = this.getEnchantingSlot(mouseX, mouseY);
-        boolean isBook = this.lastStack.getItem() == Items.BOOK;
-        list.add(new StringTextComponent("").append(isBook ? new ItemStack(Items.ENCHANTED_BOOK).getDisplayName() : this.lastStack.getDisplayName()).mergeStyle(EasyEnchantingElement.getFutureRarity(this.lastStack).color));
-        for (EnchantmentData data : this.slotEnchantments.get(slot)) {
-
-            list.add((new TranslationTextComponent("container.enchant.clue", data.enchantment == null ? "" : data.enchantment.getDisplayName(data.enchantmentLevel))).mergeStyle(TextFormatting.WHITE));
-        }
-
-        return !list.isEmpty();
     }
 
     @Unique

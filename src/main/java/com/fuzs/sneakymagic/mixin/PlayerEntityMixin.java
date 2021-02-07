@@ -1,7 +1,7 @@
 package com.fuzs.sneakymagic.mixin;
 
-import com.fuzs.sneakymagic.common.SneakyMagicElements;
-import com.fuzs.sneakymagic.common.element.ImprovementsElement;
+import com.fuzs.sneakymagic.SneakyMagicElements;
+import com.fuzs.sneakymagic.element.ImprovementsElement;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.CreatureAttribute;

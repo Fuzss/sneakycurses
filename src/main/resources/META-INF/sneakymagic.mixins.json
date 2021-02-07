@@ -20,9 +20,12 @@
     "MobEntityMixin",
     "PlayerEntityMixin",
     "EnchantmentContainerMixin",
+    "EnchantingTableBlockMixin",
+    "EnchantingTableTileEntityMixin",
     "accessor.IItemAccessor",
     "accessor.IEnchantmentAccessor",
-    "accessor.IAbstractArrowEntityAccessor"
+    "accessor.IAbstractArrowEntityAccessor",
+    "accessor.IEnchantmentContainerAccessor"
   ],
   "client": [
     "client.ItemMixin",

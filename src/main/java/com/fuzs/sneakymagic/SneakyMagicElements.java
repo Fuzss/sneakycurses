@@ -1,11 +1,11 @@
-package com.fuzs.sneakymagic.common;
+package com.fuzs.sneakymagic;
 
 import com.fuzs.puzzleslib_sm.element.AbstractElement;
 import com.fuzs.puzzleslib_sm.element.registry.ElementRegistry;
 import com.fuzs.puzzleslib_sm.element.side.ISidedElement;
 import com.fuzs.sneakymagic.SneakyMagic;
 import com.fuzs.sneakymagic.client.element.SneakyCursesElement;
-import com.fuzs.sneakymagic.common.element.*;
+import com.fuzs.sneakymagic.element.*;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 

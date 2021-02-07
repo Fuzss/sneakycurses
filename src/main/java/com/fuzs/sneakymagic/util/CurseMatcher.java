@@ -1,4 +1,4 @@
-package com.fuzs.sneakymagic.common.util;
+package com.fuzs.sneakymagic.util;
 
 import net.minecraft.enchantment.Enchantment;
 

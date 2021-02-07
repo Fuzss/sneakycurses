@@ -2,7 +2,7 @@ package com.fuzs.sneakymagic.client.element;
 
 import com.fuzs.puzzleslib_sm.element.extension.ElementExtension;
 import com.fuzs.puzzleslib_sm.element.side.IClientElement;
-import com.fuzs.sneakymagic.common.element.EasyEnchantingElement;
+import com.fuzs.sneakymagic.element.EasyEnchantingElement;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 public class EasyEnchantingExtension extends ElementExtension<EasyEnchantingElement> implements IClientElement {

@@ -2,7 +2,7 @@ package com.fuzs.sneakymagic.client.element;
 
 import com.fuzs.puzzleslib_sm.element.AbstractElement;
 import com.fuzs.puzzleslib_sm.element.side.IClientElement;
-import com.fuzs.sneakymagic.common.util.CurseMatcher;
+import com.fuzs.sneakymagic.util.CurseMatcher;
 import com.fuzs.sneakymagic.mixin.accessor.IItemAccessor;
 import com.google.common.collect.Lists;
 import net.minecraft.client.gui.screen.Screen;

@@ -1,7 +1,7 @@
 package com.fuzs.sneakymagic.mixin;
 
-import com.fuzs.sneakymagic.common.SneakyMagicElements;
-import com.fuzs.sneakymagic.common.element.ExclusivenessElement;
+import com.fuzs.sneakymagic.SneakyMagicElements;
+import com.fuzs.sneakymagic.element.ExclusivenessElement;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentType;
 import net.minecraft.enchantment.ProtectionEnchantment;

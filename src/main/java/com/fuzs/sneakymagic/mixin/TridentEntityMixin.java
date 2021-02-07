@@ -1,7 +1,7 @@
 package com.fuzs.sneakymagic.mixin;
 
-import com.fuzs.sneakymagic.common.SneakyMagicElements;
-import com.fuzs.sneakymagic.common.element.ImprovementsElement;
+import com.fuzs.sneakymagic.SneakyMagicElements;
+import com.fuzs.sneakymagic.element.ImprovementsElement;
 import com.fuzs.sneakymagic.mixin.accessor.IAbstractArrowEntityAccessor;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import net.minecraft.enchantment.EnchantmentHelper;

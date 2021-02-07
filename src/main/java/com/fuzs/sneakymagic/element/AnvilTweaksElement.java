@@ -1,4 +1,4 @@
-package com.fuzs.sneakymagic.common.element;
+package com.fuzs.sneakymagic.element;
 
 import com.fuzs.puzzleslib_sm.element.AbstractElement;
 import com.fuzs.puzzleslib_sm.element.side.ICommonElement;

@@ -1,8 +1,8 @@
 package com.fuzs.sneakymagic.mixin.client;
 
 import com.fuzs.sneakymagic.client.element.SneakyCursesElement;
-import com.fuzs.sneakymagic.common.SneakyMagicElements;
-import com.fuzs.sneakymagic.common.util.CurseMatcher;
+import com.fuzs.sneakymagic.SneakyMagicElements;
+import com.fuzs.sneakymagic.util.CurseMatcher;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;

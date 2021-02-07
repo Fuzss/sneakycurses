@@ -2,7 +2,6 @@ package com.fuzs.sneakymagic;
 
 import com.fuzs.puzzleslib_sm.PuzzlesLib;
 import com.fuzs.puzzleslib_sm.config.ConfigManager;
-import com.fuzs.sneakymagic.common.SneakyMagicElements;
 import net.minecraftforge.fml.common.Mod;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

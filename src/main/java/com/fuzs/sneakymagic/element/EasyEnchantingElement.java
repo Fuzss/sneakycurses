@@ -1,4 +1,4 @@
-package com.fuzs.sneakymagic.common.element;
+package com.fuzs.sneakymagic.element;
 
 import com.fuzs.puzzleslib_sm.element.extension.ClientExtensibleElement;
 import com.fuzs.sneakymagic.client.element.EasyEnchantingExtension;
@@ -9,6 +9,7 @@ import net.minecraftforge.common.ForgeConfigSpec;
 
 public class EasyEnchantingElement extends ClientExtensibleElement<EasyEnchantingExtension> {
 
+    public boolean itemsStay;
     public boolean rerollEnchantments;
 
     public EasyEnchantingElement() {
@@ -25,6 +26,7 @@ public class EasyEnchantingElement extends ClientExtensibleElement<EasyEnchantin
     @Override
     public void setupCommonConfig(ForgeConfigSpec.Builder builder) {
 
+        addToConfig(builder.comment("Inventory contents stay in their slot after closing the enchanting screen. Also makes hoppers able to input and output items.").define("Contents Stay", true), v -> this.itemsStay = v);
         addToConfig(builder.comment("Reroll possible enchantments in an enchanting table every time an item is placed into the enchanting slot.").define("Reroll Enchantments", true), v -> this.rerollEnchantments = v);
     }
 

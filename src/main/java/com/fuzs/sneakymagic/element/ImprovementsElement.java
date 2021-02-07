@@ -1,8 +1,8 @@
-package com.fuzs.sneakymagic.common.element;
+package com.fuzs.sneakymagic.element;
 
 import com.fuzs.puzzleslib_sm.element.AbstractElement;
 import com.fuzs.puzzleslib_sm.element.side.ICommonElement;
-import com.fuzs.sneakymagic.common.SneakyMagicElements;
+import com.fuzs.sneakymagic.SneakyMagicElements;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.CreatureAttribute;
