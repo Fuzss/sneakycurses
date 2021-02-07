@@ -114,6 +114,13 @@ public abstract class EnchantmentContainerMixin extends Container implements IEn
                 return super.onTake(thePlayer, stack);
             }
 
+            @Override
+            public void onSlotChange(@Nonnull ItemStack oldStackIn, @Nonnull ItemStack newStackIn) {
+
+                super.onSlotChange(oldStackIn, newStackIn);
+                EnchantmentContainerMixin.this.onCraftMatrixChanged(EnchantmentContainerMixin.this.tableInventory);
+            }
+
         });
         this.addSlot(new Slot(this.tableInventory, 1, 35, 47) {
 
@@ -121,6 +128,13 @@ public abstract class EnchantmentContainerMixin extends Container implements IEn
             public boolean isItemValid(@Nonnull ItemStack stack) {
 
                 return Tags.Items.GEMS_LAPIS.contains(stack.getItem());
+            }
+
+            @Override
+            public void onSlotChange(@Nonnull ItemStack oldStackIn, @Nonnull ItemStack newStackIn) {
+
+                super.onSlotChange(oldStackIn, newStackIn);
+                EnchantmentContainerMixin.this.onCraftMatrixChanged(EnchantmentContainerMixin.this.tableInventory);
             }
 
         });
@@ -136,12 +150,6 @@ public abstract class EnchantmentContainerMixin extends Container implements IEn
         for (int k = 0; k < 9; ++k) {
 
             this.addSlot(new Slot(playerInventory, k, 8 + k * 18, 142));
-        }
-
-        // update manually as there might be items in the inventory from opening earlier
-        if (!this.tableInventory.getStackInSlot(0).isEmpty()) {
-
-            this.onCraftMatrixChanged(this.tableInventory);
         }
     }
 

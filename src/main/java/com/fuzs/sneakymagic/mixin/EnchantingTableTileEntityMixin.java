@@ -13,6 +13,8 @@ import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.EnchantingTableTileEntity;
 import net.minecraft.tileentity.LockableTileEntity;
 import net.minecraft.tileentity.TileEntity;
@@ -43,50 +45,77 @@ import javax.annotation.Nullable;
 public abstract class EnchantingTableTileEntityMixin extends TileEntity implements IInventory, INamedContainerProvider, ISidedInventory, INameable {
 
     private final LazyOptional<? extends IItemHandler>[] handlers = createHandlers(this);
-    private NonNullList<ItemStack> enchantingItemStacks = NonNullList.withSize(2, ItemStack.EMPTY);
+    private final NonNullList<ItemStack> inventory = NonNullList.withSize(2, ItemStack.EMPTY);
     private LockCode code = LockCode.EMPTY_CODE;
-    private EnchantmentContainer container;
 
     public EnchantingTableTileEntityMixin(TileEntityType<?> tileEntityTypeIn) {
 
         super(tileEntityTypeIn);
     }
 
-    @Inject(method = "write", at = @At("TAIL"))
-    public void write(CompoundNBT compound, CallbackInfoReturnable<CompoundNBT> callbackInfo) {
-
-        ItemStackHelper.saveAllItems(compound, this.enchantingItemStacks);
-        this.code.write(compound);
-    }
-
     @Inject(method = "read", at = @At("TAIL"))
     public void read(BlockState state, CompoundNBT nbt, CallbackInfo callbackInfo) {
 
-        this.enchantingItemStacks = NonNullList.withSize(this.getSizeInventory(), ItemStack.EMPTY);
-        ItemStackHelper.loadAllItems(nbt, this.enchantingItemStacks);
+        this.inventory.clear();
+        ItemStackHelper.loadAllItems(nbt, this.inventory);
         this.code = LockCode.read(nbt);
+    }
+
+    @Inject(method = "write", at = @At("TAIL"))
+    public void write(CompoundNBT compound, CallbackInfoReturnable<CompoundNBT> callbackInfo) {
+
+        ItemStackHelper.saveAllItems(compound, this.inventory, true);
+        this.code.write(compound);
+    }
+
+    private CompoundNBT writeItems(CompoundNBT compound) {
+
+        super.write(compound);
+        ItemStackHelper.saveAllItems(compound, this.inventory, true);
+        return compound;
+    }
+
+    @Override
+    @Nullable
+    public SUpdateTileEntityPacket getUpdatePacket() {
+
+        return new SUpdateTileEntityPacket(this.pos, -1, this.getUpdateTag());
+    }
+
+    @Override
+    @Nonnull
+    public CompoundNBT getUpdateTag() {
+
+        return this.writeItems(new CompoundNBT());
+    }
+
+    @Override
+    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt){
+
+        CompoundNBT tag = pkt.getNbtCompound();
+        this.inventory.clear();
+        ItemStackHelper.loadAllItems(tag, this.inventory);
     }
 
     @Override
     public void markDirty() {
 
         super.markDirty();
-        if (this.container != null) {
 
-            this.container.onCraftMatrixChanged(this);
-        }
+        assert this.world != null;
+        this.world.notifyBlockUpdate(this.pos, this.getBlockState(), this.getBlockState(), 3);
     }
 
     @Override
     public int getSizeInventory() {
 
-        return this.enchantingItemStacks.size();
+        return this.inventory.size();
     }
 
     @Override
     public boolean isEmpty() {
 
-        for (ItemStack itemstack : this.enchantingItemStacks) {
+        for (ItemStack itemstack : this.inventory) {
 
             if (!itemstack.isEmpty()) {
 
@@ -101,29 +130,29 @@ public abstract class EnchantingTableTileEntityMixin extends TileEntity implemen
     @Nonnull
     public ItemStack getStackInSlot(int index) {
 
-        return index >= 0 && index < this.enchantingItemStacks.size() ? this.enchantingItemStacks.get(index) : ItemStack.EMPTY;
+        return index >= 0 && index < this.inventory.size() ? this.inventory.get(index) : ItemStack.EMPTY;
     }
 
     @Override
     @Nonnull
     public ItemStack decrStackSize(int index, int count) {
 
-        return ItemStackHelper.getAndSplit(this.enchantingItemStacks, index, count);
+        return ItemStackHelper.getAndSplit(this.inventory, index, count);
     }
 
     @Override
     @Nonnull
     public ItemStack removeStackFromSlot(int index) {
 
-        return ItemStackHelper.getAndRemove(this.enchantingItemStacks, index);
+        return ItemStackHelper.getAndRemove(this.inventory, index);
     }
 
     @Override
     public void setInventorySlotContents(int index, @Nonnull ItemStack stack) {
 
-        if (index >= 0 && index < this.enchantingItemStacks.size()) {
+        if (index >= 0 && index < this.inventory.size()) {
 
-            this.enchantingItemStacks.set(index, stack);
+            this.inventory.set(index, stack);
         }
     }
 
@@ -143,7 +172,7 @@ public abstract class EnchantingTableTileEntityMixin extends TileEntity implemen
     @Override
     public void clear() {
 
-        this.enchantingItemStacks.clear();
+        this.inventory.clear();
     }
 
     @Override
@@ -154,7 +183,7 @@ public abstract class EnchantingTableTileEntityMixin extends TileEntity implemen
             return Tags.Items.GEMS_LAPIS.contains(stack.getItem());
         } else if (index == 0) {
 
-            return (stack.isEnchantable() || stack.getItem() == Items.BOOK) && this.enchantingItemStacks.get(index).isEmpty();
+            return (stack.isEnchantable() || stack.getItem() == Items.BOOK) && this.inventory.get(index).isEmpty();
         }
 
         return false;
@@ -202,9 +231,9 @@ public abstract class EnchantingTableTileEntityMixin extends TileEntity implemen
     @SuppressWarnings("ConstantConditions")
     protected Container createMenu(int id, PlayerInventory player) {
 
-        this.container = new EnchantmentContainer(id, player, IWorldPosCallable.of(this.world, this.pos));
-        ((IEnchantmentContainer) this.container).updateInventory(this, player);
-        return this.container;
+        EnchantmentContainer container = new EnchantmentContainer(id, player, IWorldPosCallable.of(this.world, this.pos));
+        ((IEnchantmentContainer) container).updateInventory(this, player);
+        return container;
     }
 
     @Override
