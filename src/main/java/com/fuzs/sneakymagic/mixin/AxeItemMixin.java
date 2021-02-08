@@ -1,5 +1,7 @@
 package com.fuzs.sneakymagic.mixin;
 
+import com.fuzs.sneakymagic.SneakyMagicElements;
+import com.fuzs.sneakymagic.element.ImprovementsElement;
 import net.minecraft.block.Block;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.inventory.EquipmentSlotType;
@@ -22,11 +24,16 @@ public abstract class AxeItemMixin extends ToolItem {
     }
 
     @Override
-    public boolean hitEntity(ItemStack stack, @Nonnull LivingEntity target, @Nonnull LivingEntity attacker) {
+    public boolean hitEntity(@Nonnull ItemStack stack, @Nonnull LivingEntity target, @Nonnull LivingEntity attacker) {
 
-        stack.damageItem(1, attacker, (entity) -> entity.sendBreakAnimation(EquipmentSlotType.MAINHAND));
+        ImprovementsElement element = SneakyMagicElements.getAs(SneakyMagicElements.ENCHANTMENT_IMPROVEMENTS);
+        if (element.isEnabled() && element.noAxePenalty) {
 
-        return true;
+            stack.damageItem(1, attacker, (entity) -> entity.sendBreakAnimation(EquipmentSlotType.MAINHAND));
+            return true;
+        }
+
+        return super.hitEntity(stack, target, attacker);
     }
 
 }

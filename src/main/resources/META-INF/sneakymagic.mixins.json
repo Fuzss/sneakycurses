@@ -21,7 +21,6 @@
     "PlayerEntityMixin",
     "EnchantmentContainerMixin",
     "EnchantingTableBlockMixin",
-    "EnchantingTableTileEntityMixin",
     "accessor.IItemAccessor",
     "accessor.IEnchantmentAccessor",
     "accessor.IAbstractArrowEntityAccessor",

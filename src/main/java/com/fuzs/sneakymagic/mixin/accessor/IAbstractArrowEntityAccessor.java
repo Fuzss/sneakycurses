@@ -19,4 +19,7 @@ public interface IAbstractArrowEntityAccessor {
     @Accessor
     void setPiercedEntities(IntOpenHashSet piercedEntities);
 
+    @Accessor
+    int getKnockbackStrength();
+
 }

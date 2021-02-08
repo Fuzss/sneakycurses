@@ -1,5 +1,6 @@
-package com.fuzs.sneakymagic.mixin;
+package com.fuzs.sneakymagic.tileentity;
 
+import com.fuzs.sneakymagic.element.EasyEnchantingElement;
 import com.fuzs.sneakymagic.inventory.container.IEnchantmentContainer;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
@@ -17,10 +18,8 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.EnchantingTableTileEntity;
 import net.minecraft.tileentity.LockableTileEntity;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.Direction;
-import net.minecraft.util.INameable;
 import net.minecraft.util.IWorldPosCallable;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.text.ITextComponent;
@@ -31,41 +30,39 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.wrapper.SidedInvWrapper;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-@SuppressWarnings("unused")
-@Mixin(EnchantingTableTileEntity.class)
-public abstract class EnchantingTableTileEntityMixin extends TileEntity implements IInventory, INamedContainerProvider, ISidedInventory, INameable {
+@SuppressWarnings("NullableProblems")
+public class EnchantingTableInventoryTileEntity extends EnchantingTableTileEntity implements IInventory, INamedContainerProvider, ISidedInventory {
 
-    private final LazyOptional<? extends IItemHandler>[] handlers = createHandlers(this);
     private final NonNullList<ItemStack> inventory = NonNullList.withSize(2, ItemStack.EMPTY);
     private LockCode code = LockCode.EMPTY_CODE;
+    
+    private final LazyOptional<? extends IItemHandler>[] handlers = SidedInvWrapper.create(this, Direction.UP, Direction.DOWN, Direction.NORTH);
 
-    public EnchantingTableTileEntityMixin(TileEntityType<?> tileEntityTypeIn) {
+    @Override
+    public TileEntityType<?> getType() {
 
-        super(tileEntityTypeIn);
+        // set in super constructor, so just override the whole method
+        return EasyEnchantingElement.ENCHANTING_TABLE_TILE_ENTITY;
     }
 
-    @Inject(method = "read", at = @At("TAIL"))
-    public void read(BlockState state, CompoundNBT nbt, CallbackInfo callbackInfo) {
+    @Override
+    public void read(BlockState state, CompoundNBT nbt) {
 
+        super.read(state, nbt);
         this.inventory.clear();
         ItemStackHelper.loadAllItems(nbt, this.inventory);
         this.code = LockCode.read(nbt);
     }
 
-    @Inject(method = "write", at = @At("TAIL"))
-    public void write(CompoundNBT compound, CallbackInfoReturnable<CompoundNBT> callbackInfo) {
+    @Override
+    public CompoundNBT write(CompoundNBT compound) {
 
-        ItemStackHelper.saveAllItems(compound, this.inventory, true);
+        this.writeItems(compound);
         this.code.write(compound);
+        return compound;
     }
 
     private CompoundNBT writeItems(CompoundNBT compound) {
@@ -83,7 +80,6 @@ public abstract class EnchantingTableTileEntityMixin extends TileEntity implemen
     }
 
     @Override
-    @Nonnull
     public CompoundNBT getUpdateTag() {
 
         return this.writeItems(new CompoundNBT());
@@ -127,28 +123,25 @@ public abstract class EnchantingTableTileEntityMixin extends TileEntity implemen
     }
 
     @Override
-    @Nonnull
     public ItemStack getStackInSlot(int index) {
 
         return index >= 0 && index < this.inventory.size() ? this.inventory.get(index) : ItemStack.EMPTY;
     }
 
     @Override
-    @Nonnull
     public ItemStack decrStackSize(int index, int count) {
 
         return ItemStackHelper.getAndSplit(this.inventory, index, count);
     }
 
     @Override
-    @Nonnull
     public ItemStack removeStackFromSlot(int index) {
 
         return ItemStackHelper.getAndRemove(this.inventory, index);
     }
 
     @Override
-    public void setInventorySlotContents(int index, @Nonnull ItemStack stack) {
+    public void setInventorySlotContents(int index, ItemStack stack) {
 
         if (index >= 0 && index < this.inventory.size()) {
 
@@ -157,7 +150,7 @@ public abstract class EnchantingTableTileEntityMixin extends TileEntity implemen
     }
 
     @Override
-    public boolean isUsableByPlayer(@Nonnull PlayerEntity player) {
+    public boolean isUsableByPlayer(PlayerEntity player) {
 
         assert this.world != null;
         if (this.world.getTileEntity(this.pos) != this) {
@@ -176,7 +169,7 @@ public abstract class EnchantingTableTileEntityMixin extends TileEntity implemen
     }
 
     @Override
-    public boolean isItemValidForSlot(int index, @Nonnull ItemStack stack) {
+    public boolean isItemValidForSlot(int index, ItemStack stack) {
 
         if (index == 1) {
 
@@ -190,27 +183,25 @@ public abstract class EnchantingTableTileEntityMixin extends TileEntity implemen
     }
 
     @Override
-    @Nonnull
-    public int[] getSlotsForFace(@Nonnull Direction side) {
+    public int[] getSlotsForFace(Direction side) {
 
         return side == Direction.UP || side == Direction.DOWN ? new int[]{0} : new int[]{1};
     }
 
     @Override
-    public boolean canInsertItem(int index, @Nonnull ItemStack itemStackIn, @Nullable Direction direction) {
+    public boolean canInsertItem(int index, ItemStack itemStackIn, @Nullable Direction direction) {
 
         return this.isItemValidForSlot(index, itemStackIn);
     }
 
     @Override
-    public boolean canExtractItem(int index, @Nonnull ItemStack stack, @Nonnull Direction direction) {
+    public boolean canExtractItem(int index, ItemStack stack, Direction direction) {
 
         // only allow extracting of enchantable item
         return index == 0 && (stack.isEnchanted() || stack.getItem() == Items.ENCHANTED_BOOK);
     }
 
     @Override
-    @Nonnull
     public ITextComponent getDisplayName() {
 
         return this.getName();
@@ -223,7 +214,7 @@ public abstract class EnchantingTableTileEntityMixin extends TileEntity implemen
 
     @Nullable
     @Override
-    public Container createMenu(int p_createMenu_1_, @Nonnull PlayerInventory p_createMenu_2_, @Nonnull PlayerEntity p_createMenu_3_) {
+    public Container createMenu(int p_createMenu_1_, PlayerInventory p_createMenu_2_, PlayerEntity p_createMenu_3_) {
 
         return this.canOpen(p_createMenu_3_) ? this.createMenu(p_createMenu_1_, p_createMenu_2_) : null;
     }
@@ -237,8 +228,7 @@ public abstract class EnchantingTableTileEntityMixin extends TileEntity implemen
     }
 
     @Override
-    @Nonnull
-    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction facing) {
+    public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction facing) {
 
         if (!this.removed && facing != null && capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
 
@@ -266,11 +256,5 @@ public abstract class EnchantingTableTileEntityMixin extends TileEntity implemen
             handler.invalidate();
         }
     }
-
-    private static LazyOptional<? extends IItemHandler>[] createHandlers(ISidedInventory inv) {
-
-        // working around a mixin limitation
-        return SidedInvWrapper.create(inv, Direction.UP, Direction.DOWN, Direction.NORTH);
-    }
-
+    
 }

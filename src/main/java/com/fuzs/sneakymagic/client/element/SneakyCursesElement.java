@@ -2,8 +2,8 @@ package com.fuzs.sneakymagic.client.element;
 
 import com.fuzs.puzzleslib_sm.element.AbstractElement;
 import com.fuzs.puzzleslib_sm.element.side.IClientElement;
-import com.fuzs.sneakymagic.util.CurseMatcher;
 import com.fuzs.sneakymagic.mixin.accessor.IItemAccessor;
+import com.fuzs.sneakymagic.util.CurseMatcher;
 import com.google.common.collect.Lists;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.enchantment.Enchantment;
@@ -14,7 +14,6 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 
@@ -29,7 +28,6 @@ public class SneakyCursesElement extends AbstractElement implements IClientEleme
     public boolean disguiseItem;
     private boolean shiftShows;
     public boolean colorName;
-    private boolean disguiseTag;
     public boolean affectBooks;
     
     @Override
@@ -51,7 +49,6 @@ public class SneakyCursesElement extends AbstractElement implements IClientEleme
         addToConfig(builder.comment("Hide enchantment glint and remove aqua color from name in case the item is solely enchanted with curses.").define("Disguise Item", true), v -> disguiseItem = v);
         addToConfig(builder.comment("Temporarily disable effects of the \"curses\" module when a shift key is pressed.").define("Shift Shows Curses", true), v -> shiftShows = v);
         addToConfig(builder.comment("Cursed items have a red name tag instead of an aqua one.").define("Color Item Name", true), v -> colorName = v);
-        addToConfig(builder.comment("Remove one nbt tag entry in case the item is only enchanted with curses.").define("Disguise NBT Tag", false), v -> disguiseTag = v);
         addToConfig(builder.comment("Prevent curses from showing on enchanted books if they also hold other enchantments.").define("Affect Books", false), v -> affectBooks = v);
     }
 
@@ -69,10 +66,6 @@ public class SneakyCursesElement extends AbstractElement implements IClientEleme
                 this.modifyItemName(tooltip, stack);
                 assert tag != null;
                 this.modifyCurses(tooltip, stack, enchantments, tag);
-                if (evt.getFlags().isAdvanced()) {
-
-                    this.modifyNbtTag(tooltip, enchantments, tag);
-                }
             }
         }
     }
@@ -99,24 +92,6 @@ public class SneakyCursesElement extends AbstractElement implements IClientEleme
             if (stack.getItem() != Items.ENCHANTED_BOOK || !CurseMatcher.allMatch(enchantments)) {
 
                 tooltip.removeIf(component -> this.getCursesAsTooltip(stack).contains(component));
-            }
-        }
-    }
-
-    private void modifyNbtTag(List<ITextComponent> tooltip, Collection<Enchantment> enchantments, @Nonnull CompoundNBT tag) {
-
-        if (this.disguiseTag && CurseMatcher.allMatch(enchantments)) {
-
-            int index = tooltip.indexOf(new TranslationTextComponent("item.nbt_tags", tag.keySet().size()).mergeStyle(TextFormatting.DARK_GRAY));
-            if (index != -1) {
-
-                if (tag.keySet().size() > 1) {
-
-                    tooltip.set(index, new TranslationTextComponent("item.nbt_tags", tag.keySet().size() - 1).mergeStyle(TextFormatting.DARK_GRAY));
-                } else {
-
-                    tooltip.remove(index);
-                }
             }
         }
     }

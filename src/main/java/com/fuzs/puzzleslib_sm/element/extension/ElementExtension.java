@@ -13,7 +13,7 @@ public abstract class ElementExtension<T extends ExtensibleElement<?>> extends E
     /**
      * common element this belongs to
      */
-    private final T parent;
+    public final T parent;
 
     /**
      * create new with parent
@@ -24,18 +24,10 @@ public abstract class ElementExtension<T extends ExtensibleElement<?>> extends E
         this.parent = parent;
     }
 
-    /**
-     * @return common parent for this
-     */
-    public final T getParent() {
-
-        return this.parent;
-    }
-
     @Override
     public final List<EventStorage<? extends Event>> getEvents() {
 
-        return this.getParent().getEvents();
+        return this.parent.getEvents();
     }
 
 }

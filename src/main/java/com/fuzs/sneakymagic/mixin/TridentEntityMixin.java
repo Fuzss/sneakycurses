@@ -1,11 +1,11 @@
 package com.fuzs.sneakymagic.mixin;
 
+import com.fuzs.puzzleslib_sm.capability.CapabilityController;
 import com.fuzs.sneakymagic.SneakyMagicElements;
 import com.fuzs.sneakymagic.element.ImprovementsElement;
 import com.fuzs.sneakymagic.mixin.accessor.IAbstractArrowEntityAccessor;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.CreatureAttribute;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -23,6 +23,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.Objects;
 
 @SuppressWarnings("unused")
 @Mixin(TridentEntity.class)
@@ -56,24 +58,33 @@ public abstract class TridentEntityMixin extends AbstractArrowEntity {
     @Shadow
     abstract boolean shouldReturnToThrower();
 
-    @Inject(method = "onEntityHit", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/projectile/TridentEntity;dealtDamage:Z", shift = At.Shift.AFTER))
+    @Inject(method = "onEntityHit", at = @At("TAIL"))
     protected void onEntityHit(EntityRayTraceResult rayTraceResult, CallbackInfo callbackInfo) {
+        
+        Entity target = rayTraceResult.getEntity();
+        if (target instanceof LivingEntity) {
 
-        Entity entity = rayTraceResult.getEntity();
-        if (entity instanceof LivingEntity) {
-
-            int knockbackStrength = EnchantmentHelper.getEnchantmentLevel(Enchantments.KNOCKBACK, this.thrownStack);
+            int knockbackStrength = ((IAbstractArrowEntityAccessor) this).getKnockbackStrength();
             if (knockbackStrength > 0) {
 
+                // copied from punch behavior
                 Vector3d vector3d = this.getMotion().mul(1.0, 0.0, 1.0).normalize().scale(knockbackStrength * 0.6);
                 if (vector3d.lengthSquared() > 0.0) {
 
-                    entity.addVelocity(vector3d.x, 0.1, vector3d.z);
+                    target.addVelocity(vector3d.x, 0.1, vector3d.z);
                 }
             }
         }
+        
+        if (this.applyPiercing(target)) {
 
-        int pierceLevel = EnchantmentHelper.getEnchantmentLevel(Enchantments.PIERCING, this.thrownStack);
+            this.dealtDamage = false;
+        }
+    }
+    
+    private boolean applyPiercing(Entity target) {
+
+        int pierceLevel = this.getPierceLevel();
         if (pierceLevel > 0) {
 
             IntOpenHashSet piercedEntities = ((IAbstractArrowEntityAccessor) this).getPiercedEntities();
@@ -83,19 +94,58 @@ public abstract class TridentEntityMixin extends AbstractArrowEntity {
                 ((IAbstractArrowEntityAccessor) this).setPiercedEntities(piercedEntities);
             }
 
-            piercedEntities.add(entity.getEntityId());
-            if (piercedEntities.size() < pierceLevel) {
+            piercedEntities.add(target.getEntityId());
+            if (piercedEntities.size() <= pierceLevel) {
 
-                this.dealtDamage = false;
+                // reverting previous motion change
+                this.setMotion(this.getMotion().mul(-100.0, -10.0, -100.0));
+
+                return true;
             }
         }
+
+        return false;
     }
 
     @Redirect(method = "onEntityHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/enchantment/EnchantmentHelper;getModifierForCreature(Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/CreatureAttribute;)F"))
     public float getModifierForCreature(ItemStack stack, CreatureAttribute creatureAttribute, EntityRayTraceResult rayTraceResult) {
 
+        // make impaling work on mobs when in contact with water or rain
         LivingEntity livingentity = (LivingEntity) rayTraceResult.getEntity();
         return ImprovementsElement.getModifierForCreature(stack, creatureAttribute, livingentity);
+    }
+
+    @Inject(method = "onCollideWithPlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/projectile/AbstractArrowEntity;onCollideWithPlayer(Lnet/minecraft/entity/player/PlayerEntity;)V"), cancellable = true)
+    public void onCollideWithPlayer(PlayerEntity entityIn, CallbackInfo callbackInfo) {
+
+        ImprovementsElement element = SneakyMagicElements.getAs(SneakyMagicElements.ENCHANTMENT_IMPROVEMENTS);
+        if (element.isEnabled() && element.returnTridentToSlot) {
+
+            returnTridentToSlot(entityIn);
+            callbackInfo.cancel();
+        }
+    }
+
+    private void returnTridentToSlot(PlayerEntity entityIn) {
+
+        if (!this.world.isRemote && (this.inGround || this.getNoClip()) && this.arrowShake <= 0) {
+
+            // getShooter
+            boolean flag = this.pickupStatus == AbstractArrowEntity.PickupStatus.ALLOWED || this.pickupStatus == AbstractArrowEntity.PickupStatus.CREATIVE_ONLY && entityIn.abilities.isCreativeMode || this.getNoClip() && Objects.requireNonNull(this.func_234616_v_()).getUniqueID() == entityIn.getUniqueID();
+            if (this.pickupStatus == AbstractArrowEntity.PickupStatus.ALLOWED) {
+
+                if (!CapabilityController.getCapability(this, ImprovementsElement.TRIDENT_SLOT_CAPABILITY).map(tridentSlot -> tridentSlot.addToInventory(entityIn, this.getArrowStack())).orElse(false)) {
+
+                    flag = false;
+                }
+            }
+
+            if (flag) {
+
+                entityIn.onItemPickup(this, 1);
+                this.remove();
+            }
+        }
     }
 
 }

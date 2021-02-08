@@ -1,28 +1,41 @@
 package com.fuzs.sneakymagic.element;
 
+import com.fuzs.puzzleslib_sm.PuzzlesLib;
+import com.fuzs.puzzleslib_sm.capability.CapabilityDispatcher;
 import com.fuzs.puzzleslib_sm.element.AbstractElement;
 import com.fuzs.puzzleslib_sm.element.side.ICommonElement;
+import com.fuzs.sneakymagic.SneakyMagic;
 import com.fuzs.sneakymagic.SneakyMagicElements;
+import com.fuzs.sneakymagic.capability.container.ITridentSlot;
+import com.fuzs.sneakymagic.capability.container.TridentSlot;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.CreatureAttribute;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.projectile.TridentEntity;
 import net.minecraft.item.CrossbowItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.ArrowNockEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
 public class ImprovementsElement extends AbstractElement implements ICommonElement {
+
+    @CapabilityInject(ITridentSlot.class)
+    public static final Capability<TridentSlot> TRIDENT_SLOT_CAPABILITY = null;
     
     private boolean trueInfinity;
     private boolean noProjectileResistance;
     public boolean requireSweepingEdge;
     private boolean boostImpaling;
     public boolean returnTridentFromVoid;
+    public boolean returnTridentToSlot;
     public boolean noAxePenalty;
     
     @Override
@@ -40,6 +53,20 @@ public class ImprovementsElement extends AbstractElement implements ICommonEleme
     }
 
     @Override
+    public void loadCommon() {
+
+        PuzzlesLib.getCapabilityController().addEntityCapability(new ResourceLocation(SneakyMagic.MODID, TridentSlot.getName()), ITridentSlot.class, TridentSlot::new, entity -> {
+
+            if (entity instanceof TridentEntity) {
+
+                return new CapabilityDispatcher<>(new TridentSlot(), TRIDENT_SLOT_CAPABILITY);
+            }
+
+            return null;
+        });
+    }
+
+    @Override
     public void setupCommonConfig(ForgeConfigSpec.Builder builder) {
 
         addToConfig(builder.comment("Infinity enchantment no longer requires a single arrow to be present in the player inventory.").define("True Infinity", true), v -> this.trueInfinity = v);
@@ -47,6 +74,7 @@ public class ImprovementsElement extends AbstractElement implements ICommonEleme
         addToConfig(builder.comment("Is the sweeping edge enchantment required to perform a sweep attack.").define("Require Sweeping Edge", false), v -> this.requireSweepingEdge = v);
         addToConfig(builder.comment("Makes the impaling enchantment apply to any creature in contact with rain or water.").define("Boost Impaling", true), v -> this.boostImpaling = v);
         addToConfig(builder.comment("Tridents enchanted with loyalty will return when thrown into the void.").define("Return Trident From Void", true), v -> this.returnTridentFromVoid = v);
+        addToConfig(builder.comment("Tridents will be picked up in the slot they were thrown from.").define("Remember Trident Slot", true), v -> this.returnTridentToSlot = v);
         addToConfig(builder.comment("Prevent axes from receiving additional damage when attack an entity to make them work as proper weapons.").define("No Axe Penalty", true), v -> this.noAxePenalty = v);
     }
 

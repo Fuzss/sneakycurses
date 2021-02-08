@@ -8,10 +8,10 @@ import com.fuzs.puzzleslib_sm.config.deserialize.EntryCollectionBuilder;
 import com.fuzs.puzzleslib_sm.element.AbstractElement;
 import com.fuzs.puzzleslib_sm.element.side.ICommonElement;
 import com.fuzs.sneakymagic.SneakyMagic;
-import com.fuzs.sneakymagic.capability.container.ArrowCapability;
-import com.fuzs.sneakymagic.capability.container.IArrowCapability;
-import com.fuzs.sneakymagic.util.CompatibilityManager;
+import com.fuzs.sneakymagic.capability.container.ArrowPlundering;
+import com.fuzs.sneakymagic.capability.container.IArrowPlundering;
 import com.fuzs.sneakymagic.mixin.accessor.IAbstractArrowEntityAccessor;
+import com.fuzs.sneakymagic.util.CompatibilityManager;
 import net.minecraft.enchantment.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -38,10 +38,10 @@ import java.util.stream.Stream;
 public class CompatibilityElement extends AbstractElement implements ICommonElement {
 
     @ObjectHolder(SneakyMagic.MODID + ":" + "plundering")
-    public static final Enchantment PLUNDERING = null;
+    public static final Enchantment PLUNDERING_ENCHANTMENT = null;
 
-    @CapabilityInject(IArrowCapability.class)
-    public static final Capability<ArrowCapability> ARROW_ENCHANTMENTS = null;
+    @CapabilityInject(IArrowPlundering.class)
+    public static final Capability<ArrowPlundering> ARROW_PLUNDERING_CAPABILITY = null;
     
     public Set<Enchantment> swordEnchantments;
     public Set<Enchantment> axeEnchantments;
@@ -75,11 +75,11 @@ public class CompatibilityElement extends AbstractElement implements ICommonElem
 
         // register after config has been loaded once
         ConfigManager.get().addListener(new CompatibilityManager(this)::load);
-        PuzzlesLib.getCapabilityController().addEntityCapability(new ResourceLocation(SneakyMagic.MODID, ArrowCapability.getName()), IArrowCapability.class, ArrowCapability::new, entity -> {
+        PuzzlesLib.getCapabilityController().addEntityCapability(new ResourceLocation(SneakyMagic.MODID, ArrowPlundering.getName()), IArrowPlundering.class, ArrowPlundering::new, entity -> {
 
             if (entity instanceof AbstractArrowEntity) {
 
-                return new CapabilityDispatcher<>(new ArrowCapability(), ARROW_ENCHANTMENTS);
+                return new CapabilityDispatcher<>(new ArrowPlundering(), ARROW_PLUNDERING_CAPABILITY);
             }
 
             return null;
@@ -138,7 +138,9 @@ public class CompatibilityElement extends AbstractElement implements ICommonElem
                     AbstractArrowEntity abstractarrowentity = arrowitem.createArrow(evt.getWorld(), itemstack, playerentity);
                     // shoot
                     abstractarrowentity.func_234612_a_(playerentity, playerentity.rotationPitch, playerentity.rotationYaw - 10.0F + i * 20.0F, 0.0F, velocity * 3.0F, 1.0F);
-                    applyCommonEnchantments(abstractarrowentity, stack);
+                    applyPowerEnchantment(abstractarrowentity, stack);
+                    applyPunchEnchantment(abstractarrowentity, stack);
+                    applyFlameEnchantment(abstractarrowentity, stack);
                     applyPiercingEnchantment(abstractarrowentity, stack);
                     applyPlunderingEnchantment(abstractarrowentity, stack);
                     abstractarrowentity.pickupStatus = AbstractArrowEntity.PickupStatus.CREATIVE_ONLY;
@@ -176,26 +178,32 @@ public class CompatibilityElement extends AbstractElement implements ICommonElem
             } else {
 
                 // overwrite anything set by vanilla, even when enchantment is not present
-                evt.setLootingLevel(CapabilityController.getCapability(source, ARROW_ENCHANTMENTS)
-                        .map(ArrowCapability::getPlunderingLevel)
+                evt.setLootingLevel(CapabilityController.getCapability(source, ARROW_PLUNDERING_CAPABILITY)
+                        .map(ArrowPlundering::getPlunderingLevel)
                         .orElse((byte) 0));
             }
         }
     }
 
-    public static void applyCommonEnchantments(AbstractArrowEntity abstractarrowentity, ItemStack stack) {
+    public static void applyPowerEnchantment(AbstractArrowEntity abstractarrowentity, ItemStack stack) {
 
         int powerLevel = EnchantmentHelper.getEnchantmentLevel(Enchantments.POWER, stack);
         if (powerLevel > 0) {
 
             abstractarrowentity.setDamage(abstractarrowentity.getDamage() + (double) powerLevel * 0.5 + 0.5);
         }
+    }
+
+    public static void applyPunchEnchantment(AbstractArrowEntity abstractarrowentity, ItemStack stack) {
 
         int punchLevel = EnchantmentHelper.getEnchantmentLevel(Enchantments.PUNCH, stack);
         if (punchLevel > 0) {
 
             abstractarrowentity.setKnockbackStrength(punchLevel);
         }
+    }
+
+    public static void applyFlameEnchantment(AbstractArrowEntity abstractarrowentity, ItemStack stack) {
 
         if (EnchantmentHelper.getEnchantmentLevel(Enchantments.FLAME, stack) > 0) {
 
@@ -215,10 +223,10 @@ public class CompatibilityElement extends AbstractElement implements ICommonElem
     @SuppressWarnings("ConstantConditions")
     public static void applyPlunderingEnchantment(AbstractArrowEntity abstractarrowentity, ItemStack stack) {
 
-        int plunderLevel = EnchantmentHelper.getEnchantmentLevel(PLUNDERING, stack);
+        int plunderLevel = EnchantmentHelper.getEnchantmentLevel(PLUNDERING_ENCHANTMENT, stack);
         if (plunderLevel > 0) {
 
-            CapabilityController.getCapability(abstractarrowentity, ARROW_ENCHANTMENTS)
+            CapabilityController.getCapability(abstractarrowentity, ARROW_PLUNDERING_CAPABILITY)
                     .ifPresent(cap -> cap.setPlunderingLevel((byte) plunderLevel));
         }
     }

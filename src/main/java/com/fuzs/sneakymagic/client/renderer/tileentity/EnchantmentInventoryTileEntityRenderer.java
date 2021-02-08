@@ -1,5 +1,7 @@
 package com.fuzs.sneakymagic.client.renderer.tileentity;
 
+import com.fuzs.sneakymagic.SneakyMagicElements;
+import com.fuzs.sneakymagic.element.EasyEnchantingElement;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
@@ -27,6 +29,11 @@ public class EnchantmentInventoryTileEntityRenderer extends EnchantmentTableTile
     public void render(@Nonnull EnchantingTableTileEntity tileEntityIn, float partialTicks, @Nonnull MatrixStack matrixStackIn, @Nonnull IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn) {
 
         super.render(tileEntityIn, partialTicks, matrixStackIn, bufferIn, combinedLightIn, combinedOverlayIn);
+        EasyEnchantingElement element = SneakyMagicElements.getAs(SneakyMagicElements.EASY_ENCHANTING);
+        if (!element.isEnabled() || !element.extension.displayContents || !(tileEntityIn instanceof IInventory)) {
+
+            return;
+        }
 
         // randomise item placement via position
         BlockPos pos = tileEntityIn.getPos();

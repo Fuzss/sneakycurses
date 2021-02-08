@@ -3,7 +3,7 @@ package com.fuzs.sneakymagic.capability.container;
 import com.fuzs.puzzleslib_sm.util.INamespaceLocator;
 import net.minecraft.nbt.CompoundNBT;
 
-public class ArrowCapability implements IArrowCapability {
+public class ArrowPlundering implements IArrowPlundering {
 
     private byte plundering;
 

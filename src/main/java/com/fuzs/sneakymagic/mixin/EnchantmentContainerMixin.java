@@ -13,7 +13,6 @@ import net.minecraft.inventory.container.EnchantmentContainer;
 import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.util.IWorldPosCallable;
 import net.minecraft.util.IntReferenceHolder;
 import net.minecraftforge.common.Tags;
 import org.spongepowered.asm.mixin.Final;
@@ -48,12 +47,6 @@ public abstract class EnchantmentContainerMixin extends Container implements IEn
 
         this.updateInventory(this.tableInventory, playerInventory);
     }
-
-//    @Inject(method = "<init>(ILnet/minecraft/entity/player/PlayerInventory;Lnet/minecraft/util/IWorldPosCallable;)V", at = @At("TAIL"))
-//    public void onInit(int id, PlayerInventory playerInventory, IWorldPosCallable worldPosCallable, CallbackInfo callbackInfo) {
-//
-//        this.onCraftMatrixChanged(this.tableInventory);
-//    }
 
     @Inject(method = "onContainerClosed", at = @At("HEAD"), cancellable = true)
     public void onContainerClosed(PlayerEntity playerIn, CallbackInfo callbackInfo) {

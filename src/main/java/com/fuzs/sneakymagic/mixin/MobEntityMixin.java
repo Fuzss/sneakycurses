@@ -20,6 +20,7 @@ public abstract class MobEntityMixin extends LivingEntity {
     @Redirect(method = "attackEntityAsMob", at = @At(value = "INVOKE", target = "Lnet/minecraft/enchantment/EnchantmentHelper;getModifierForCreature(Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/CreatureAttribute;)F", ordinal = 0))
     public float getModifierForCreature(ItemStack stack, CreatureAttribute creatureAttribute, Entity entityIn) {
 
+        // make impaling work on mobs when in contact with water or rain
         return ImprovementsElement.getModifierForCreature(stack, creatureAttribute, (LivingEntity) entityIn);
     }
 
