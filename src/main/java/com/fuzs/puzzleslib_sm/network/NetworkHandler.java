@@ -2,20 +2,23 @@ package com.fuzs.puzzleslib_sm.network;
 
 import com.fuzs.puzzleslib_sm.PuzzlesLib;
 import com.fuzs.puzzleslib_sm.network.message.IMessage;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.network.NetworkDirection;
+import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.network.NetworkEvent;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.PacketDistributor;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 
+import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
 /**
- * handler for network communications of all mods
+ * handler for network communications of all puzzles lib mods
  */
 @SuppressWarnings("unused")
 public class NetworkHandler {
@@ -23,11 +26,11 @@ public class NetworkHandler {
     /**
      * protocol version for testing client-server compatibility of this mod
      */
-    private final String PROTOCOL_VERSION = Integer.toString(1);
+    private static final String PROTOCOL_VERSION = Integer.toString(1);
     /**
      * channel for sending messages
      */
-    private final SimpleChannel MAIN_CHANNEL = NetworkRegistry.newSimpleChannel(new ResourceLocation(PuzzlesLib.MODID, "main_channel"),
+    private static final SimpleChannel MAIN_CHANNEL = NetworkRegistry.newSimpleChannel(new ResourceLocation(PuzzlesLib.MODID, "main_channel"),
             () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
 
     /**
@@ -38,21 +41,18 @@ public class NetworkHandler {
     /**
      * register a message for a side
      * @param supplier supplier for message (called when receiving at executing end)
-     * @param direction side message is to be executed at
+     * @param origin side message sent from
      * @param <T> this message
      */
-    public <T extends IMessage> void registerMessage(Supplier<T> supplier, NetworkDirection direction) {
+    public <T extends IMessage> void registerMessage(Supplier<T> supplier, LogicalSide origin) {
 
         MAIN_CHANNEL.registerMessage(this.discriminator++, supplier.get().getClass(), IMessage::writePacketData, buf -> supplier.get().getPacketData(buf), (message, side) -> {
 
             NetworkEvent.Context ctx = side.get();
-            if (ctx.getDirection() == direction) {
+            assert origin == ctx.getDirection().getOriginationSide() : "Receiving " + message.getClass().getSimpleName() + " at wrong side!";
 
-                PuzzlesLib.LOGGER.error("Receiving {} at wrong side!", message.getClass().getSimpleName());
-            } else {
-
-                ctx.enqueueWork(() -> message.processPacket(ctx.getSender()));
-            }
+            PlayerEntity player = PuzzlesLib.getProxy().getPlayer(ctx.getSender());
+            ctx.enqueueWork(() -> message.processPacket(player));
 
             ctx.setPacketHandled(true);
         });
@@ -84,6 +84,40 @@ public class NetworkHandler {
     public void sendToAll(IMessage message) {
 
         MAIN_CHANNEL.send(PacketDistributor.ALL.noArg(), message);
+    }
+
+    /**
+     * send message from server to all clients near given position
+     * @param message message to send
+     * @param world dimension key provider world
+     * @param pos source position
+     */
+    public void sendToAllNear(IMessage message, World world, BlockPos pos) {
+
+        this.sendToAllNearExcept(message, world, pos, null);
+    }
+
+    /**
+     * send message from server to all clients near given position
+     * @param message message to send
+     * @param world dimension key provider world
+     * @param pos source position
+     * @param exclude exclude player having caused this event
+     */
+    public void sendToAllNearExcept(IMessage message, World world, BlockPos pos, @Nullable ServerPlayerEntity exclude) {
+
+        PacketDistributor.TargetPoint targetPoint = new PacketDistributor.TargetPoint(exclude, pos.getX(), pos.getY(), pos.getZ(), 64.0D, world.getDimensionKey());
+        MAIN_CHANNEL.send(PacketDistributor.NEAR.with(() -> targetPoint), message);
+    }
+
+    /**
+     * send message from server to all clients in dimension
+     * @param message message to send
+     * @param world dimension key provider world
+     */
+    public void sendToDimension(IMessage message, World world) {
+
+        this.sendToDimension(message, world.getDimensionKey());
     }
 
     /**

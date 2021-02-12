@@ -1,5 +1,7 @@
 package com.fuzs.puzzleslib_sm.config;
 
+import com.fuzs.puzzleslib_sm.PuzzlesLib;
+import com.fuzs.puzzleslib_sm.config.json.JsonConfigFileUtil;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
@@ -117,8 +119,12 @@ public class ConfigBuilder {
 
         if (folderName.length > 0) {
 
-            String prefix = String.join(File.separator, folderName) + File.separator;
-            this.configTypeEntries.values().forEach(typeEntry -> typeEntry.setPrefix(prefix));
+            String prefix = String.join(File.separator, folderName);
+            JsonConfigFileUtil.mkdirs(prefix);
+            this.configTypeEntries.values().forEach(typeEntry -> typeEntry.setPrefix(prefix + File.separator));
+        } else {
+
+            PuzzlesLib.LOGGER.error("Unable to move config files to folder" + ":" + "Invalid path");
         }
     }
 

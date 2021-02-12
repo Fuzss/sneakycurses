@@ -7,6 +7,7 @@ import net.minecraftforge.fml.ModLoadingContext;
 /**
  * helper for namespace related things
  */
+@SuppressWarnings("unused")
 public interface INamespaceLocator {
 
     /**

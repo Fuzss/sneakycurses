@@ -3,17 +3,19 @@ package com.fuzs.puzzleslib_sm;
 import com.fuzs.puzzleslib_sm.capability.CapabilityController;
 import com.fuzs.puzzleslib_sm.element.registry.ElementRegistry;
 import com.fuzs.puzzleslib_sm.network.NetworkHandler;
+import com.fuzs.puzzleslib_sm.proxy.IProxy;
 import com.fuzs.puzzleslib_sm.registry.RegistryManager;
+import com.fuzs.puzzleslib_sm.util.PuzzlesLibUtil;
+import net.minecraftforge.fml.ExtensionPoint;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLDedicatedServerSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.network.FMLNetworkConstants;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import javax.annotation.Nullable;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 //@Mod(PuzzlesLib.MODID)
@@ -23,6 +25,7 @@ public class PuzzlesLib {
     public static final String NAME = "Puzzles Lib";
     public static final Logger LOGGER = LogManager.getLogger(PuzzlesLib.NAME);
 
+    private static IProxy sidedProxy;
     private static RegistryManager registryManager;
     private static NetworkHandler networkHandler;
     private static CapabilityController capabilityController;
@@ -49,30 +52,45 @@ public class PuzzlesLib {
         ElementRegistry.load(evt);
     }
 
+    /**
+     * set mod to only be required on one side, server or client
+     * works like <code>clientSideOnly</code> back in 1.12
+     */
+    protected final void setSideSideOnly() {
+
+        ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.DISPLAYTEST, () -> Pair.of(() -> FMLNetworkConstants.IGNORESERVERONLY, (remote, isServer) -> true));
+    }
+
+    /**
+     * @return proxy for getting physical side specific objects
+     */
+    public static IProxy getProxy() {
+
+        return PuzzlesLibUtil.getOrElse(sidedProxy, IProxy::getProxy, instance -> sidedProxy = instance);
+    }
+
+    /**
+     * @return registry manager for puzzles lib mods
+     */
     public static RegistryManager getRegistryManager() {
 
-        return getOrElse(registryManager, RegistryManager::new, instance -> registryManager = instance);
+        return PuzzlesLibUtil.getOrElse(registryManager, RegistryManager::new, instance -> registryManager = instance);
     }
 
+    /**
+     * @return network handler for puzzles lib mods
+     */
     public static NetworkHandler getNetworkHandler() {
 
-        return getOrElse(networkHandler, NetworkHandler::new, instance -> networkHandler = instance);
+        return PuzzlesLibUtil.getOrElse(networkHandler, NetworkHandler::new, instance -> networkHandler = instance);
     }
 
+    /**
+     * @return capability controller for puzzles lib mods
+     */
     public static CapabilityController getCapabilityController() {
 
-        return getOrElse(capabilityController, CapabilityController::new, instance -> capabilityController = instance);
-    }
-
-    private static <T> T getOrElse(@Nullable T instance, Supplier<T> supplier, Consumer<T> consumer) {
-
-        if (instance == null) {
-
-            instance = supplier.get();
-            consumer.accept(instance);
-        }
-
-        return instance;
+        return PuzzlesLibUtil.getOrElse(capabilityController, CapabilityController::new, instance -> capabilityController = instance);
     }
 
 }

@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 /**
  * helper for encoding and decoding a json config file
  */
+@SuppressWarnings("unused")
 public class JsonSerializationUtil {
 
     /**

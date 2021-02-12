@@ -1,6 +1,5 @@
 package com.fuzs.puzzleslib_sm.element.registry;
 
-import com.fuzs.puzzleslib_sm.PuzzlesLib;
 import com.fuzs.puzzleslib_sm.element.AbstractElement;
 import com.fuzs.puzzleslib_sm.element.side.ISidedElement;
 import net.minecraftforge.api.distmarker.Dist;
@@ -8,10 +7,6 @@ import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import java.util.function.Supplier;
 
-/**
- * just a template, copy this for every mod and change mod id
- */
-@SuppressWarnings("unused")
 public class PuzzlesLibElements extends ElementRegistry {
 
     /**
@@ -44,7 +39,16 @@ public class PuzzlesLibElements extends ElementRegistry {
      */
     private static <T extends AbstractElement & ISidedElement> AbstractElement register(String key, Supplier<T> supplier, Dist dist) {
 
-        return register(PuzzlesLib.MODID, key, supplier, dist);
+        return register(getNamespace(), key, supplier, dist);
+    }
+
+    /**
+     * easy access to modid
+     * @return modid of this mod
+     */
+    private static String getNamespace() {
+
+        return null;
     }
 
 }

@@ -1,5 +1,6 @@
 package com.fuzs.puzzleslib_sm.element.side;
 
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 /**
@@ -36,6 +37,14 @@ public interface IClientElement extends ISidedElement {
     default String[] getClientDescription() {
 
         return new String[0];
+    }
+
+    /**
+     * @return Minecraft client instance
+     */
+    static Minecraft getMc() {
+
+        return Minecraft.getInstance();
     }
 
 }

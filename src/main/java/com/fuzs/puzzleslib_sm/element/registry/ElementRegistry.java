@@ -1,5 +1,6 @@
 package com.fuzs.puzzleslib_sm.element.registry;
 
+import com.fuzs.puzzleslib_sm.PuzzlesLib;
 import com.fuzs.puzzleslib_sm.config.ConfigManager;
 import com.fuzs.puzzleslib_sm.element.AbstractElement;
 import com.fuzs.puzzleslib_sm.element.side.IClientElement;
@@ -88,15 +89,15 @@ public abstract class ElementRegistry {
      * @param path path for config value
      * @return the config value
      */
-    @SuppressWarnings("OptionalIsPresent")
-    public static Optional<Object> getConfigValue(String namespace, String key, String... path) {
+    public static <T> Optional<T> getConfigValue(String namespace, String key, Class<T> type, String... path) {
 
         Optional<AbstractElement> element = get(namespace, key);
         if (element.isPresent()) {
 
-            return getConfigValue(element.get(), path);
+            return getConfigValue(element.get(), type, path);
         }
 
+        PuzzlesLib.LOGGER.error("Unable to get config value: " + "Invalid element location");
         return Optional.empty();
     }
 
@@ -106,14 +107,15 @@ public abstract class ElementRegistry {
      * @param path path for config value
      * @return the config value
      */
-    public static Optional<Object> getConfigValue(AbstractElement element, String... path) {
+    @SuppressWarnings("unchecked")
+    public static <T> Optional<T> getConfigValue(AbstractElement element, Class<T> type, String... path) {
 
         if (element.isEnabled()) {
 
             assert path.length != 0 : "Unable to get config value: " + "Invalid config path";
 
             String fullPath = Stream.concat(Stream.of(getRegistryName(element).getPath()), Stream.of(path)).collect(Collectors.joining("."));
-            return Optional.of(ConfigManager.get().getValueFromPath(fullPath));
+            return Optional.of((T) ConfigManager.get().getValue(fullPath));
         }
 
         return Optional.empty();
@@ -127,6 +129,19 @@ public abstract class ElementRegistry {
      */
     @SuppressWarnings("unchecked")
     public static <T extends AbstractElement> T getAs(AbstractElement element) {
+
+        return (T) element;
+    }
+
+    /**
+     * cast an element to its class type to make unique methods accessible
+     * @param element element to get
+     * @param clazz clazz type to cast to
+     * @param <T> return type
+     * @return <code>element</code> cast as <code>T</code>
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends AbstractElement> T getAs(AbstractElement element, Class<T> clazz) {
 
         return (T) element;
     }

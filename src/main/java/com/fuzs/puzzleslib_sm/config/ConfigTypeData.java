@@ -15,7 +15,7 @@ class ConfigTypeData {
     /**
      * type extension for config name
      */
-    private final String type;
+    private final ModConfig.Type type;
     /**
      * file path, only specified when config is in a separate folder
      */
@@ -34,7 +34,7 @@ class ConfigTypeData {
      */
     ConfigTypeData(ModConfig.Type type) {
 
-        this.type = type.extension();
+        this.type = type;
     }
 
     /**
@@ -119,7 +119,7 @@ class ConfigTypeData {
     String getName(ModLoadingContext context) {
 
         String modId = context.getActiveContainer().getModId();
-        return this.path + String.format("%s-%s.toml", modId, this.type);
+        return this.path + ConfigManager.getConfigName(modId, this.type);
     }
 
 }

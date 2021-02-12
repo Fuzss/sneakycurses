@@ -14,7 +14,6 @@ import net.minecraft.util.text.event.ClickEvent;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileReader;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -30,7 +29,7 @@ public class JsonCommandUtil {
      * @param deserializer read from file
      * @return new command
      */
-    public static LiteralArgumentBuilder<CommandSource> createReloadCommand(String jsonName, String modId, BiConsumer<String, File> serializer, Consumer<FileReader> deserializer) {
+    public static LiteralArgumentBuilder<CommandSource> createReloadCommand(String jsonName, String modId, Consumer<File> serializer, Consumer<FileReader> deserializer) {
 
         return createReloadCommand(jsonName, modId, "command.reload." + jsonName.replace(".json", ""), serializer, deserializer);
     }
@@ -43,7 +42,7 @@ public class JsonCommandUtil {
      * @param deserializer read from file
      * @return new command
      */
-    public static LiteralArgumentBuilder<CommandSource> createReloadCommand(String jsonName, String modId, String translationKey, BiConsumer<String, File> serializer, Consumer<FileReader> deserializer) {
+    public static LiteralArgumentBuilder<CommandSource> createReloadCommand(String jsonName, String modId, String translationKey, Consumer<File> serializer, Consumer<FileReader> deserializer) {
 
         return Commands.literal(modId).then(Commands.literal("reload").executes(ctx -> {
 
@@ -60,7 +59,7 @@ public class JsonCommandUtil {
      * @param serializer create new config if absent
      * @param deserializer read from file
      */
-    public static void handleFileReload(CommandContext<CommandSource> ctx, String jsonName, String translationKey, BiConsumer<String, File> serializer, Consumer<FileReader> deserializer) {
+    public static void handleFileReload(CommandContext<CommandSource> ctx, String jsonName, String translationKey, Consumer<File> serializer, Consumer<FileReader> deserializer) {
 
         handleFolderReload(ctx, jsonName, null, translationKey, serializer, deserializer);
     }
@@ -73,7 +72,7 @@ public class JsonCommandUtil {
      * @param serializer create new config if absent
      * @param deserializer read from file
      */
-    public static void handleFolderReload(CommandContext<CommandSource> ctx, String jsonName, @Nullable String modId, String translationKey, BiConsumer<String, File> serializer, Consumer<FileReader> deserializer) {
+    public static void handleFolderReload(CommandContext<CommandSource> ctx, String jsonName, @Nullable String modId, String translationKey, Consumer<File> serializer, Consumer<FileReader> deserializer) {
 
         reloadJsonConfig(jsonName, modId, serializer, deserializer);
         sendFeedback(ctx, jsonName, modId, translationKey);
@@ -85,14 +84,14 @@ public class JsonCommandUtil {
      * @param serializer create new config if absent
      * @param deserializer read from file
      */
-    private static void reloadJsonConfig(String jsonName, @Nullable String modId, BiConsumer<String, File> serializer, Consumer<FileReader> deserializer) {
+    private static void reloadJsonConfig(String jsonName, @Nullable String modId, Consumer<File> serializer, Consumer<FileReader> deserializer) {
 
         if (modId != null) {
 
-            JsonConfigFileUtil.load(jsonName, modId, serializer, deserializer);
+            JsonConfigFileUtil.getAndLoad(jsonName, modId, serializer, deserializer);
         } else {
 
-            JsonConfigFileUtil.load(jsonName, serializer, deserializer);
+            JsonConfigFileUtil.getAndLoad(jsonName, serializer, deserializer);
         }
     }
 
@@ -125,7 +124,7 @@ public class JsonCommandUtil {
      */
     private static IFormattableTextComponent getClickableComponent(String jsonName, @Nullable String modId) {
 
-        File filePath = modId != null ? JsonConfigFileUtil.getFolderPath(jsonName, modId) : JsonConfigFileUtil.getFilePath(jsonName);
+        File filePath = modId != null ? JsonConfigFileUtil.getPathInDir(jsonName, modId) : JsonConfigFileUtil.getPath(jsonName);
 
         return new StringTextComponent(jsonName).mergeStyle(TextFormatting.UNDERLINE)
                 .modifyStyle(style -> style.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, filePath.getAbsolutePath())));

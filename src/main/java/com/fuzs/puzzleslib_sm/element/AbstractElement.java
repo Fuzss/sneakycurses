@@ -1,5 +1,6 @@
 package com.fuzs.puzzleslib_sm.element;
 
+import com.fuzs.puzzleslib_sm.PuzzlesLib;
 import com.fuzs.puzzleslib_sm.config.ConfigManager;
 import com.fuzs.puzzleslib_sm.element.registry.ElementRegistry;
 import com.fuzs.puzzleslib_sm.element.side.IClientElement;
@@ -33,13 +34,14 @@ public abstract class AbstractElement extends EventListener implements IConfigur
     private final List<EventStorage<? extends Event>> events = Lists.newArrayList();
     /**
      * is this element enabled (are events registered)
+     * 1 and 0 for enable / disable, -1 for force disable where reloading the config doesn't have any effect
      */
-    private boolean enabled = this.getDefaultState();
+    private int enabled = this.getDefaultState() ? 1 : 0;
 
     /**
      * @return name of this set in elements registry
      */
-    private String getRegistryName() {
+    protected String getRegistryName() {
 
         return ElementRegistry.getRegistryName(this).getPath();
     }
@@ -179,7 +181,7 @@ public abstract class AbstractElement extends EventListener implements IConfigur
     @Override
     public final boolean isEnabled() {
 
-        return this.enabled;
+        return this.enabled == 1;
     }
 
     /**
@@ -197,11 +199,52 @@ public abstract class AbstractElement extends EventListener implements IConfigur
      */
     private void setEnabled(boolean enabled) {
 
-        if (enabled != this.enabled) {
+        this.setEnabled(enabled ? 1 : 0);
+    }
+
+    /**
+     * set {@link #enabled} state, reload when changed
+     * @param enabled enabled as int
+     */
+    private void setEnabled(int enabled) {
+
+        if (this.enabled != -1 && this.enabled != enabled) {
 
             this.enabled = enabled;
             this.reload(false);
         }
+    }
+
+    /**
+     * something went wrong using this element, disable until game is restarted
+     */
+    protected void forceDisable() {
+
+        this.setEnabled(-1);
+        PuzzlesLib.LOGGER.warn("Detected issue in {} element: {}", this.getDisplayName(), "Disabling until game restart");
+    }
+
+    /**
+     * cast an element to its class type to make unique methods accessible
+     * @param <T> return type
+     * @return <code>element</code> cast as <code>T</code>
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends AbstractElement> T getAs() {
+
+        return (T) this;
+    }
+
+    /**
+     * cast an element to its class type to make unique methods accessible
+     * @param clazz clazz type to cast to
+     * @param <T> return type
+     * @return <code>element</code> cast as <code>T</code>
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends AbstractElement> T getAs(Class<T> clazz) {
+
+        return (T) this;
     }
 
     @Override

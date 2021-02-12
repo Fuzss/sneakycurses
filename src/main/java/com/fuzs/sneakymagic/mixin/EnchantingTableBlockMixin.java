@@ -46,11 +46,11 @@ public abstract class EnchantingTableBlockMixin extends ContainerBlock {
     @Inject(method = "onBlockActivated", at = @At("HEAD"), cancellable = true)
     public void onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit, CallbackInfoReturnable<ActionResultType> callbackInfo) {
 
-        EasyEnchantingElement element = SneakyMagicElements.getAs(SneakyMagicElements.EASY_ENCHANTING);
-        if (!worldIn.isRemote && element.isEnabled() && element.itemsStay) {
+        TileEntity tileentity = worldIn.getTileEntity(pos);
+        if (!worldIn.isRemote && tileentity instanceof EnchantingTableInventoryTileEntity) {
 
-            TileEntity tileentity = worldIn.getTileEntity(pos);
-            if (tileentity instanceof EnchantingTableInventoryTileEntity) {
+            EasyEnchantingElement element = SneakyMagicElements.getAs(SneakyMagicElements.EASY_ENCHANTING);
+            if (element.isEnabled() && element.itemsStay) {
 
                 player.openContainer((INamedContainerProvider) tileentity);
             }
@@ -63,11 +63,11 @@ public abstract class EnchantingTableBlockMixin extends ContainerBlock {
     @Override
     public void onReplaced(@Nonnull BlockState state, @Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull BlockState newState, boolean isMoving) {
 
-        EasyEnchantingElement element = SneakyMagicElements.getAs(SneakyMagicElements.EASY_ENCHANTING);
-        if (element.isEnabled() && element.itemsStay && !state.isIn(newState.getBlock())) {
+        TileEntity tileentity = worldIn.getTileEntity(pos);
+        if (tileentity instanceof EnchantingTableInventoryTileEntity && !state.isIn(newState.getBlock())) {
 
-            TileEntity tileentity = worldIn.getTileEntity(pos);
-            if (tileentity instanceof EnchantingTableInventoryTileEntity) {
+            EasyEnchantingElement element = SneakyMagicElements.getAs(SneakyMagicElements.EASY_ENCHANTING);
+            if (element.isEnabled() && element.itemsStay) {
 
                 InventoryHelper.dropInventoryItems(worldIn, pos, (IInventory) tileentity);
             }

@@ -1,9 +1,10 @@
 package com.fuzs.puzzleslib_sm.network.message;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketBuffer;
-
-import javax.annotation.Nullable;
+import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.fml.LogicalSidedProvider;
 
 /**
  * network message template
@@ -39,6 +40,14 @@ public interface IMessage {
      * handles message on receiving side
      * @param player server player when sent from client
      */
-    void processPacket(@Nullable ServerPlayerEntity player);
+    void processPacket(PlayerEntity player);
+
+    /**
+     * @return Minecraft client instance
+     */
+    static Minecraft getMinecraft() {
+
+        return LogicalSidedProvider.INSTANCE.get(LogicalSide.CLIENT);
+    }
 
 }
