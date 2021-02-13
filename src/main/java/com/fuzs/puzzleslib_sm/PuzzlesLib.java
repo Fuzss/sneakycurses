@@ -25,7 +25,7 @@ public class PuzzlesLib {
     public static final String NAME = "Puzzles Lib";
     public static final Logger LOGGER = LogManager.getLogger(PuzzlesLib.NAME);
 
-    private static IProxy sidedProxy;
+    private static IProxy<?> sidedProxy;
     private static RegistryManager registryManager;
     private static NetworkHandler networkHandler;
     private static CapabilityController capabilityController;
@@ -64,7 +64,7 @@ public class PuzzlesLib {
     /**
      * @return proxy for getting physical side specific objects
      */
-    public static IProxy getProxy() {
+    public static IProxy<?> getProxy() {
 
         return PuzzlesLibUtil.getOrElse(sidedProxy, IProxy::getProxy, instance -> sidedProxy = instance);
     }

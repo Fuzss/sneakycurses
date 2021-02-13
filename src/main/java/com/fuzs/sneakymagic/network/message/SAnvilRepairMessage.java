@@ -1,13 +1,14 @@
 package com.fuzs.sneakymagic.network.message;
 
-import com.fuzs.puzzleslib_sm.network.message.SMessage;
+import com.fuzs.puzzleslib_sm.network.message.Message;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.util.Constants;
 
-public class SAnvilRepairMessage extends SMessage {
+public class SAnvilRepairMessage extends Message {
 
     private BlockPos blockPos;
     private int stateId;
@@ -22,39 +23,30 @@ public class SAnvilRepairMessage extends SMessage {
         this.stateId = Block.getStateId(blockState);
     }
 
-    @Override
-    public void writePacketData(PacketBuffer buf) {
+    public void write(PacketBuffer buf) {
 
         buf.writeBlockPos(this.blockPos);
         buf.writeInt(this.stateId);
     }
 
-    @Override
-    public void readPacketData(PacketBuffer buf) {
+    public void read(PacketBuffer buf) {
 
         this.blockPos = buf.readBlockPos();
         this.stateId = buf.readInt();
     }
 
     @Override
-    public SMessageProcessor getProcessor() {
+    public MessageProcessor createProcessor() {
 
-        return new AnvilRepairProcessor();
-    }
-
-    private class AnvilRepairProcessor extends SMessageProcessor {
-
-        @Override
-        protected void process() {
+        return playerEntity -> {
 
             // play repair sound
-            this.getWorld().playEvent(Constants.WorldEvents.ANVIL_USE_SOUND, SAnvilRepairMessage.this.blockPos, 0);
+            playerEntity.world.playEvent(Constants.WorldEvents.ANVIL_USE_SOUND, SAnvilRepairMessage.this.blockPos, 0);
 
-            // show block breaking particles for anvil
+            // show block breaking particles for anvil without playing breaking sound
             BlockState blockstate = Block.getStateById(SAnvilRepairMessage.this.stateId);
-            this.getInstance().particles.addBlockDestroyEffects(SAnvilRepairMessage.this.blockPos, blockstate);
-        }
-
+            Minecraft.getInstance().particles.addBlockDestroyEffects(SAnvilRepairMessage.this.blockPos, blockstate);
+        };
     }
 
 }

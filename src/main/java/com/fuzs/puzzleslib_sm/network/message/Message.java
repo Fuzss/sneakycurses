@@ -2,12 +2,8 @@ package com.fuzs.puzzleslib_sm.network.message;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.concurrent.RecursiveEventLoop;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.fml.LogicalSidedProvider;
 
-import javax.annotation.Nonnull;
+import java.util.function.Consumer;
 
 /**
  * network message template
@@ -18,78 +14,46 @@ public abstract class Message {
      * writes message data to buffer
      * @param buf network data byte buffer
      */
-    public abstract void writePacketData(final PacketBuffer buf);
+    public abstract void write(final PacketBuffer buf);
 
     /**
      * reads message data from buffer
      * @param buf network data byte buffer
      */
-    protected abstract void readPacketData(final PacketBuffer buf);
+    protected abstract void read(final PacketBuffer buf);
 
     /**
-     * call {@link #readPacketData} and return this
+     * call {@link #read} and return this
      * @param buf network data byte buffer
      * @param <T> this
      * @return instance of this
      */
     @SuppressWarnings("unchecked")
-    public final <T extends Message> T getPacketData(PacketBuffer buf) {
+    public final <T extends Message> T getMessage(PacketBuffer buf) {
 
-        this.readPacketData(buf);
+        this.read(buf);
         return (T) this;
     }
 
     /**
      * handles message on receiving side
+     * @param player server player when sent from client
      */
-    public final void processPacket() {
+    public final void process(PlayerEntity player) {
 
-        this.getProcessor().process();
+        this.createProcessor().accept(player);
     }
 
     /**
      * @return message processor to run when received
      */
-    protected abstract MessageProcessor<?> getProcessor();
-
-    /**
-     * side message is executed at
-     * @return {@link LogicalSide#CLIENT} or {@link LogicalSide#SERVER}
-     */
-    public abstract LogicalSide getExecutionSide();
+    protected abstract MessageProcessor createProcessor();
 
     /**
      * separate class for executing message when received to work around sided limitations
-     * @param <T> Minecraft client or server instance type on receiving end
      */
-    abstract class MessageProcessor<T extends RecursiveEventLoop<?>> {
-
-        /**
-         * action to perform when this message is received
-         */
-        protected abstract void process();
-
-        /**
-         * @return Minecraft client or server instance
-         */
-        public final T getInstance() {
-
-            return LogicalSidedProvider.INSTANCE.get(Message.this.getExecutionSide());
-        }
-
-        /**
-         * @return player entity depending on side
-         */
-        @Nonnull
-        public abstract PlayerEntity getPlayer();
-
-        /**
-         * @return world object depending on side
-         */
-        public final World getWorld() {
-
-            return this.getPlayer().world;
-        }
+    @FunctionalInterface
+    protected interface MessageProcessor extends Consumer<PlayerEntity> {
 
     }
 
