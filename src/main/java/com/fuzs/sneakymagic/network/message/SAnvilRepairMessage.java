@@ -1,14 +1,13 @@
 package com.fuzs.sneakymagic.network.message;
 
-import com.fuzs.puzzleslib_sm.network.message.IMessage;
+import com.fuzs.puzzleslib_sm.network.message.SMessage;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.util.Constants;
 
-public class SAnvilRepairMessage implements IMessage {
+public class SAnvilRepairMessage extends SMessage {
 
     private BlockPos blockPos;
     private int stateId;
@@ -38,14 +37,24 @@ public class SAnvilRepairMessage implements IMessage {
     }
 
     @Override
-    public void processPacket(PlayerEntity player) {
+    public SMessageProcessor getProcessor() {
 
-        // play repair sound
-        player.world.playEvent(Constants.WorldEvents.ANVIL_USE_SOUND, this.blockPos, 0);
+        return new AnvilRepairProcessor();
+    }
 
-        // show block breaking particles for anvil
-        BlockState blockstate = Block.getStateById(this.stateId);
-        IMessage.getMinecraft().particles.addBlockDestroyEffects(this.blockPos, blockstate);
+    private class AnvilRepairProcessor extends SMessageProcessor {
+
+        @Override
+        protected void process() {
+
+            // play repair sound
+            this.getWorld().playEvent(Constants.WorldEvents.ANVIL_USE_SOUND, SAnvilRepairMessage.this.blockPos, 0);
+
+            // show block breaking particles for anvil
+            BlockState blockstate = Block.getStateById(SAnvilRepairMessage.this.stateId);
+            this.getInstance().particles.addBlockDestroyEffects(SAnvilRepairMessage.this.blockPos, blockstate);
+        }
+
     }
 
 }
