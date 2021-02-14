@@ -19,6 +19,7 @@ import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.fml.LogicalSide;
 
 import javax.annotation.Nullable;
 
@@ -47,7 +48,7 @@ public class AnvilTweaksElement extends AbstractElement implements ICommonElemen
     @Override
     public void loadCommon() {
 
-        PuzzlesLib.getNetworkHandler().registerMessage(SAnvilRepairMessage::new);
+        PuzzlesLib.getNetworkHandler().registerMessage(SAnvilRepairMessage::new, LogicalSide.CLIENT);
     }
 
     @Override

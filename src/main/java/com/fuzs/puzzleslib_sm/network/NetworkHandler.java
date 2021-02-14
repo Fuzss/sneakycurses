@@ -8,12 +8,14 @@ import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.network.NetworkEvent;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.PacketDistributor;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 
 import javax.annotation.Nullable;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 /**
@@ -31,23 +33,24 @@ public class NetworkHandler {
      */
     private static final SimpleChannel MAIN_CHANNEL = NetworkRegistry.newSimpleChannel(new ResourceLocation(PuzzlesLib.MODID, "main_channel"),
             () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
-
     /**
      * message index
      */
-    private int discriminator;
+    private static final AtomicInteger DISCRIMINATOR = new AtomicInteger();
 
     /**
      * register a message for a side
      * @param supplier supplier for message (called when receiving at executing end)
+     * @param executionSide side this message is to be executed at
      */
-    public void registerMessage(Supplier<Message> supplier) {
+    public void registerMessage(Supplier<Message> supplier, LogicalSide executionSide) {
 
-        MAIN_CHANNEL.registerMessage(this.discriminator++, supplier.get().getClass(), Message::write, buf -> supplier.get().getMessage(buf), (message, side) -> {
+        MAIN_CHANNEL.registerMessage(DISCRIMINATOR.getAndIncrement(), supplier.get().getClass(), Message::write, buf -> supplier.get().getMessage(buf), (message, context) -> {
 
-            NetworkEvent.Context ctx = side.get();
+            NetworkEvent.Context ctx = context.get();
+            assert executionSide == ctx.getDirection().getReceptionSide() : "Unable to handle " + message.getClass().getSimpleName() + " message: " + "Received at wrong side";
+
             PlayerEntity player = PuzzlesLib.getProxy().getPlayer(ctx.getSender());
-
             // https://stackoverflow.com/questions/15722184/method-in-is-defined-in-inaccessible-class-or-interface-compilation
             ctx.enqueueWork(() -> message.process(player));
             ctx.setPacketHandled(true);
