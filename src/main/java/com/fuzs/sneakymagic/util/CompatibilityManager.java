@@ -83,12 +83,15 @@ public class CompatibilityManager {
 
         public void setEnchantmentType(Enchantment enchantment) {
 
-            if (this.needsUpdate()) {
+            synchronized (this.predicates) {
 
-                ((IEnchantmentAccessor) enchantment).setType(this.createType());
+                if (this.needsUpdate()) {
+
+                    ((IEnchantmentAccessor) enchantment).setType(this.createType());
+                }
+
+                this.finish();
             }
-
-            this.finish();
         }
 
         private boolean needsUpdate() {

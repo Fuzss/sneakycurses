@@ -25,6 +25,7 @@ import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.living.LootingLevelEvent;
 import net.minecraftforge.event.entity.player.ArrowLooseEvent;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ObjectHolder;
 
@@ -74,7 +75,7 @@ public class CompatibilityElement extends AbstractElement implements ICommonElem
     public void loadCommon() {
 
         // register after config has been loaded once
-        ConfigManager.get().addListener(new CompatibilityManager(this)::load);
+        ConfigManager.get().addListener(new CompatibilityManager(this)::load, ModConfig.Type.COMMON);
         PuzzlesLib.getCapabilityController().addEntityCapability(new ResourceLocation(SneakyMagic.MODID, ArrowPlundering.getName()), IArrowPlundering.class, ArrowPlundering::new, entity -> {
 
             if (entity instanceof AbstractArrowEntity) {

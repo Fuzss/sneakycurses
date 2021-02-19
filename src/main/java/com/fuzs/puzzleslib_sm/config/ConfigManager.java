@@ -1,8 +1,10 @@
 package com.fuzs.puzzleslib_sm.config;
 
-import com.fuzs.puzzleslib_sm.util.INamespaceLocator;
 import com.fuzs.puzzleslib_sm.PuzzlesLib;
+import com.fuzs.puzzleslib_sm.util.INamespaceLocator;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -42,7 +44,7 @@ public class ConfigManager implements INamespaceLocator {
     /**
      * listeners to call when a config is somehow loaded
      */
-    private final Map<Runnable, ConfigLoading> configListeners = Maps.newHashMap();
+    private final Multimap<ModConfig.Type, Runnable> configListeners = HashMultimap.create();
 
     /**
      * this class is a singleton
@@ -80,7 +82,7 @@ public class ConfigManager implements INamespaceLocator {
         } else {
 
             this.syncType(modid, type);
-            this.notifyListeners(ConfigLoading.getState(evt));
+            this.notifyListeners(type);
             if (evt instanceof ModConfig.Reloading) {
 
                 PuzzlesLib.LOGGER.info("Reloading " + type.extension() + " config for " + modid);
@@ -247,49 +249,22 @@ public class ConfigManager implements INamespaceLocator {
     }
 
     /**
-     * add a listener for when the config is loaded and reloaded
-     * @param listener listener to add
-     */
-    public void addListener(Runnable listener) {
-
-        this.addListener(listener, ConfigLoading.BOTH);
-    }
-
-    /**
-     * add a listener for when the config is loaded
-     * @param listener listener to add
-     */
-    public void addLoadingListener(Runnable listener) {
-
-        this.addListener(listener, ConfigLoading.LOADING);
-    }
-
-    /**
-     * add a listener for when the config is reloaded
-     * @param listener listener to add
-     */
-    public void addReloadingListener(Runnable listener) {
-
-        this.addListener(listener, ConfigLoading.RELOADING);
-    }
-
-    /**
      * add a listener for when the config is somehow loaded
      * @param listener listener to add
-     * @param state load states when to call this listener
+     * @param type config type for this listener
      */
-    private void addListener(Runnable listener, ConfigLoading state) {
+    public void addListener(Runnable listener, ModConfig.Type type) {
 
-        this.configListeners.merge(listener, state, (state1, state2) -> state1 != state2 ? ConfigLoading.BOTH : state1);
+        this.configListeners.put(type, listener);
     }
 
     /**
      * call listeners for state as the config has somehow been loaded
-     * @param state config load state
+     * @param type config type for this listener
      */
-    private void notifyListeners(ConfigLoading state) {
+    private void notifyListeners(ModConfig.Type type) {
 
-        this.configListeners.entrySet().stream().filter(entry -> entry.getValue().matches(state)).map(Map.Entry::getKey).forEach(Runnable::run);
+        this.configListeners.get(type).forEach(Runnable::run);
     }
 
     /**
@@ -367,43 +342,6 @@ public class ConfigManager implements INamespaceLocator {
     public static ConfigBuilder builder() {
 
         return get().getBuilder();
-    }
-
-    /**
-     * state for when to trigger listeners
-     */
-    private enum ConfigLoading {
-
-        LOADING, RELOADING, BOTH;
-
-        /**
-         * check if two states are compatible
-         * @param state state to match with
-         * @return are states compatible
-         */
-        boolean matches(ConfigLoading state) {
-
-            if (state == BOTH || this == BOTH) {
-
-                return true;
-            } else if (state == LOADING && this != RELOADING) {
-
-                return true;
-            }
-
-            return state == RELOADING && this != LOADING;
-        }
-
-        /**
-         * get state for an event object
-         * @param evt event to get state for
-         * @return state for event
-         */
-        static ConfigLoading getState(ModConfig.ModConfigEvent evt) {
-
-            return evt instanceof ModConfig.Loading ? LOADING : RELOADING;
-        }
-
     }
 
 }
