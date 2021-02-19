@@ -80,13 +80,13 @@ public class SneakyCursesElement extends AbstractElement implements IClientEleme
                     .findFirst().map(component -> ((StringTextComponent) component));
 
             boolean handleBook = !this.affectBooks && stack.getItem() == Items.ENCHANTED_BOOK;
-            nameComponent.ifPresent(component -> component.mergeStyle(handleBook ? ((IItemAccessor) stack.getItem()).getRarity().color : TextFormatting.RED));
+            nameComponent.ifPresent(component -> component.applyTextStyle(handleBook ? ((IItemAccessor) stack.getItem()).getRarity().color : TextFormatting.RED));
         }
     }
 
     private void modifyCurses(List<ITextComponent> tooltip, ItemStack stack, Collection<Enchantment> enchantments, @Nonnull CompoundNBT tag) {
 
-        boolean isHidingEnchantments = tag.contains("HideFlags", 99) && (tag.getInt("HideFlags") & ItemStack.TooltipDisplayFlags.ENCHANTMENTS.func_242397_a()) == 0;
+        boolean isHidingEnchantments = tag.contains("HideFlags", 99) && (tag.getInt("HideFlags") & 1) == 0;
         if (this.hideCurses && (!isHidingEnchantments || stack.getItem() == Items.ENCHANTED_BOOK)) {
 
             if (stack.getItem() != Items.ENCHANTED_BOOK || !CurseMatcher.allMatch(enchantments)) {

@@ -15,7 +15,7 @@ import net.minecraft.entity.projectile.AbstractArrowEntity;
 import net.minecraft.entity.projectile.TridentEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.EntityRayTraceResult;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -46,7 +46,7 @@ public abstract class TridentEntityMixin extends AbstractArrowEntity {
         ImprovementsElement element = SneakyMagicElements.getAs(SneakyMagicElements.ENCHANTMENT_IMPROVEMENTS);
         if (element.isEnabled() && element.returnTridentFromVoid) {
 
-            Entity entity = this.func_234616_v_();
+            Entity entity = this.getShooter();
             if (this.getPosY() < -64.0 && entity instanceof PlayerEntity && EnchantmentHelper.getLoyaltyModifier(this.thrownStack) > 0 && this.shouldReturnToThrower()) {
 
                 this.setNoClip(true);
@@ -68,7 +68,7 @@ public abstract class TridentEntityMixin extends AbstractArrowEntity {
             if (knockbackStrength > 0) {
 
                 // copied from punch behavior
-                Vector3d vector3d = this.getMotion().mul(1.0, 0.0, 1.0).normalize().scale(knockbackStrength * 0.6);
+                Vec3d vector3d = this.getMotion().mul(1.0, 0.0, 1.0).normalize().scale(knockbackStrength * 0.6);
                 if (vector3d.lengthSquared() > 0.0) {
 
                     target.addVelocity(vector3d.x, 0.1, vector3d.z);
@@ -131,7 +131,7 @@ public abstract class TridentEntityMixin extends AbstractArrowEntity {
         if (!this.world.isRemote && (this.inGround || this.getNoClip()) && this.arrowShake <= 0) {
 
             // getShooter
-            boolean flag = this.pickupStatus == AbstractArrowEntity.PickupStatus.ALLOWED || this.pickupStatus == AbstractArrowEntity.PickupStatus.CREATIVE_ONLY && entityIn.abilities.isCreativeMode || this.getNoClip() && Objects.requireNonNull(this.func_234616_v_()).getUniqueID() == entityIn.getUniqueID();
+            boolean flag = this.pickupStatus == AbstractArrowEntity.PickupStatus.ALLOWED || this.pickupStatus == AbstractArrowEntity.PickupStatus.CREATIVE_ONLY && entityIn.abilities.isCreativeMode || this.getNoClip() && Objects.requireNonNull(this.getShooter()).getUniqueID() == entityIn.getUniqueID();
             if (this.pickupStatus == AbstractArrowEntity.PickupStatus.ALLOWED) {
 
                 if (!CapabilityController.getCapability(this, ImprovementsElement.TRIDENT_SLOT_CAPABILITY).map(tridentSlot -> tridentSlot.addToInventory(entityIn, this.getArrowStack())).orElse(false)) {

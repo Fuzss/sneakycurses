@@ -2,7 +2,6 @@ package com.fuzs.sneakymagic.mixin;
 
 import com.fuzs.puzzleslib_sm.capability.CapabilityController;
 import com.fuzs.sneakymagic.SneakyMagicElements;
-import com.fuzs.sneakymagic.capability.container.TridentSlot;
 import com.fuzs.sneakymagic.element.CompatibilityElement;
 import com.fuzs.sneakymagic.element.ImprovementsElement;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -22,7 +21,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 import javax.annotation.Nonnull;
-import java.util.Optional;
 
 @SuppressWarnings("unused")
 @Mixin(TridentItem.class)
@@ -51,17 +49,16 @@ public abstract class TridentItemMixin extends Item {
         ImprovementsElement element = SneakyMagicElements.getAs(SneakyMagicElements.ENCHANTMENT_IMPROVEMENTS);
         if (element.isEnabled() && element.returnTridentToSlot && itemUserEntity instanceof PlayerEntity && itemUserEntity.getActiveItemStack().isItemEqual(stack)) {
 
-            Optional<TridentSlot> tridentSlot = CapabilityController.getCapability(tridentEntity, ImprovementsElement.TRIDENT_SLOT_CAPABILITY).resolve();
-            if (tridentSlot.isPresent()) {
+            CapabilityController.getCapability(tridentEntity, ImprovementsElement.TRIDENT_SLOT_CAPABILITY).ifPresent(tridentSlot -> {
 
                 if (itemUserEntity.getActiveHand() == Hand.OFF_HAND) {
 
-                    tridentSlot.get().setSlot(-2);
+                    tridentSlot.setSlot(-2);
                 } else {
 
-                    tridentSlot.get().setSlot(((PlayerEntity) itemUserEntity).inventory.currentItem);
+                    tridentSlot.setSlot(((PlayerEntity) itemUserEntity).inventory.currentItem);
                 }
-            }
+            });
         }
 
         // add bow enchantments

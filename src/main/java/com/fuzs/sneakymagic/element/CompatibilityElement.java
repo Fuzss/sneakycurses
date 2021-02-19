@@ -138,7 +138,7 @@ public class CompatibilityElement extends AbstractElement implements ICommonElem
 
                     AbstractArrowEntity abstractarrowentity = arrowitem.createArrow(evt.getWorld(), itemstack, playerentity);
                     // shoot
-                    abstractarrowentity.func_234612_a_(playerentity, playerentity.rotationPitch, playerentity.rotationYaw - 10.0F + i * 20.0F, 0.0F, velocity * 3.0F, 1.0F);
+                    abstractarrowentity.shoot(playerentity, playerentity.rotationPitch, playerentity.rotationYaw - 10.0F + i * 20.0F, 0.0F, velocity * 3.0F, 1.0F);
                     applyPowerEnchantment(abstractarrowentity, stack);
                     applyPunchEnchantment(abstractarrowentity, stack);
                     applyFlameEnchantment(abstractarrowentity, stack);

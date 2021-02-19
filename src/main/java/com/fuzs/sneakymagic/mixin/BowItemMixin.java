@@ -12,10 +12,10 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(BowItem.class)
 public abstract class BowItemMixin {
 
-    @Redirect(method = "onPlayerStoppedUsing", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/BowItem;customArrow(Lnet/minecraft/entity/projectile/AbstractArrowEntity;)Lnet/minecraft/entity/projectile/AbstractArrowEntity;", remap = false))
+    @Redirect(method = "onPlayerStoppedUsing", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/BowItem;customeArrow(Lnet/minecraft/entity/projectile/AbstractArrowEntity;)Lnet/minecraft/entity/projectile/AbstractArrowEntity;", remap = false))
     public AbstractArrowEntity customArrow(BowItem bow, AbstractArrowEntity arrow, ItemStack stack) {
 
-        arrow = bow.customArrow(arrow);
+        arrow = bow.customeArrow(arrow);
         CompatibilityElement.applyPiercingEnchantment(arrow, stack);
         CompatibilityElement.applyPlunderingEnchantment(arrow, stack);
 
