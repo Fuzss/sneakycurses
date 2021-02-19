@@ -1,13 +1,12 @@
 {
   "required": true,
-  "minVersion": "0.8",
+  "minVersion": "0.8.0",
   "compatibilityLevel": "JAVA_8",
   "package": "com.fuzs.sneakymagic.mixin",
   "refmap": "sneakymagic.refmap.json",
   "mixins": [
     "AxeItemMixin",
     "BowItemMixin",
-    "ElytraItemMixin",
     "TridentItemMixin",
     "CrossbowItemMixin",
     "TridentEntityMixin",
@@ -19,17 +18,13 @@
     "ImpalingEnchantmentMixin",
     "MobEntityMixin",
     "PlayerEntityMixin",
-    "EnchantmentContainerMixin",
-    "EnchantingTableBlockMixin",
     "accessor.IItemAccessor",
     "accessor.IEnchantmentAccessor",
-    "accessor.IAbstractArrowEntityAccessor",
-    "accessor.IEnchantmentContainerAccessor"
+    "accessor.IAbstractArrowEntityAccessor"
   ],
   "client": [
     "client.ItemMixin",
-    "client.IngameGuiMixin",
-    "client.EnchantmentScreenMixin"
+    "client.IngameGuiMixin"
   ],
   "injectors": {
     "defaultRequire": 1

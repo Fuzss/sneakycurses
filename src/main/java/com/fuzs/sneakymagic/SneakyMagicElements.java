@@ -16,8 +16,6 @@ public class SneakyMagicElements extends ElementRegistry {
     public static final AbstractElement ENCHANTMENT_IMPROVEMENTS = register("enchantment_improvements", ImprovementsElement::new);
     public static final AbstractElement ENCHANTMENT_COMPATIBILITY = register("enchantment_compatibility", CompatibilityElement::new);
     public static final AbstractElement SNEAKY_CURSES = register("sneaky_curses", SneakyCursesElement::new, Dist.CLIENT);
-    public static final AbstractElement ANVIL_TWEAKS = register("anvil_tweaks", AnvilTweaksElement::new);
-    public static final AbstractElement EASY_ENCHANTING = register("easy_enchanting", EasyEnchantingElement::new);
 
     /**
      * create overload so this class and its elements are loaded

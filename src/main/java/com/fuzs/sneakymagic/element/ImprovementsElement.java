@@ -1,7 +1,7 @@
 package com.fuzs.sneakymagic.element;
 
 import com.fuzs.puzzleslib_sm.PuzzlesLib;
-import com.fuzs.puzzleslib_sm.capability.CapabilityDispatcher;
+import com.fuzs.puzzleslib_sm.capability.core.CapabilityDispatcher;
 import com.fuzs.puzzleslib_sm.element.AbstractElement;
 import com.fuzs.puzzleslib_sm.element.side.ICommonElement;
 import com.fuzs.sneakymagic.SneakyMagic;
@@ -34,6 +34,7 @@ public class ImprovementsElement extends AbstractElement implements ICommonEleme
     private boolean noProjectileResistance;
     public boolean requireSweepingEdge;
     private boolean boostImpaling;
+    public boolean repairTridentWithPrismarine;
     public boolean returnTridentFromVoid;
     public boolean returnTridentToSlot;
     public boolean noAxePenalty;
@@ -73,6 +74,7 @@ public class ImprovementsElement extends AbstractElement implements ICommonEleme
         addToConfig(builder.comment("Disables damage immunity when hit by a projectile. Makes it possible for entities to be hit by multiple projectiles at once.").define("No Projectile Immunity", true), v -> this.noProjectileResistance = v);
         addToConfig(builder.comment("Is the sweeping edge enchantment required to perform a sweep attack.").define("Require Sweeping Edge", false), v -> this.requireSweepingEdge = v);
         addToConfig(builder.comment("Makes the impaling enchantment apply to any creature in contact with rain or water.").define("Boost Impaling", true), v -> this.boostImpaling = v);
+        addToConfig(builder.comment("Tridents can be repaired in an anvil using prismarine shards.").define("Prismarine Repairs Trident", true), v -> this.repairTridentWithPrismarine = v);
         addToConfig(builder.comment("Tridents enchanted with loyalty will return when thrown into the void.").define("Return Trident From Void", true), v -> this.returnTridentFromVoid = v);
         addToConfig(builder.comment("Tridents will be picked up in the slot they were thrown from.").define("Remember Trident Slot", true), v -> this.returnTridentToSlot = v);
         addToConfig(builder.comment("Prevent axes from receiving additional damage when attack an entity to make them work as proper weapons.").define("No Axe Penalty", true), v -> this.noAxePenalty = v);

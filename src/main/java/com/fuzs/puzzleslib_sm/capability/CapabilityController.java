@@ -1,5 +1,7 @@
 package com.fuzs.puzzleslib_sm.capability;
 
+import com.fuzs.puzzleslib_sm.capability.core.CapabilityDispatcher;
+import com.fuzs.puzzleslib_sm.capability.core.CapabilityStorage;
 import com.google.common.collect.ArrayListMultimap;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;

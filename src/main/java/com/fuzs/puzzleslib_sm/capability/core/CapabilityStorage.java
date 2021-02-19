@@ -1,4 +1,4 @@
-package com.fuzs.puzzleslib_sm.capability;
+package com.fuzs.puzzleslib_sm.capability.core;
 
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;

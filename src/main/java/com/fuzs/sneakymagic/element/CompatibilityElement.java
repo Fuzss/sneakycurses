@@ -2,7 +2,7 @@ package com.fuzs.sneakymagic.element;
 
 import com.fuzs.puzzleslib_sm.PuzzlesLib;
 import com.fuzs.puzzleslib_sm.capability.CapabilityController;
-import com.fuzs.puzzleslib_sm.capability.CapabilityDispatcher;
+import com.fuzs.puzzleslib_sm.capability.core.CapabilityDispatcher;
 import com.fuzs.puzzleslib_sm.config.ConfigManager;
 import com.fuzs.puzzleslib_sm.config.deserialize.EntryCollectionBuilder;
 import com.fuzs.puzzleslib_sm.element.AbstractElement;

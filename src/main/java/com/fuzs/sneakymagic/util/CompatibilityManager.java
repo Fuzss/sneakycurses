@@ -83,6 +83,8 @@ public class CompatibilityManager {
 
         public void setEnchantmentType(Enchantment enchantment) {
 
+            // a ConcurrentModificationException was reported here
+            // probably caused by client and server thread both trying to reload this listener
             synchronized (this.predicates) {
 
                 if (this.needsUpdate()) {

@@ -3,7 +3,6 @@ package com.fuzs.sneakymagic.mixin;
 import com.fuzs.puzzleslib_sm.capability.CapabilityController;
 import com.fuzs.sneakymagic.SneakyMagicElements;
 import com.fuzs.sneakymagic.capability.container.TridentSlot;
-import com.fuzs.sneakymagic.element.AnvilTweaksElement;
 import com.fuzs.sneakymagic.element.CompatibilityElement;
 import com.fuzs.sneakymagic.element.ImprovementsElement;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -37,7 +36,7 @@ public abstract class TridentItemMixin extends Item {
     @Override
     public boolean getIsRepairable(@Nonnull ItemStack toRepair, @Nonnull ItemStack repair) {
 
-        AnvilTweaksElement element = SneakyMagicElements.getAs(SneakyMagicElements.ANVIL_TWEAKS);
+        ImprovementsElement element = SneakyMagicElements.getAs(SneakyMagicElements.ENCHANTMENT_IMPROVEMENTS);
         if (element.isEnabled() && element.repairTridentWithPrismarine) {
 
             return repair.getItem().isIn(Tags.Items.DUSTS_PRISMARINE);
