@@ -1,6 +1,7 @@
 package com.fuzs.puzzleslib_sm;
 
 import com.fuzs.puzzleslib_sm.capability.CapabilityController;
+import com.fuzs.puzzleslib_sm.config.ConfigManager;
 import com.fuzs.puzzleslib_sm.element.registry.ElementRegistry;
 import com.fuzs.puzzleslib_sm.network.NetworkHandler;
 import com.fuzs.puzzleslib_sm.proxy.IProxy;
@@ -8,6 +9,7 @@ import com.fuzs.puzzleslib_sm.registry.RegistryManager;
 import com.fuzs.puzzleslib_sm.util.PuzzlesLibUtil;
 import net.minecraftforge.fml.ExtensionPoint;
 import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLDedicatedServerSetupEvent;
@@ -40,16 +42,19 @@ public class PuzzlesLib {
     protected void onCommonSetup(final FMLCommonSetupEvent evt) {
 
         ElementRegistry.load(evt);
+        ConfigManager.get().syncAll(ModConfig.Type.COMMON);
     }
 
     protected void onClientSetup(final FMLClientSetupEvent evt) {
 
         ElementRegistry.load(evt);
+        ConfigManager.get().syncAll(ModConfig.Type.CLIENT);
     }
 
     protected void onServerSetup(final FMLDedicatedServerSetupEvent evt) {
 
         ElementRegistry.load(evt);
+        ConfigManager.get().syncAll(ModConfig.Type.SERVER);
     }
 
     /**
