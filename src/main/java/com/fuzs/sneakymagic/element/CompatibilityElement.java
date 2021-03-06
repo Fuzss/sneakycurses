@@ -30,11 +30,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ObjectHolder;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class CompatibilityElement extends AbstractElement implements ICommonElement {
 
@@ -92,25 +88,16 @@ public class CompatibilityElement extends AbstractElement implements ICommonElem
 
         String compatibility = "Additional enchantments to be made usable with ";
         String blacklist = " to be disabled from receiving additional enchantments.";
-        addToConfig(builder.comment(compatibility + "swords.").define("Sword Enchantments", getEnchantmentList(Enchantments.IMPALING)), v -> this.swordEnchantments = deserializeToSet(v, ForgeRegistries.ENCHANTMENTS));
-        addToConfig(builder.comment(compatibility + "axes.").define("Axe Enchantments", getEnchantmentList(Enchantments.SHARPNESS, Enchantments.SMITE, Enchantments.BANE_OF_ARTHROPODS, Enchantments.KNOCKBACK, Enchantments.FIRE_ASPECT, Enchantments.LOOTING, Enchantments.SWEEPING, Enchantments.IMPALING)), v -> this.axeEnchantments = deserializeToSet(v, ForgeRegistries.ENCHANTMENTS));
-        addToConfig(builder.comment(compatibility + "tridents.").define("Trident Enchantments", getEnchantmentList(Enchantments.SHARPNESS, Enchantments.SMITE, Enchantments.BANE_OF_ARTHROPODS, Enchantments.KNOCKBACK, Enchantments.FIRE_ASPECT, Enchantments.LOOTING, Enchantments.SWEEPING, Enchantments.QUICK_CHARGE, Enchantments.PIERCING)), v -> this.tridentEnchantments = deserializeToSet(v, ForgeRegistries.ENCHANTMENTS));
-        addToConfig(builder.comment(compatibility + "bows.").define("Bow Enchantments", getEnchantmentList(Enchantments.PIERCING, Enchantments.MULTISHOT, Enchantments.QUICK_CHARGE)), v -> this.bowEnchantments = deserializeToSet(v, ForgeRegistries.ENCHANTMENTS));
-        addToConfig(builder.comment(compatibility + "crossbows.").define("Crossbow Enchantments", getEnchantmentList(Enchantments.FLAME, Enchantments.PUNCH, Enchantments.POWER, Enchantments.INFINITY)), v -> this.crossbowEnchantments = deserializeToSet(v, ForgeRegistries.ENCHANTMENTS));
+        addToConfig(builder.comment(compatibility + "swords.").define("Sword Enchantments", ConfigManager.getKeyList(Enchantments.IMPALING)), v -> this.swordEnchantments = deserializeToSet(v, ForgeRegistries.ENCHANTMENTS));
+        addToConfig(builder.comment(compatibility + "axes.").define("Axe Enchantments", ConfigManager.getKeyList(Enchantments.SHARPNESS, Enchantments.SMITE, Enchantments.BANE_OF_ARTHROPODS, Enchantments.KNOCKBACK, Enchantments.FIRE_ASPECT, Enchantments.LOOTING, Enchantments.SWEEPING, Enchantments.IMPALING)), v -> this.axeEnchantments = deserializeToSet(v, ForgeRegistries.ENCHANTMENTS));
+        addToConfig(builder.comment(compatibility + "tridents.").define("Trident Enchantments", ConfigManager.getKeyList(Enchantments.SHARPNESS, Enchantments.SMITE, Enchantments.BANE_OF_ARTHROPODS, Enchantments.KNOCKBACK, Enchantments.FIRE_ASPECT, Enchantments.LOOTING, Enchantments.SWEEPING, Enchantments.QUICK_CHARGE, Enchantments.PIERCING)), v -> this.tridentEnchantments = deserializeToSet(v, ForgeRegistries.ENCHANTMENTS));
+        addToConfig(builder.comment(compatibility + "bows.").define("Bow Enchantments", ConfigManager.getKeyList(Enchantments.PIERCING, Enchantments.MULTISHOT, Enchantments.QUICK_CHARGE)), v -> this.bowEnchantments = deserializeToSet(v, ForgeRegistries.ENCHANTMENTS));
+        addToConfig(builder.comment(compatibility + "crossbows.").define("Crossbow Enchantments", ConfigManager.getKeyList(Enchantments.FLAME, Enchantments.PUNCH, Enchantments.POWER, Enchantments.INFINITY)), v -> this.crossbowEnchantments = deserializeToSet(v, ForgeRegistries.ENCHANTMENTS));
         addToConfig(builder.comment("Swords" + blacklist).define("Sword Blacklist", new ArrayList<String>()), v -> this.swordBlacklist = deserializeToSet(v, ForgeRegistries.ITEMS));
         addToConfig(builder.comment("Axes" + blacklist).define("Axe Blacklist", new ArrayList<String>()), v -> this.axeBlacklist = deserializeToSet(v, ForgeRegistries.ITEMS));
         addToConfig(builder.comment("Tridents" + blacklist).define("Trident Blacklist", new ArrayList<String>()), v -> this.tridentBlacklist = deserializeToSet(v, ForgeRegistries.ITEMS));
         addToConfig(builder.comment("Bows" + blacklist).define("Bow Blacklist", new ArrayList<String>()), v -> this.bowBlacklist = deserializeToSet(v, ForgeRegistries.ITEMS));
         addToConfig(builder.comment("Crossbows" + blacklist).define("Crossbow Blacklist", new ArrayList<String>()), v -> this.crossbowBlacklist = deserializeToSet(v, ForgeRegistries.ITEMS));
-    }
-
-    private static List<String> getEnchantmentList(Enchantment... enchantments) {
-
-        return Stream.of(enchantments)
-                .map(ForgeRegistries.ENCHANTMENTS::getKey)
-                .filter(Objects::nonNull)
-                .map(ResourceLocation::toString)
-                .collect(Collectors.toList());
     }
 
     @Override
@@ -165,23 +152,26 @@ public class CompatibilityElement extends AbstractElement implements ICommonElem
 
     private void onLootingLevel(final LootingLevelEvent evt) {
 
-        Entity source = evt.getDamageSource().getImmediateSource();
-        if (source instanceof AbstractArrowEntity) {
+        if (evt.getDamageSource() != null) {
 
-            if (source instanceof TridentEntity) {
+            Entity source = evt.getDamageSource().getImmediateSource();
+            if (source instanceof AbstractArrowEntity) {
 
-                ItemStack trident = ((IAbstractArrowEntityAccessor) source).callGetArrowStack();
-                int lootLevel = EnchantmentHelper.getEnchantmentLevel(Enchantments.LOOTING, trident);
-                if (lootLevel > 0) {
+                if (source instanceof TridentEntity) {
 
-                    evt.setLootingLevel(lootLevel);
+                    ItemStack trident = ((IAbstractArrowEntityAccessor) source).callGetArrowStack();
+                    int lootLevel = EnchantmentHelper.getEnchantmentLevel(Enchantments.LOOTING, trident);
+                    if (lootLevel > 0) {
+
+                        evt.setLootingLevel(lootLevel);
+                    }
+                } else {
+
+                    // overwrite anything set by vanilla, even when enchantment is not present
+                    evt.setLootingLevel(CapabilityController.getCapability(source, ARROW_PLUNDERING_CAPABILITY)
+                            .map(ArrowPlundering::getPlunderingLevel)
+                            .orElse((byte) 0));
                 }
-            } else {
-
-                // overwrite anything set by vanilla, even when enchantment is not present
-                evt.setLootingLevel(CapabilityController.getCapability(source, ARROW_PLUNDERING_CAPABILITY)
-                        .map(ArrowPlundering::getPlunderingLevel)
-                        .orElse((byte) 0));
             }
         }
     }
