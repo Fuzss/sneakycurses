@@ -97,6 +97,7 @@ public class ConfigManager implements INamespaceLocator {
     public void syncAll(ModConfig.Type type) {
 
         this.syncAll(null, type);
+        PuzzlesLib.LOGGER.info("Reloading " + type.extension() + " config for all mods");
     }
 
     /**
