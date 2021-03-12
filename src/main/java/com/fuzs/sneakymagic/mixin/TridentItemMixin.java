@@ -1,7 +1,7 @@
 package com.fuzs.sneakymagic.mixin;
 
 import com.fuzs.puzzleslib_sm.capability.CapabilityController;
-import com.fuzs.sneakymagic.SneakyMagicElements;
+import com.fuzs.sneakymagic.SneakyMagic;
 import com.fuzs.sneakymagic.capability.container.TridentSlot;
 import com.fuzs.sneakymagic.element.CompatibilityElement;
 import com.fuzs.sneakymagic.element.ImprovementsElement;
@@ -36,7 +36,7 @@ public abstract class TridentItemMixin extends Item {
     @Override
     public boolean getIsRepairable(@Nonnull ItemStack toRepair, @Nonnull ItemStack repair) {
 
-        ImprovementsElement element = SneakyMagicElements.getAs(SneakyMagicElements.ENCHANTMENT_IMPROVEMENTS);
+        ImprovementsElement element = (ImprovementsElement) SneakyMagic.ENCHANTMENT_IMPROVEMENTS;
         if (element.isEnabled() && element.repairTridentWithPrismarine) {
 
             return repair.getItem().isIn(Tags.Items.DUSTS_PRISMARINE);
@@ -48,7 +48,7 @@ public abstract class TridentItemMixin extends Item {
     @Redirect(method = "onPlayerStoppedUsing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;addEntity(Lnet/minecraft/entity/Entity;)Z"))
     public boolean addEntity(World worldToAddIn, Entity tridentEntity, ItemStack stack, World worldIn2, LivingEntity itemUserEntity) {
 
-        ImprovementsElement element = SneakyMagicElements.getAs(SneakyMagicElements.ENCHANTMENT_IMPROVEMENTS);
+        ImprovementsElement element = (ImprovementsElement) SneakyMagic.ENCHANTMENT_IMPROVEMENTS;
         if (element.isEnabled() && element.returnTridentToSlot && itemUserEntity instanceof PlayerEntity && itemUserEntity.getActiveItemStack().isItemEqual(stack)) {
 
             Optional<TridentSlot> tridentSlot = CapabilityController.getCapability(tridentEntity, ImprovementsElement.TRIDENT_SLOT_CAPABILITY).resolve();

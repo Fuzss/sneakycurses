@@ -20,7 +20,7 @@ public abstract class Message {
      * reads message data from buffer
      * @param buf network data byte buffer
      */
-    protected abstract void read(final PacketBuffer buf);
+    public abstract void read(final PacketBuffer buf);
 
     /**
      * call {@link #read} and return this

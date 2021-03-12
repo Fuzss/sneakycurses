@@ -5,7 +5,6 @@ import com.fuzs.puzzleslib_sm.capability.core.CapabilityDispatcher;
 import com.fuzs.puzzleslib_sm.element.AbstractElement;
 import com.fuzs.puzzleslib_sm.element.side.ICommonElement;
 import com.fuzs.sneakymagic.SneakyMagic;
-import com.fuzs.sneakymagic.SneakyMagicElements;
 import com.fuzs.sneakymagic.capability.container.ITridentSlot;
 import com.fuzs.sneakymagic.capability.container.TridentSlot;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -117,7 +116,7 @@ public class ImprovementsElement extends AbstractElement implements ICommonEleme
 
     public static float getModifierForCreature(ItemStack stack, CreatureAttribute creatureAttribute, LivingEntity livingentity) {
 
-        ImprovementsElement element = SneakyMagicElements.getAs(SneakyMagicElements.ENCHANTMENT_IMPROVEMENTS);
+        ImprovementsElement element = (ImprovementsElement) SneakyMagic.ENCHANTMENT_IMPROVEMENTS;
         if (element.isEnabled() && element.boostImpaling) {
 
             int impaleLevel = EnchantmentHelper.getEnchantmentLevel(Enchantments.IMPALING, stack);

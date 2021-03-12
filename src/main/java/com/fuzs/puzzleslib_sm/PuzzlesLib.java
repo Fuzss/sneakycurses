@@ -2,11 +2,14 @@ package com.fuzs.puzzleslib_sm;
 
 import com.fuzs.puzzleslib_sm.capability.CapabilityController;
 import com.fuzs.puzzleslib_sm.config.ConfigManager;
+import com.fuzs.puzzleslib_sm.element.AbstractElement;
 import com.fuzs.puzzleslib_sm.element.registry.ElementRegistry;
+import com.fuzs.puzzleslib_sm.element.side.ISidedElement;
 import com.fuzs.puzzleslib_sm.network.NetworkHandler;
 import com.fuzs.puzzleslib_sm.proxy.IProxy;
 import com.fuzs.puzzleslib_sm.registry.RegistryManager;
 import com.fuzs.puzzleslib_sm.util.PuzzlesLibUtil;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.ExtensionPoint;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
@@ -18,6 +21,8 @@ import net.minecraftforge.fml.network.FMLNetworkConstants;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 //@Mod(PuzzlesLib.MODID)
@@ -37,6 +42,7 @@ public class PuzzlesLib {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onCommonSetup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onClientSetup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onServerSetup);
+        FMLJavaModLoadingContext.get().getModEventBus().register(getRegistryManager());
     }
 
     protected void onCommonSetup(final FMLCommonSetupEvent evt) {
@@ -96,6 +102,31 @@ public class PuzzlesLib {
     public static CapabilityController getCapabilityController() {
 
         return PuzzlesLibUtil.getOrElse(capabilityController, CapabilityController::new, instance -> capabilityController = instance);
+    }
+
+    /**
+     * register an element
+     * @param key identifier for this element
+     * @param supplier supplier for element to be registered
+     * @return <code>element</code>
+     * @param <T> make sure element also extends ISidedElement
+     */
+    protected static <T extends AbstractElement & ISidedElement> AbstractElement register(String key, Supplier<T> supplier) {
+
+        return ElementRegistry.register(key, supplier);
+    }
+
+    /**
+     * register an element
+     * @param key identifier for this element
+     * @param supplier supplier for element to be registered
+     * @param dist physical side to register on
+     * @return <code>element</code>
+     * @param <T> make sure element also extends ISidedElement
+     */
+    protected static <T extends AbstractElement & ISidedElement> AbstractElement register(String key, Supplier<T> supplier, Dist dist) {
+
+        return ElementRegistry.register(key, supplier, dist);
     }
 
 }

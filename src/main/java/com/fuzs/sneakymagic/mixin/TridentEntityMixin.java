@@ -1,7 +1,7 @@
 package com.fuzs.sneakymagic.mixin;
 
 import com.fuzs.puzzleslib_sm.capability.CapabilityController;
-import com.fuzs.sneakymagic.SneakyMagicElements;
+import com.fuzs.sneakymagic.SneakyMagic;
 import com.fuzs.sneakymagic.element.ImprovementsElement;
 import com.fuzs.sneakymagic.mixin.accessor.IAbstractArrowEntityAccessor;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -43,7 +43,7 @@ public abstract class TridentEntityMixin extends AbstractArrowEntity {
     @Inject(method = "tick", at = @At("HEAD"))
     public void tick(CallbackInfo callbackInfo) {
 
-        ImprovementsElement element = SneakyMagicElements.getAs(SneakyMagicElements.ENCHANTMENT_IMPROVEMENTS);
+        ImprovementsElement element = (ImprovementsElement) SneakyMagic.ENCHANTMENT_IMPROVEMENTS;
         if (element.isEnabled() && element.returnTridentFromVoid) {
 
             Entity entity = this.func_234616_v_();
@@ -118,7 +118,7 @@ public abstract class TridentEntityMixin extends AbstractArrowEntity {
     @Inject(method = "onCollideWithPlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/projectile/AbstractArrowEntity;onCollideWithPlayer(Lnet/minecraft/entity/player/PlayerEntity;)V"), cancellable = true)
     public void onCollideWithPlayer(PlayerEntity entityIn, CallbackInfo callbackInfo) {
 
-        ImprovementsElement element = SneakyMagicElements.getAs(SneakyMagicElements.ENCHANTMENT_IMPROVEMENTS);
+        ImprovementsElement element = (ImprovementsElement) SneakyMagic.ENCHANTMENT_IMPROVEMENTS;
         if (element.isEnabled() && element.returnTridentToSlot) {
 
             returnTridentToSlot(entityIn);
