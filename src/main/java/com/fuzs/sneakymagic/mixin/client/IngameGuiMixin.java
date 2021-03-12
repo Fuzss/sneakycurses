@@ -1,6 +1,6 @@
 package com.fuzs.sneakymagic.mixin.client;
 
-import com.fuzs.sneakymagic.SneakyMagicElements;
+import com.fuzs.sneakymagic.SneakyMagic;
 import com.fuzs.sneakymagic.client.element.SneakyCursesElement;
 import com.fuzs.sneakymagic.mixin.accessor.IItemAccessor;
 import com.fuzs.sneakymagic.util.CurseMatcher;
@@ -29,7 +29,7 @@ public abstract class IngameGuiMixin extends AbstractGui {
     @Redirect(method = "renderSelectedItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/text/ITextComponent;applyTextStyle(Lnet/minecraft/util/text/TextFormatting;)Lnet/minecraft/util/text/ITextComponent;", ordinal = 0))
     public ITextComponent getCurseColor(ITextComponent component, TextFormatting format) {
 
-        SneakyCursesElement element = SneakyMagicElements.getAs(SneakyMagicElements.SNEAKY_CURSES);
+        SneakyCursesElement element = (SneakyCursesElement) SneakyMagic.SNEAKY_CURSES;
         if (element.isEnabled()) {
 
             if (this.highlightingItemStack.isEnchanted() || element.affectBooks && this.highlightingItemStack.getItem() == Items.ENCHANTED_BOOK) {

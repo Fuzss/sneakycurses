@@ -1,7 +1,6 @@
 package com.fuzs.sneakymagic.util;
 
 import com.fuzs.sneakymagic.SneakyMagic;
-import com.fuzs.sneakymagic.SneakyMagicElements;
 import com.fuzs.sneakymagic.element.CompatibilityElement;
 import com.fuzs.sneakymagic.mixin.accessor.IEnchantmentAccessor;
 import com.google.common.collect.Maps;
@@ -28,6 +27,7 @@ public class CompatibilityManager {
 
     public void load() {
 
+        // requires game restart when disabled on config reload
         if (this.parent.isEnabled()) {
 
             Map<Set<Enchantment>, TypePredicate> configMap = this.createConfigMap();
@@ -123,11 +123,11 @@ public class CompatibilityManager {
 
     private enum TypePredicate {
 
-        SWORD(item -> item instanceof SwordItem && !((CompatibilityElement) SneakyMagicElements.ENCHANTMENT_COMPATIBILITY).swordBlacklist.contains(item)),
-        AXE(item -> item instanceof AxeItem && !((CompatibilityElement) SneakyMagicElements.ENCHANTMENT_COMPATIBILITY).axeBlacklist.contains(item)),
-        TRIDENT(item -> item instanceof TridentItem && !((CompatibilityElement) SneakyMagicElements.ENCHANTMENT_COMPATIBILITY).tridentBlacklist.contains(item)),
-        BOW(item -> item instanceof BowItem && !((CompatibilityElement) SneakyMagicElements.ENCHANTMENT_COMPATIBILITY).bowBlacklist.contains(item)),
-        CROSSBOW(item -> item instanceof CrossbowItem && !((CompatibilityElement) SneakyMagicElements.ENCHANTMENT_COMPATIBILITY).crossbowBlacklist.contains(item));
+        SWORD(item -> item instanceof SwordItem && !((CompatibilityElement) SneakyMagic.ENCHANTMENT_COMPATIBILITY).swordBlacklist.contains(item)),
+        AXE(item -> item instanceof AxeItem && !((CompatibilityElement) SneakyMagic.ENCHANTMENT_COMPATIBILITY).axeBlacklist.contains(item)),
+        TRIDENT(item -> item instanceof TridentItem && !((CompatibilityElement) SneakyMagic.ENCHANTMENT_COMPATIBILITY).tridentBlacklist.contains(item)),
+        BOW(item -> item instanceof BowItem && !((CompatibilityElement) SneakyMagic.ENCHANTMENT_COMPATIBILITY).bowBlacklist.contains(item)),
+        CROSSBOW(item -> item instanceof CrossbowItem && !((CompatibilityElement) SneakyMagic.ENCHANTMENT_COMPATIBILITY).crossbowBlacklist.contains(item));
 
         private final Predicate<Item> delegate;
 

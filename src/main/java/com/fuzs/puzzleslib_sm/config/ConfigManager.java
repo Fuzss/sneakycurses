@@ -82,8 +82,7 @@ public class ConfigManager implements INamespaceLocator {
             PuzzlesLib.LOGGER.error("Unable to get values from " + type.extension() + " config for " + modid + " during " + (evt instanceof ModConfig.Loading ? "loading" : "reloading") + " phase: " + "Config spec not present");
         } else {
 
-            this.syncAll(modid, type);
-            if (evt instanceof ModConfig.Reloading) {
+            if (this.syncAll(modid, type) && evt instanceof ModConfig.Reloading) {
 
                 PuzzlesLib.LOGGER.info("Reloading " + type.extension() + " config for mod " + modid);
             }
@@ -96,8 +95,10 @@ public class ConfigManager implements INamespaceLocator {
      */
     public void syncAll(ModConfig.Type type) {
 
-        this.syncAll(null, type);
-        PuzzlesLib.LOGGER.info("Reloading " + type.extension() + " config for all mods");
+        if (this.syncAll(null, type)) {
+
+            PuzzlesLib.LOGGER.info("Reloading " + type.extension() + " config for all mods");
+        }
     }
 
     /**
@@ -105,18 +106,30 @@ public class ConfigManager implements INamespaceLocator {
      * call listeners for type as the config has somehow been loaded
      * @param modid mod to get entries for
      * @param type config type for this listener
+     * @return was any data found for syncing
      */
-    private void syncAll(@Nullable String modid, ModConfig.Type type) {
+    private boolean syncAll(@Nullable String modid, ModConfig.Type type) {
 
-        this.getEntriesForMod(modid).filter(configValue -> configValue.getType() == type).forEach(ConfigValueData::sync);
-        this.configListeners.get(type).forEach(Runnable::run);
+        List<ConfigValueData<? extends ForgeConfigSpec.ConfigValue<?>, ?, ?>> typeData = this.getConfigData(modid)
+                .filter(configValue -> configValue.getType() == type)
+                .collect(Collectors.toList());
+
+        if (!typeData.isEmpty()) {
+
+            typeData.forEach(ConfigValueData::sync);
+            this.configListeners.get(type).forEach(Runnable::run);
+
+            return true;
+        }
+
+        return false;
     }
 
     /**
      * @param modid mod to get entries for
      * @return stream of entries only for this mod
      */
-    private Stream<ConfigValueData<? extends ForgeConfigSpec.ConfigValue<?>, ?, ?>> getEntriesForMod(@Nullable String modid) {
+    private Stream<ConfigValueData<? extends ForgeConfigSpec.ConfigValue<?>, ?, ?>> getConfigData(@Nullable String modid) {
 
         return this.configData.values().stream().filter(entry -> modid == null || entry.getModId().equals(modid));
     }

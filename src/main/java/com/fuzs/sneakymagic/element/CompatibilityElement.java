@@ -4,9 +4,10 @@ import com.fuzs.puzzleslib_sm.PuzzlesLib;
 import com.fuzs.puzzleslib_sm.capability.CapabilityController;
 import com.fuzs.puzzleslib_sm.capability.core.CapabilityDispatcher;
 import com.fuzs.puzzleslib_sm.config.ConfigManager;
-import com.fuzs.puzzleslib_sm.config.deserialize.EntryCollectionBuilder;
+import com.fuzs.puzzleslib_sm.config.serialization.EntryCollectionBuilder;
 import com.fuzs.puzzleslib_sm.element.AbstractElement;
 import com.fuzs.puzzleslib_sm.element.side.ICommonElement;
+import com.fuzs.sneakymagic.enchantment.PlunderingEnchantment;
 import com.fuzs.sneakymagic.SneakyMagic;
 import com.fuzs.sneakymagic.capability.container.ArrowPlundering;
 import com.fuzs.sneakymagic.capability.container.IArrowPlundering;
@@ -39,7 +40,8 @@ public class CompatibilityElement extends AbstractElement implements ICommonElem
 
     @CapabilityInject(IArrowPlundering.class)
     public static final Capability<ArrowPlundering> ARROW_PLUNDERING_CAPABILITY = null;
-    
+
+    public boolean plundering;
     public Set<Enchantment> swordEnchantments;
     public Set<Enchantment> axeEnchantments;
     public Set<Enchantment> tridentEnchantments;
@@ -61,7 +63,7 @@ public class CompatibilityElement extends AbstractElement implements ICommonElem
     public void setupCommon() {
 
         EnchantmentType shootable = EnchantmentType.create("SHOOTABLE", item -> item instanceof BowItem || item instanceof CrossbowItem);
-        PuzzlesLib.getRegistryManager().register("plundering", new LootBonusEnchantment(Enchantment.Rarity.RARE, shootable) {});
+        PuzzlesLib.getRegistryManager().register("plundering", new PlunderingEnchantment(Enchantment.Rarity.RARE, shootable));
         this.addListener(this::onArrowLoose);
         this.addListener(this::onItemUseTick);
         this.addListener(this::onLootingLevel);
@@ -86,6 +88,7 @@ public class CompatibilityElement extends AbstractElement implements ICommonElem
     @Override
     public void setupCommonConfig(ForgeConfigSpec.Builder builder) {
 
+        addToConfig(builder.comment("A looting enchantment for bows and crossbows.").define("Plundering Enchantment", true), v -> this.plundering = v);
         String compatibility = "Additional enchantments to be made usable with ";
         String blacklist = " to be disabled from receiving additional enchantments.";
         addToConfig(builder.comment(compatibility + "swords.").define("Sword Enchantments", ConfigManager.getKeyList(Enchantments.IMPALING)), v -> this.swordEnchantments = deserializeToSet(v, ForgeRegistries.ENCHANTMENTS));
@@ -124,7 +127,6 @@ public class CompatibilityElement extends AbstractElement implements ICommonElem
                 for (int i = 0; i < 2; i++) {
 
                     AbstractArrowEntity abstractarrowentity = arrowitem.createArrow(evt.getWorld(), itemstack, playerentity);
-                    // shoot
                     abstractarrowentity.shoot(playerentity, playerentity.rotationPitch, playerentity.rotationYaw - 10.0F + i * 20.0F, 0.0F, velocity * 3.0F, 1.0F);
                     applyPowerEnchantment(abstractarrowentity, stack);
                     applyPunchEnchantment(abstractarrowentity, stack);

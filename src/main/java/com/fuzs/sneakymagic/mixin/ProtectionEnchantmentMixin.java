@@ -1,6 +1,6 @@
 package com.fuzs.sneakymagic.mixin;
 
-import com.fuzs.sneakymagic.SneakyMagicElements;
+import com.fuzs.sneakymagic.SneakyMagic;
 import com.fuzs.sneakymagic.element.ExclusivenessElement;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentType;
@@ -23,7 +23,7 @@ public abstract class ProtectionEnchantmentMixin extends Enchantment {
     @Inject(method = "canApplyTogether", at = @At("HEAD"), cancellable = true)
     public void canApplyTogether(Enchantment ench, CallbackInfoReturnable<Boolean> callbackInfo) {
 
-        ExclusivenessElement element = SneakyMagicElements.getAs(SneakyMagicElements.ENCHANTMENT_EXCLUSIVENESS);
+        ExclusivenessElement element = (ExclusivenessElement) SneakyMagic.ENCHANTMENT_EXCLUSIVENESS;
         if (element.isEnabled() && element.protectionFix && ench instanceof ProtectionEnchantment) {
 
             callbackInfo.setReturnValue(super.canApplyTogether(ench));

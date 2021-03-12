@@ -1,7 +1,7 @@
 package com.fuzs.sneakymagic.mixin.client;
 
+import com.fuzs.sneakymagic.SneakyMagic;
 import com.fuzs.sneakymagic.client.element.SneakyCursesElement;
-import com.fuzs.sneakymagic.SneakyMagicElements;
 import com.fuzs.sneakymagic.util.CurseMatcher;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.item.Item;
@@ -21,7 +21,7 @@ public abstract class ItemMixin extends ForgeRegistryEntry<Item> {
 
         if (stack.isEnchanted()) {
 
-            SneakyCursesElement element = SneakyMagicElements.getAs(SneakyMagicElements.SNEAKY_CURSES);
+            SneakyCursesElement element = (SneakyCursesElement) SneakyMagic.SNEAKY_CURSES;
             callbackInfo.setReturnValue(!element.isEnabled() || !element.disguiseItem ||
                     !CurseMatcher.allMatch(EnchantmentHelper.getEnchantments(stack).keySet()));
         }

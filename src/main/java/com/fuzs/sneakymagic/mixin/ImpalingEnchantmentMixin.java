@@ -1,6 +1,6 @@
 package com.fuzs.sneakymagic.mixin;
 
-import com.fuzs.sneakymagic.SneakyMagicElements;
+import com.fuzs.sneakymagic.SneakyMagic;
 import com.fuzs.sneakymagic.element.ExclusivenessElement;
 import net.minecraft.enchantment.DamageEnchantment;
 import net.minecraft.enchantment.Enchantment;
@@ -23,7 +23,7 @@ public abstract class ImpalingEnchantmentMixin extends Enchantment {
     @Override
     public boolean canApplyTogether(@Nonnull Enchantment ench) {
 
-        ExclusivenessElement element = SneakyMagicElements.getAs(SneakyMagicElements.ENCHANTMENT_EXCLUSIVENESS);
+        ExclusivenessElement element = (ExclusivenessElement) SneakyMagic.ENCHANTMENT_EXCLUSIVENESS;
         if (element.isEnabled() && element.damageFix) {
 
             return super.canApplyTogether(ench);
