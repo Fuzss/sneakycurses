@@ -1,4 +1,4 @@
-# Sneaky Magic
+# Sneaky Curses
 
 A Minecraft mod. Downloads can be found on CurseForge.
 
