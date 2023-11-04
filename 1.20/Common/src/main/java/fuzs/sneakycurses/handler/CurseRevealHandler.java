@@ -4,7 +4,6 @@ import fuzs.puzzleslib.api.event.v1.core.EventResult;
 import fuzs.puzzleslib.api.event.v1.data.MutableInt;
 import fuzs.puzzleslib.api.event.v1.data.MutableValue;
 import fuzs.sneakycurses.SneakyCurses;
-import fuzs.sneakycurses.capability.CurseRevealCapability;
 import fuzs.sneakycurses.config.ServerConfig;
 import fuzs.sneakycurses.init.ModRegistry;
 import net.minecraft.ChatFormatting;
@@ -24,21 +23,15 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import java.util.Objects;
 
 public class CurseRevealHandler {
+    public static final String KEY_ITEM_CURSES_REVEALED = "item." + SneakyCurses.MOD_ID + ".curses_revealed";
     public static final String TAG_CURSES_REVEALED = SneakyCurses.id("curses_revealed").toString();
-
-    public static void onLivingEquipmentChange(LivingEntity entity, EquipmentSlot equipmentSlot, ItemStack oldItemStack, ItemStack newItemStack) {
-        if (equipmentSlot.isArmor() && ModRegistry.CURSE_REVEAL_CAPABILITY.get(entity).isAllowedToRevealCurses()) {
-            if (entity.getRandom().nextDouble() < SneakyCurses.CONFIG.get(ServerConfig.class).curseRevealChance) {
-                revealAllCurses(newItemStack);
-            }
-        }
-    }
 
     public static EventResult onAnvilUpdate(ItemStack leftInput, ItemStack rightInput, MutableValue<ItemStack> output, String itemName, MutableInt enchantmentCost, MutableInt materialCost, Player player) {
         if (isAffected(leftInput) && rightInput.is(ModRegistry.REVEALS_CURSES_ITEM_TAG) && !allCursesRevealed(leftInput)) {
             ItemStack itemStack = leftInput.copy();
             revealAllCurses(itemStack);
             output.accept(itemStack);
+            materialCost.accept(1);
             enchantmentCost.accept(SneakyCurses.CONFIG.get(ServerConfig.class).revealCursesCost);
             return EventResult.INTERRUPT;
         }
@@ -46,17 +39,18 @@ public class CurseRevealHandler {
     }
 
     public static EventResult onLivingTick(LivingEntity entity) {
-        ModRegistry.CURSE_REVEAL_CAPABILITY.maybeGet(entity).ifPresent(CurseRevealCapability::tick);
-        for (EquipmentSlot equipmentSlot : EquipmentSlot.values()) {
-            ItemStack itemStack = entity.getItemBySlot(equipmentSlot);
-            if (Mob.getEquipmentSlotForItem(itemStack) == equipmentSlot && anyEnchantIsCursed(itemStack) && !allCursesRevealed(itemStack)) {
-                if (entity.tickCount % 1200 == 0 && !entity.level().isClientSide) {
-                    revealAllCurses(itemStack);
-                    entity.playSound(SoundEvents.ENCHANTMENT_TABLE_USE);
-                    if (entity instanceof Player player) {
-                        player.displayClientMessage(Component.translatableWithFallback("test", "Curses revealed for %s", itemStack.getDisplayName()).withStyle(ChatFormatting.RED), false);
+        if (!entity.level().isClientSide && entity.tickCount % 1200 == 0 && (!(entity instanceof Player player) || !player.getAbilities().invulnerable)) {
+            for (EquipmentSlot equipmentSlot : EquipmentSlot.values()) {
+                ItemStack itemStack = entity.getItemBySlot(equipmentSlot);
+                if (Mob.getEquipmentSlotForItem(itemStack) == equipmentSlot && anyEnchantIsCursed(itemStack) && !allCursesRevealed(itemStack)) {
+                    if (entity.getRandom().nextDouble() < SneakyCurses.CONFIG.get(ServerConfig.class).curseRevealChance) {
+                        revealAllCurses(itemStack);
+                        entity.playSound(SoundEvents.ENCHANTMENT_TABLE_USE, 1.0F, entity.getRandom().nextFloat() * 0.1F + 0.9F);
+                        if (entity instanceof Player player) {
+                            player.displayClientMessage(Component.translatable(KEY_ITEM_CURSES_REVEALED, itemStack.getDisplayName()).withStyle(ChatFormatting.RED), false);
+                        }
+                        break;
                     }
-                    break;
                 }
             }
         }
@@ -74,8 +68,12 @@ public class CurseRevealHandler {
     }
 
     public static boolean allCursesRevealed(ItemStack itemStack) {
-        CompoundTag tag = itemStack.getTag();
-        return tag != null && tag.contains(TAG_CURSES_REVEALED, Tag.TAG_BYTE) && tag.getBoolean(TAG_CURSES_REVEALED);
+        if (!itemStack.isEmpty()) {
+            CompoundTag tag = itemStack.getTag();
+            return tag != null && tag.contains(TAG_CURSES_REVEALED, Tag.TAG_BYTE) && tag.getBoolean(TAG_CURSES_REVEALED);
+        } else {
+            return false;
+        }
     }
 
     public static boolean anyEnchantIsCursed(ItemStack itemStack) {

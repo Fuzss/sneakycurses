@@ -5,7 +5,6 @@ import fuzs.puzzleslib.api.core.v1.ModConstructor;
 import fuzs.puzzleslib.api.event.v1.entity.living.LivingEvents;
 import fuzs.puzzleslib.api.event.v1.entity.player.AnvilUpdateCallback;
 import fuzs.puzzleslib.api.network.v3.NetworkHandlerV3;
-import fuzs.sneakycurses.api.event.v1.entity.living.LivingEquipmentChangeCallback;
 import fuzs.sneakycurses.config.ServerConfig;
 import fuzs.sneakycurses.handler.CurseRevealHandler;
 import fuzs.sneakycurses.init.ModRegistry;
@@ -30,7 +29,6 @@ public class SneakyCurses implements ModConstructor {
     }
 
     private static void registerHandlers() {
-        LivingEquipmentChangeCallback.EVENT.register(CurseRevealHandler::onLivingEquipmentChange);
         AnvilUpdateCallback.EVENT.register(CurseRevealHandler::onAnvilUpdate);
         LivingEvents.TICK.register(CurseRevealHandler::onLivingTick);
     }

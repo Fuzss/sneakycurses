@@ -30,6 +30,7 @@ public class SneakyCursesClient implements ClientModConstructor {
         });
         ClientEntityLevelEvents.LOAD.register((entity, level) -> {
             if (entity instanceof ThrownTrident) {
+                // need to go this way around as during the server load event the entity has not yet been sycned to clients
                 SneakyCurses.NETWORK.sendToServer(new ServerboundRequestTridentItemMessage(entity.getId()));
             }
             return EventResult.PASS;

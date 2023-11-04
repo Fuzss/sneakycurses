@@ -27,15 +27,11 @@
     ],
     "client": [
       "${clientEntryPoint}"
-    ],
-    "cardinal-components": [
-      "fuzs.puzzleslib.api.capability.v2.initializer.EntityComponentInitializerImpl"
     ]
   },
 
   "mixins": [
-    "${modId}.common.mixins.json",
-    "${modId}.fabric.mixins.json"
+    "${modId}.common.mixins.json"
   ],
 
   "depends": {
@@ -44,11 +40,5 @@
     "puzzleslib": ">=${minPuzzlesVersion}",
     "minecraft": "${minecraftVersion}",
     "java": ">=17"
-  },
-
-  "custom": {
-    "cardinal-components": [
-      "${modId}:curse_reveal"
-    ]
   }
 }

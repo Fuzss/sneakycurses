@@ -19,6 +19,7 @@ import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AnvilMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.ItemStack;
@@ -69,7 +70,7 @@ public class ItemTooltipHandler {
     }
 
     private static Component getLoreForWidth() {
-        int maxWidth = RANDOM_SOURCE.nextInt(8, 24);
+        int maxWidth = RANDOM_SOURCE.nextInt(16, 24);
         StringBuilder builder = new StringBuilder();
         while (builder.length() <= maxWidth) {
             if (!builder.isEmpty()) builder.append(" ");
@@ -105,9 +106,12 @@ public class ItemTooltipHandler {
                 }
             }
             if (minecraft.screen instanceof AnvilScreen screen) {
-                Slot slot = ScreenHelper.INSTANCE.getHoveredSlot(screen);
-                if (slot != null && screen.getMenu().getResultSlot() == slot.index && slot.getItem() == itemStack) {
-                    return true;
+                Slot hoveredSlot = ScreenHelper.INSTANCE.getHoveredSlot(screen);
+                if (hoveredSlot != null && screen.getMenu().getResultSlot() == hoveredSlot.index && hoveredSlot.getItem() == itemStack) {
+                    Slot inputSlot = screen.getMenu().getSlot(0);
+                    if (!CurseRevealHandler.allCursesRevealed(inputSlot.getItem())) {
+                        return true;
+                    }
                 }
             }
         }

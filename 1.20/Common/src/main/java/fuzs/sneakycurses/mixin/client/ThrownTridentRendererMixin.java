@@ -23,6 +23,7 @@ abstract class ThrownTridentRendererMixin extends EntityRenderer<ThrownTrident> 
 
     @Inject(method = "render", at = @At("HEAD"))
     public void render$0(ThrownTrident entity, float entityYaw, float partialTicks, PoseStack matrixStack, MultiBufferSource buffer, int packedLight, CallbackInfo callback) {
+        // vanilla doesn't sync the stack to clients, we need to take care of that ourselves
         GlintColorHelper.setTargetStack(((ThrownTridentAccessor) entity).sneakycurses$getTridentItem());
     }
 

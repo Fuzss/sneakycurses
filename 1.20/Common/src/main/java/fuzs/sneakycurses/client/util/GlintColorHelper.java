@@ -9,7 +9,8 @@ public class GlintColorHelper {
     private static ItemStack targetStack = ItemStack.EMPTY;
 
     public static boolean shouldRenderCursedGlint() {
-        if (!SneakyCurses.CONFIG.get(ServerConfig.class).cursedItemGlint) return false;
+        if (targetStack.isEmpty()) return false;
+        if (!SneakyCurses.CONFIG.getHolder(ServerConfig.class).isAvailable() || !SneakyCurses.CONFIG.get(ServerConfig.class).cursedItemGlint) return false;
         return CurseRevealHandler.anyEnchantIsCursed(targetStack);
     }
 
