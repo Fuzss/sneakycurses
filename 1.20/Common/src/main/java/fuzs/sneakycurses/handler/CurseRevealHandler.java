@@ -47,7 +47,7 @@ public class CurseRevealHandler {
                         revealAllCurses(itemStack);
                         entity.playSound(SoundEvents.ENCHANTMENT_TABLE_USE, 1.0F, entity.getRandom().nextFloat() * 0.1F + 0.9F);
                         if (entity instanceof Player player) {
-                            player.displayClientMessage(Component.translatable(KEY_ITEM_CURSES_REVEALED, itemStack.getDisplayName()).withStyle(ChatFormatting.RED), false);
+                            player.displayClientMessage(Component.translatable(KEY_ITEM_CURSES_REVEALED, itemStack.getDisplayName()).withStyle(ChatFormatting.DARK_PURPLE), false);
                         }
                         break;
                     }
