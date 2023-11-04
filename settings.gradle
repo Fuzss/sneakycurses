@@ -1,1 +1,0 @@
-rootProject.name = "${modName.replaceAll("[^a-zA-Z]", "")}"
