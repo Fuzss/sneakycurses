@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v8.0.1-1.20.1] - 2023-11-12
+### Fixed
+- Fixed enchanted books holding curses being hidden from the creative mode search
+
 ## [v8.0.0-1.20.1] - 2023-10-04
 - Rewritten for Minecraft 1.20.1
 ### Changed

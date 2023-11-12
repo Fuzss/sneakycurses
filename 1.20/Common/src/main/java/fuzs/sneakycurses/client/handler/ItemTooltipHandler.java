@@ -41,6 +41,7 @@ public class ItemTooltipHandler {
     }
 
     public static void onItemTooltip(ItemStack itemStack, @Nullable Player player, List<Component> lines, TooltipFlag context) {
+        if (context.isCreative()) return;
         if (!SneakyCurses.CONFIG.getHolder(ServerConfig.class).isAvailable() || !SneakyCurses.CONFIG.get(ServerConfig.class).obfuscateCurses) return;
         if (!isAffected(player, itemStack)) return;
         ListIterator<Component> iterator = lines.listIterator();
@@ -91,12 +92,8 @@ public class ItemTooltipHandler {
             Minecraft minecraft = Minecraft.getInstance();
             if (minecraft.gameMode.hasInfiniteItems() && Screen.hasShiftDown() && SneakyCurses.CONFIG.get(ServerConfig.class).shiftShows) {
                 return false;
-            } else if (itemStack.getItem() instanceof EnchantedBookItem) {
-                if (!SneakyCurses.CONFIG.get(ServerConfig.class).affectBooks) {
-                    return false;
-                } else if (minecraft.screen instanceof CreativeModeInventoryScreen screen && !screen.isInventoryOpen()) {
-                    return false;
-                }
+            } else if (itemStack.getItem() instanceof EnchantedBookItem && !SneakyCurses.CONFIG.get(ServerConfig.class).affectBooks) {
+                return false;
             }
             if (minecraft.screen instanceof AnvilScreen screen) {
                 Slot hoveredSlot = ScreenHelper.INSTANCE.getHoveredSlot(screen);
