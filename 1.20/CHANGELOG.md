@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
+## [v8.0.2-1.20.1] - 2023-11-16
+### Fixed
+- Fixed start-up crash on Forge
+
 ## [v8.0.1-1.20.1] - 2023-11-12
 ### Fixed
 - Fixed enchanted books holding curses being hidden from the creative mode search
