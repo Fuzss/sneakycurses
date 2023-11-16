@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(RenderBuffers.class)
 abstract class RenderBuffersMixin {
 
-    @Inject(method = {"method_22999", "lambda$new$1"}, at = @At("TAIL"))
+    @Inject(method = {"method_22999", "lambda$new$1", "m_268794_"}, at = @At("TAIL"), remap = false)
     private void putAll(Object2ObjectLinkedOpenHashMap<RenderType, BufferBuilder> map, CallbackInfo callback) {
         GlintRenderTypes.GLINT_RENDER_TYPES.keySet().forEach(renderType -> {
             put(map, renderType);
