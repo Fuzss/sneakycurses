@@ -13,7 +13,7 @@ public class ModItemTagsProvider extends AbstractTagProvider.Items {
     }
 
     @Override
-    protected void addTags(HolderLookup.Provider provider) {
+    public void addTags(HolderLookup.Provider provider) {
         this.tag(ModRegistry.REVEALS_CURSES_ITEM_TAG).add(Items.AMETHYST_SHARD);
     }
 }

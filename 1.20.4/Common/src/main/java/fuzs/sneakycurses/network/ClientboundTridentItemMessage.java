@@ -2,7 +2,7 @@ package fuzs.sneakycurses.network;
 
 import fuzs.puzzleslib.api.network.v3.ClientMessageListener;
 import fuzs.puzzleslib.api.network.v3.ClientboundMessage;
-import fuzs.sneakycurses.mixin.client.accessor.ThrownTridentAccessor;
+import fuzs.sneakycurses.mixin.client.accessor.AbstractArrowAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -20,7 +20,7 @@ public record ClientboundTridentItemMessage(int entityId,
             @Override
             public void handle(ClientboundTridentItemMessage message, Minecraft client, ClientPacketListener handler, LocalPlayer player, ClientLevel level) {
                 if (level.getEntity(message.entityId) instanceof ThrownTrident thrownTrident) {
-                    ((ThrownTridentAccessor) thrownTrident).sneakycurses$setTridentItem(message.tridentItem);
+                    ((AbstractArrowAccessor) thrownTrident).sneakycurses$setPickupItemStack(message.tridentItem);
                 }
             }
         };

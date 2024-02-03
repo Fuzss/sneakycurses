@@ -2,7 +2,6 @@ package fuzs.sneakycurses.mixin.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import fuzs.sneakycurses.client.util.GlintColorHelper;
-import fuzs.sneakycurses.mixin.client.accessor.ThrownTridentAccessor;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -24,7 +23,7 @@ abstract class ThrownTridentRendererMixin extends EntityRenderer<ThrownTrident> 
     @Inject(method = "render", at = @At("HEAD"))
     public void render$0(ThrownTrident entity, float entityYaw, float partialTicks, PoseStack matrixStack, MultiBufferSource buffer, int packedLight, CallbackInfo callback) {
         // vanilla doesn't sync the stack to clients, we need to take care of that ourselves
-        GlintColorHelper.setTargetStack(((ThrownTridentAccessor) entity).sneakycurses$getTridentItem());
+        GlintColorHelper.setTargetStack(entity.getPickupItemStackOrigin());
     }
 
     @Inject(method = "render", at = @At("TAIL"))

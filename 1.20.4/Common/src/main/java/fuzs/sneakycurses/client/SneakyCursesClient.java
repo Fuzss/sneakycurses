@@ -1,10 +1,11 @@
 package fuzs.sneakycurses.client;
 
 import fuzs.puzzleslib.api.client.core.v1.ClientModConstructor;
-import fuzs.puzzleslib.api.client.event.v1.ClientEntityLevelEvents;
-import fuzs.puzzleslib.api.client.event.v1.ItemTooltipCallback;
-import fuzs.puzzleslib.api.client.event.v1.RenderLevelEvents;
-import fuzs.puzzleslib.api.client.event.v1.ScreenEvents;
+import fuzs.puzzleslib.api.client.core.v1.context.RenderBuffersContext;
+import fuzs.puzzleslib.api.client.event.v1.entity.ClientEntityLevelEvents;
+import fuzs.puzzleslib.api.client.event.v1.gui.ItemTooltipCallback;
+import fuzs.puzzleslib.api.client.event.v1.gui.ScreenEvents;
+import fuzs.puzzleslib.api.client.event.v1.renderer.RenderLevelEvents;
 import fuzs.puzzleslib.api.event.v1.core.EventResult;
 import fuzs.sneakycurses.SneakyCurses;
 import fuzs.sneakycurses.client.handler.ItemTooltipHandler;
@@ -35,5 +36,10 @@ public class SneakyCursesClient implements ClientModConstructor {
             }
             return EventResult.PASS;
         });
+    }
+
+    @Override
+    public void onRegisterRenderBuffers(RenderBuffersContext context) {
+        GlintRenderTypes.GLINT_RENDER_TYPES.keySet().forEach(context::registerRenderBuffer);
     }
 }

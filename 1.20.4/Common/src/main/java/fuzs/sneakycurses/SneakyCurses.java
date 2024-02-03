@@ -2,8 +2,8 @@ package fuzs.sneakycurses;
 
 import fuzs.puzzleslib.api.config.v3.ConfigHolder;
 import fuzs.puzzleslib.api.core.v1.ModConstructor;
-import fuzs.puzzleslib.api.event.v1.entity.living.LivingEvents;
-import fuzs.puzzleslib.api.event.v1.entity.player.AnvilUpdateCallback;
+import fuzs.puzzleslib.api.event.v1.entity.living.LivingTickCallback;
+import fuzs.puzzleslib.api.event.v1.entity.player.AnvilEvents;
 import fuzs.puzzleslib.api.network.v3.NetworkHandlerV3;
 import fuzs.sneakycurses.config.ServerConfig;
 import fuzs.sneakycurses.handler.CurseRevealHandler;
@@ -19,7 +19,9 @@ public class SneakyCurses implements ModConstructor {
     public static final String MOD_NAME = "Sneaky Curses";
     public static final Logger LOGGER = LogManager.getLogger(MOD_NAME);
 
-    public static final NetworkHandlerV3 NETWORK = NetworkHandlerV3.builder(MOD_ID).registerClientbound(ClientboundTridentItemMessage.class).registerServerbound(ServerboundRequestTridentItemMessage.class);
+    public static final NetworkHandlerV3 NETWORK = NetworkHandlerV3.builder(MOD_ID)
+            .registerClientbound(ClientboundTridentItemMessage.class)
+            .registerServerbound(ServerboundRequestTridentItemMessage.class);
     public static final ConfigHolder CONFIG = ConfigHolder.builder(MOD_ID).server(ServerConfig.class);
 
     @Override
@@ -29,8 +31,8 @@ public class SneakyCurses implements ModConstructor {
     }
 
     private static void registerHandlers() {
-        AnvilUpdateCallback.EVENT.register(CurseRevealHandler::onAnvilUpdate);
-        LivingEvents.TICK.register(CurseRevealHandler::onLivingTick);
+        AnvilEvents.UPDATE.register(CurseRevealHandler::onAnvilUpdate);
+        LivingTickCallback.EVENT.register(CurseRevealHandler::onLivingTick);
     }
 
     public static ResourceLocation id(String path) {

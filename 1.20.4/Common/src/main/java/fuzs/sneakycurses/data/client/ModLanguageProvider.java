@@ -11,7 +11,7 @@ public class ModLanguageProvider extends AbstractLanguageProvider {
     }
 
     @Override
-    protected void addTranslations(TranslationBuilder builder) {
+    public void addTranslations(TranslationBuilder builder) {
         builder.add(CurseRevealHandler.KEY_ITEM_CURSES_REVEALED, "Curses revealed for %s...");
     }
 }

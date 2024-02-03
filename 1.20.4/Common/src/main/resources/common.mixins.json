@@ -2,9 +2,7 @@
   "required": true,
   "minVersion": "0.8",
   "compatibilityLevel": "JAVA_17",
-  "package": "fuzs.sneakycurses.mixin",
-  "refmap": "sneakycurses.refmap.json",
-  "plugin": "fuzs.sneakycurses.mixin.ModMixinConfigPlugin",
+  "package": "${modGroup}.mixin",
   "mixins": [
   ],
   "client": [
@@ -13,9 +11,8 @@
     "client.HorseArmorLayerMixin",
     "client.HumanoidArmorLayerMixin",
     "client.ItemRendererMixin",
-    "client.RenderBuffersMixin",
     "client.ThrownTridentRendererMixin",
-    "client.accessor.ThrownTridentAccessor"
+    "client.accessor.AbstractArrowAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
