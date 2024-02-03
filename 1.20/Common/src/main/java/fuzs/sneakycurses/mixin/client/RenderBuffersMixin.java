@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(RenderBuffers.class)
 abstract class RenderBuffersMixin {
 
+    @SuppressWarnings("target")
     @Inject(method = "lambda$new$1(Lit/unimi/dsi/fastutil/objects/Object2ObjectLinkedOpenHashMap;)V", at = @At("TAIL"))
     private void putAll(Object2ObjectLinkedOpenHashMap<RenderType, BufferBuilder> map, CallbackInfo callback) {
         GlintRenderTypes.GLINT_RENDER_TYPES.keySet().forEach(renderType -> {
