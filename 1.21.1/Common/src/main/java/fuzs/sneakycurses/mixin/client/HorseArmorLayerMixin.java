@@ -24,7 +24,7 @@ abstract class HorseArmorLayerMixin extends RenderLayer<Horse, HorseModel<Horse>
     @Inject(method = "render", at = @At("HEAD"))
     public void render$0(PoseStack matrixStack, MultiBufferSource buffer, int packedLight, Horse livingEntity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo callback) {
         // not useful in vanilla, but should come in handy with mods that make horse armor enchantable
-        GlintColorHelper.setTargetStack(livingEntity.getArmor());
+        GlintColorHelper.setTargetStack(livingEntity.getBodyArmorItem());
     }
 
     @Inject(method = "render", at = @At("TAIL"))

@@ -1,7 +1,7 @@
 package fuzs.sneakycurses.client.handler;
 
-import fuzs.puzzleslib.api.client.event.v1.gui.ScreenEvents;
-import fuzs.puzzleslib.api.client.gui.v2.screen.ScreenHelper;
+import com.google.common.collect.MapMaker;
+import fuzs.puzzleslib.api.core.v1.utility.ResourceLocationHelper;
 import fuzs.sneakycurses.SneakyCurses;
 import fuzs.sneakycurses.client.util.ComponentHelper;
 import fuzs.sneakycurses.config.ServerConfig;
@@ -13,14 +13,19 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AnvilScreen;
 import net.minecraft.client.gui.screens.inventory.EnchantmentNames;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.EnchantedBookItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -28,14 +33,18 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Random;
+import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 public class ItemTooltipHandler {
+    private static final Map<Enchantment, Integer> ENCHANTMENT_IDS = new MapMaker().weakKeys().concurrencyLevel(1).makeMap();
     private static final Random RANDOM = new Random();
 
     private static int currentScreenSeed;
 
-    public static void onAfterInit(Minecraft minecraft, Screen screen, int screenWidth, int screenHeight, List<AbstractWidget> widgets, ScreenEvents.ConsumingOperator<AbstractWidget> addWidget, ScreenEvents.ConsumingOperator<AbstractWidget> removeWidget) {
+    public static void onAfterInit(Minecraft minecraft, Screen screen, int screenWidth, int screenHeight, List<AbstractWidget> widgets, UnaryOperator<AbstractWidget> addWidget, Consumer<AbstractWidget> removeWidget) {
         setFreshSeed();
     }
 
@@ -43,8 +52,8 @@ public class ItemTooltipHandler {
         currentScreenSeed = RANDOM.nextInt();
     }
 
-    public static void onItemTooltip(ItemStack itemStack, @Nullable Player player, List<Component> lines, TooltipFlag context) {
-        if (context.isCreative()) return;
+    public static void onItemTooltip(ItemStack itemStack, List<Component> lines, Item.TooltipContext tooltipContext, @Nullable Player player, TooltipFlag tooltipFlag) {
+        if (tooltipFlag.isCreative() || tooltipContext.registries() == null) return;
         if (!SneakyCurses.CONFIG.getHolder(ServerConfig.class).isAvailable() ||
                 !SneakyCurses.CONFIG.get(ServerConfig.class).obfuscateCurses) return;
         if (!isAffected(player, itemStack)) return;
@@ -53,16 +62,17 @@ public class ItemTooltipHandler {
             if (iterator.next().getContents() instanceof TranslatableContents contents &&
                     contents.getKey().startsWith("enchantment.")) {
                 String[] enchantmentKey = contents.getKey().split("\\.");
-                Enchantment enchantment = null;
+                Holder<Enchantment> enchantment = null;
                 if (enchantmentKey.length >= 3) {
-                    ResourceLocation resourceLocation = new ResourceLocation(enchantmentKey[1], enchantmentKey[2]);
-                    if (BuiltInRegistries.ENCHANTMENT.containsKey(resourceLocation)) {
-                        enchantment = BuiltInRegistries.ENCHANTMENT.get(resourceLocation);
-                    }
+                    HolderLookup.RegistryLookup<Enchantment> enchantments = tooltipContext.registries()
+                            .lookupOrThrow(Registries.ENCHANTMENT);
+                    ResourceLocation resourceLocation = ResourceLocationHelper.fromNamespaceAndPath(enchantmentKey[1], enchantmentKey[2]);
+                    enchantment = enchantments.get(ResourceKey.create(Registries.ENCHANTMENT, resourceLocation)).orElse(null);
                 }
-                if (enchantment != null && enchantment.isCurse()) {
+                if (enchantment != null && enchantment.is(EnchantmentTags.CURSE)) {
                     if (enchantmentKey.length == 3) {
-                        initSeed(currentScreenSeed + BuiltInRegistries.ENCHANTMENT.getId(enchantment));
+                        int enchantmentId = ENCHANTMENT_IDS.computeIfAbsent(enchantment.value(), $ -> RANDOM.nextInt());
+                        initSeed(currentScreenSeed + enchantmentId);
                         Component component = getLoreForWidth(Minecraft.getInstance().font);
                         iterator.set(Component.empty().append(component).withStyle(ChatFormatting.RED));
                     } else {
@@ -91,7 +101,7 @@ public class ItemTooltipHandler {
             }
             // don't show in anvil output slot, since it would reveal curses without actually having to apply the operation
             if (minecraft.screen instanceof AnvilScreen screen) {
-                Slot hoveredSlot = ScreenHelper.INSTANCE.getHoveredSlot(screen);
+                Slot hoveredSlot = screen.hoveredSlot;
                 if (hoveredSlot != null &&
                         screen.getMenu().getResultSlot() == hoveredSlot.index &&
                         hoveredSlot.getItem() == itemStack) {
@@ -101,8 +111,10 @@ public class ItemTooltipHandler {
                     }
                 }
             }
+
             return CurseRevealHandler.isAffected(itemStack) && !CurseRevealHandler.allCursesRevealed(itemStack);
         }
+
         return false;
     }
 
