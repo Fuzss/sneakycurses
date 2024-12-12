@@ -20,17 +20,18 @@ public class SneakyCurses implements ModConstructor {
     public static final String MOD_NAME = "Sneaky Curses";
     public static final Logger LOGGER = LogManager.getLogger(MOD_NAME);
 
-    public static final NetworkHandler NETWORK = NetworkHandler.builder(MOD_ID).registerClientbound(
-            ClientboundTridentItemMessage.class).registerServerbound(ServerboundRequestTridentItemMessage.class);
+    public static final NetworkHandler NETWORK = NetworkHandler.builder(MOD_ID)
+            .registerClientbound(ClientboundTridentItemMessage.class)
+            .registerServerbound(ServerboundRequestTridentItemMessage.class);
     public static final ConfigHolder CONFIG = ConfigHolder.builder(MOD_ID).server(ServerConfig.class);
 
     @Override
     public void onConstructMod() {
-        ModRegistry.touch();
-        registerHandlers();
+        ModRegistry.bootstrap();
+        registerEventHandlers();
     }
 
-    private static void registerHandlers() {
+    private static void registerEventHandlers() {
         AnvilEvents.UPDATE.register(CurseRevealHandler::onAnvilUpdate);
         EntityTickEvents.END.register(CurseRevealHandler::onEndEntityTick);
     }

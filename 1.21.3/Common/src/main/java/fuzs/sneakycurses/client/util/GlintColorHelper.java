@@ -9,10 +9,18 @@ public class GlintColorHelper {
     private static ItemStack targetStack = ItemStack.EMPTY;
 
     public static boolean shouldRenderCursedGlint() {
-        if (targetStack.isEmpty()) return false;
-        if (!SneakyCurses.CONFIG.getHolder(ServerConfig.class).isAvailable() ||
-                !SneakyCurses.CONFIG.get(ServerConfig.class).cursedItemGlint) return false;
-        return CurseRevealHandler.anyEnchantIsCursed(targetStack);
+        return shouldRenderCursedGlint(targetStack);
+    }
+
+    public static boolean shouldRenderCursedGlint(ItemStack itemStack) {
+        if (itemStack.isEmpty() || !itemStack.hasFoil()) {
+            return false;
+        } else if (!SneakyCurses.CONFIG.getHolder(ServerConfig.class).isAvailable() ||
+                !SneakyCurses.CONFIG.get(ServerConfig.class).cursedItemGlint) {
+            return false;
+        } else {
+            return CurseRevealHandler.anyEnchantIsCursed(itemStack);
+        }
     }
 
     public static void setTargetStack(ItemStack targetStack) {

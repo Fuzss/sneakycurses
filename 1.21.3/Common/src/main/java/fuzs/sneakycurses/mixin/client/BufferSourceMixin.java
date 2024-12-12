@@ -1,6 +1,6 @@
 package fuzs.sneakycurses.mixin.client;
 
-import fuzs.sneakycurses.client.renderer.GlintRenderTypes;
+import fuzs.sneakycurses.client.renderer.ModRenderType;
 import fuzs.sneakycurses.client.util.GlintColorHelper;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -13,6 +13,7 @@ abstract class BufferSourceMixin {
 
     @ModifyVariable(method = "getBuffer", at = @At("HEAD"), argsOnly = true)
     public RenderType getBuffer(RenderType renderType) {
-        return GlintColorHelper.shouldRenderCursedGlint() ? GlintRenderTypes.GLINT_RENDER_TYPES.inverse().getOrDefault(renderType, renderType) : renderType;
+        return GlintColorHelper.shouldRenderCursedGlint() ?
+                ModRenderType.GLINT_RENDER_TYPES.inverse().getOrDefault(renderType, renderType) : renderType;
     }
 }

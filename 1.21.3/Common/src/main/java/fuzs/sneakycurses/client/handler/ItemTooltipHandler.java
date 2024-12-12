@@ -24,9 +24,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.enchantment.Enchantment;
 import org.jetbrains.annotations.Nullable;
@@ -39,7 +39,9 @@ import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 public class ItemTooltipHandler {
-    private static final Map<Enchantment, Integer> ENCHANTMENT_IDS = new MapMaker().weakKeys().concurrencyLevel(1).makeMap();
+    private static final Map<Enchantment, Integer> ENCHANTMENT_IDS = new MapMaker().weakKeys()
+            .concurrencyLevel(1)
+            .makeMap();
     private static final Random RANDOM = new Random();
 
     private static int currentScreenSeed;
@@ -55,7 +57,9 @@ public class ItemTooltipHandler {
     public static void onItemTooltip(ItemStack itemStack, List<Component> lines, Item.TooltipContext tooltipContext, @Nullable Player player, TooltipFlag tooltipFlag) {
         if (tooltipFlag.isCreative() || tooltipContext.registries() == null) return;
         if (!SneakyCurses.CONFIG.getHolder(ServerConfig.class).isAvailable() ||
-                !SneakyCurses.CONFIG.get(ServerConfig.class).obfuscateCurses) return;
+                !SneakyCurses.CONFIG.get(ServerConfig.class).obfuscateCurses) {
+            return;
+        }
         if (!isAffected(player, itemStack)) return;
         ListIterator<Component> iterator = lines.listIterator();
         while (iterator.hasNext()) {
@@ -66,8 +70,10 @@ public class ItemTooltipHandler {
                 if (enchantmentKey.length >= 3) {
                     HolderLookup.RegistryLookup<Enchantment> enchantments = tooltipContext.registries()
                             .lookupOrThrow(Registries.ENCHANTMENT);
-                    ResourceLocation resourceLocation = ResourceLocationHelper.fromNamespaceAndPath(enchantmentKey[1], enchantmentKey[2]);
-                    enchantment = enchantments.get(ResourceKey.create(Registries.ENCHANTMENT, resourceLocation)).orElse(null);
+                    ResourceLocation resourceLocation = ResourceLocationHelper.fromNamespaceAndPath(enchantmentKey[1],
+                            enchantmentKey[2]);
+                    enchantment = enchantments.get(ResourceKey.create(Registries.ENCHANTMENT, resourceLocation))
+                            .orElse(null);
                 }
                 if (enchantment != null && enchantment.is(EnchantmentTags.CURSE)) {
                     if (enchantmentKey.length == 3) {
@@ -91,19 +97,16 @@ public class ItemTooltipHandler {
             }
             // show when holding shift in creative mode
             Minecraft minecraft = Minecraft.getInstance();
-            if (minecraft.gameMode.hasInfiniteItems() &&
-                    Screen.hasShiftDown() &&
+            if (minecraft.gameMode.hasInfiniteItems() && Screen.hasShiftDown() &&
                     SneakyCurses.CONFIG.get(ServerConfig.class).shiftShows) {
                 return false;
-            } else if (itemStack.getItem() instanceof EnchantedBookItem &&
-                    !SneakyCurses.CONFIG.get(ServerConfig.class).affectBooks) {
+            } else if (itemStack.is(Items.ENCHANTED_BOOK) && !SneakyCurses.CONFIG.get(ServerConfig.class).affectBooks) {
                 return false;
             }
             // don't show in anvil output slot, since it would reveal curses without actually having to apply the operation
             if (minecraft.screen instanceof AnvilScreen screen) {
                 Slot hoveredSlot = screen.hoveredSlot;
-                if (hoveredSlot != null &&
-                        screen.getMenu().getResultSlot() == hoveredSlot.index &&
+                if (hoveredSlot != null && screen.getMenu().getResultSlot() == hoveredSlot.index &&
                         hoveredSlot.getItem() == itemStack) {
                     Slot inputSlot = screen.getMenu().getSlot(0);
                     if (!CurseRevealHandler.allCursesRevealed(inputSlot.getItem())) {
