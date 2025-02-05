@@ -5,14 +5,18 @@ import fuzs.sneakycurses.config.ServerConfig;
 import fuzs.sneakycurses.handler.CurseRevealHandler;
 import net.minecraft.world.item.ItemStack;
 
-public class GlintColorHelper {
-    private static ItemStack targetStack = ItemStack.EMPTY;
+public class GlintRenderStateHelper {
+    private static boolean glintRenderState;
 
-    public static boolean shouldRenderCursedGlint() {
-        return shouldRenderCursedGlint(targetStack);
+    public static boolean getRenderState() {
+        return glintRenderState;
     }
 
-    public static boolean shouldRenderCursedGlint(ItemStack itemStack) {
+    public static void extractRenderState(ItemStack itemStack) {
+        glintRenderState = isItemStackCursed(itemStack);
+    }
+
+    public static boolean isItemStackCursed(ItemStack itemStack) {
         if (itemStack.isEmpty() || !itemStack.hasFoil()) {
             return false;
         } else if (!SneakyCurses.CONFIG.getHolder(ServerConfig.class).isAvailable() ||
@@ -23,7 +27,11 @@ public class GlintColorHelper {
         }
     }
 
-    public static void setTargetStack(ItemStack targetStack) {
-        GlintColorHelper.targetStack = targetStack;
+    public static void copyRenderState(GlintItemStackRenderState renderState) {
+        glintRenderState = renderState.sneakycurses$getGlint();
+    }
+
+    public static void clearRenderState() {
+        glintRenderState = false;
     }
 }

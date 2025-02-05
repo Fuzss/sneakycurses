@@ -66,7 +66,7 @@ public class ModRenderType extends RenderType {
             VertexFormat.Mode.QUADS,
             1536,
             RenderType.CompositeState.builder()
-                    .setShaderState(RENDERTYPE_ENTITY_GLINT_SHADER)
+                    .setShaderState(RENDERTYPE_ARMOR_ENTITY_GLINT_SHADER)
                     .setTextureState(new RenderStateShard.TextureStateShard(ENCHANTED_GLINT_ENTITY,
                             TriState.DEFAULT,
                             false))
@@ -74,8 +74,8 @@ public class ModRenderType extends RenderType {
                     .setCullState(NO_CULL)
                     .setDepthTestState(EQUAL_DEPTH_TEST)
                     .setTransparencyState(GLINT_TRANSPARENCY)
-                    .setOutputState(ITEM_ENTITY_TARGET)
                     .setTexturingState(ENTITY_GLINT_TEXTURING)
+                    .setLayeringState(VIEW_OFFSET_Z_LAYERING)
                     .createCompositeState(false));
     public static final BiMap<RenderType, RenderType> GLINT_RENDER_TYPES = ImmutableBiMap.of(armorEntityGlint(),
             RenderType.armorEntityGlint(),
@@ -85,6 +85,14 @@ public class ModRenderType extends RenderType {
             RenderType.glint(),
             entityGlint(),
             RenderType.entityGlint());
+
+    private ModRenderType(String name, VertexFormat format, VertexFormat.Mode mode, int bufferSize, boolean affectsCrumbling, boolean sortOnUpload, Runnable setupState, Runnable clearState) {
+        super(name, format, mode, bufferSize, affectsCrumbling, sortOnUpload, setupState, clearState);
+    }
+
+    public static RenderType.CompositeRenderType create(String name, VertexFormat format, VertexFormat.Mode mode, int bufferSize, RenderType.CompositeState state) {
+        return RenderType.create(SneakyCurses.id("cursed_" + name).toString(), format, mode, bufferSize, state);
+    }
 
     public static RenderType armorEntityGlint() {
         return ARMOR_ENTITY_GLINT;
@@ -100,13 +108,5 @@ public class ModRenderType extends RenderType {
 
     public static RenderType entityGlint() {
         return ENTITY_GLINT;
-    }
-
-    private ModRenderType(String name, VertexFormat format, VertexFormat.Mode mode, int bufferSize, boolean affectsCrumbling, boolean sortOnUpload, Runnable setupState, Runnable clearState) {
-        super(name, format, mode, bufferSize, affectsCrumbling, sortOnUpload, setupState, clearState);
-    }
-
-    public static RenderType.CompositeRenderType create(String name, VertexFormat format, VertexFormat.Mode mode, int bufferSize, RenderType.CompositeState state) {
-        return RenderType.create("cursed_" + name, format, mode, bufferSize, state);
     }
 }

@@ -2,8 +2,8 @@ package fuzs.sneakycurses.client.handler;
 
 import com.google.common.collect.MapMaker;
 import fuzs.puzzleslib.api.core.v1.utility.ResourceLocationHelper;
+import fuzs.puzzleslib.api.util.v1.ComponentHelper;
 import fuzs.sneakycurses.SneakyCurses;
-import fuzs.sneakycurses.client.util.ComponentHelper;
 import fuzs.sneakycurses.config.ServerConfig;
 import fuzs.sneakycurses.handler.CurseRevealHandler;
 import net.minecraft.ChatFormatting;
