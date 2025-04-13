@@ -2,10 +2,10 @@ package fuzs.sneakycurses;
 
 import fuzs.puzzleslib.api.config.v3.ConfigHolder;
 import fuzs.puzzleslib.api.core.v1.ModConstructor;
+import fuzs.puzzleslib.api.core.v1.context.PayloadTypesContext;
 import fuzs.puzzleslib.api.core.v1.utility.ResourceLocationHelper;
 import fuzs.puzzleslib.api.event.v1.entity.EntityTickEvents;
 import fuzs.puzzleslib.api.event.v1.entity.player.AnvilEvents;
-import fuzs.puzzleslib.api.network.v3.NetworkHandler;
 import fuzs.sneakycurses.config.ServerConfig;
 import fuzs.sneakycurses.handler.CurseRevealHandler;
 import fuzs.sneakycurses.init.ModRegistry;
@@ -20,9 +20,6 @@ public class SneakyCurses implements ModConstructor {
     public static final String MOD_NAME = "Sneaky Curses";
     public static final Logger LOGGER = LogManager.getLogger(MOD_NAME);
 
-    public static final NetworkHandler NETWORK = NetworkHandler.builder(MOD_ID)
-            .registerClientbound(ClientboundTridentItemMessage.class)
-            .registerServerbound(ServerboundRequestTridentItemMessage.class);
     public static final ConfigHolder CONFIG = ConfigHolder.builder(MOD_ID).server(ServerConfig.class);
 
     @Override
@@ -34,6 +31,13 @@ public class SneakyCurses implements ModConstructor {
     private static void registerEventHandlers() {
         AnvilEvents.UPDATE.register(CurseRevealHandler::onAnvilUpdate);
         EntityTickEvents.END.register(CurseRevealHandler::onEndEntityTick);
+    }
+
+    @Override
+    public void onRegisterPayloadTypes(PayloadTypesContext context) {
+        context.playToClient(ClientboundTridentItemMessage.class, ClientboundTridentItemMessage.STREAM_CODEC);
+        context.playToServer(ServerboundRequestTridentItemMessage.class,
+                ServerboundRequestTridentItemMessage.STREAM_CODEC);
     }
 
     public static ResourceLocation id(String path) {

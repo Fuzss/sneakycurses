@@ -26,8 +26,9 @@ abstract class ThrownTridentRendererMixin extends EntityRenderer<ThrownTrident, 
     @Inject(method = "render", at = @At("HEAD"))
     public void render$0(ThrownTridentRenderState thrownTridentRenderState, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight, CallbackInfo callback) {
         // vanilla doesn't sync the stack to clients, we need to take care of that ourselves
-        ItemStack itemStack = RenderPropertyKey.getRenderProperty(thrownTridentRenderState,
-                SneakyCursesClient.PICKUP_ITEM_STACK_RENDER_PROPERTY);
+        ItemStack itemStack = RenderPropertyKey.getOrDefault(thrownTridentRenderState,
+                SneakyCursesClient.PICKUP_ITEM_STACK_RENDER_PROPERTY,
+                ItemStack.EMPTY);
         GlintRenderStateHelper.extractRenderState(itemStack);
     }
 

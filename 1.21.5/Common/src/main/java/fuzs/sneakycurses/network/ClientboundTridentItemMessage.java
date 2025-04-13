@@ -1,26 +1,31 @@
 package fuzs.sneakycurses.network;
 
-import fuzs.puzzleslib.api.network.v3.ClientMessageListener;
-import fuzs.puzzleslib.api.network.v3.ClientboundMessage;
+import fuzs.puzzleslib.api.network.v4.message.MessageListener;
+import fuzs.puzzleslib.api.network.v4.message.play.ClientboundPlayMessage;
 import fuzs.sneakycurses.mixin.client.accessor.AbstractArrowAccessor;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.ItemStack;
 
-public record ClientboundTridentItemMessage(int entityId,
-                                            ItemStack tridentItem) implements ClientboundMessage<ClientboundTridentItemMessage> {
+public record ClientboundTridentItemMessage(int entityId, ItemStack tridentItem) implements ClientboundPlayMessage {
+    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundTridentItemMessage> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.INT,
+            ClientboundTridentItemMessage::entityId,
+            ItemStack.OPTIONAL_STREAM_CODEC,
+            ClientboundTridentItemMessage::tridentItem,
+            ClientboundTridentItemMessage::new);
 
     @Override
-    public ClientMessageListener<ClientboundTridentItemMessage> getHandler() {
-        return new ClientMessageListener<>() {
-
+    public MessageListener<Context> getListener() {
+        return new MessageListener<Context>() {
             @Override
-            public void handle(ClientboundTridentItemMessage message, Minecraft client, ClientPacketListener handler, LocalPlayer player, ClientLevel level) {
-                if (level.getEntity(message.entityId) instanceof ThrownTrident thrownTrident) {
-                    ((AbstractArrowAccessor) thrownTrident).sneakycurses$setPickupItemStack(message.tridentItem);
+            public void accept(Context context) {
+                if (context.level()
+                        .getEntity(ClientboundTridentItemMessage.this.entityId) instanceof ThrownTrident thrownTrident) {
+                    ((AbstractArrowAccessor) thrownTrident).sneakycurses$setPickupItemStack(
+                            ClientboundTridentItemMessage.this.tridentItem);
                 }
             }
         };

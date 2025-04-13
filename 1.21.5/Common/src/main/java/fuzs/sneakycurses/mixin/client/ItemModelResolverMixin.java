@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 abstract class ItemModelResolverMixin {
 
     @Inject(method = "updateForTopItem", at = @At("TAIL"))
-    public void updateForTopItem(ItemStackRenderState renderState, ItemStack stack, ItemDisplayContext displayContext, boolean leftHand, @Nullable Level level, @Nullable LivingEntity entity, int seed, CallbackInfo callback) {
+    public void updateForTopItem(ItemStackRenderState renderState, ItemStack stack, ItemDisplayContext displayContext, @Nullable Level level, @Nullable LivingEntity entity, int seed, CallbackInfo callback) {
         if (!stack.isEmpty()) {
             ((GlintItemStackRenderState) renderState).sneakycurses$setGlint(GlintRenderStateHelper.isItemStackCursed(
                     stack));

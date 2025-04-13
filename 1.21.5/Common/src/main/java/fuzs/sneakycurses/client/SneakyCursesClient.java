@@ -9,6 +9,7 @@ import fuzs.puzzleslib.api.client.event.v1.renderer.ExtractRenderStateCallback;
 import fuzs.puzzleslib.api.client.event.v1.renderer.RenderLevelEvents;
 import fuzs.puzzleslib.api.client.renderer.v1.RenderPropertyKey;
 import fuzs.puzzleslib.api.event.v1.core.EventResult;
+import fuzs.puzzleslib.api.network.v4.MessageSender;
 import fuzs.sneakycurses.SneakyCurses;
 import fuzs.sneakycurses.client.handler.ItemTooltipHandler;
 import fuzs.sneakycurses.client.renderer.ModRenderType;
@@ -42,14 +43,14 @@ public class SneakyCursesClient implements ClientModConstructor {
         ClientEntityLevelEvents.LOAD.register((entity, level) -> {
             if (entity instanceof ThrownTrident) {
                 // need to go this way around as during the server load event the entity has not yet been synced to clients
-                SneakyCurses.NETWORK.sendMessage(new ServerboundRequestTridentItemMessage(entity.getId()));
+                MessageSender.broadcast(new ServerboundRequestTridentItemMessage(entity.getId()));
             }
             return EventResult.PASS;
         });
         ExtractRenderStateCallback.EVENT.register((Entity entity, EntityRenderState entityRenderState, float partialTick) -> {
             if (entity instanceof ThrownTrident thrownTrident &&
                     entityRenderState instanceof ThrownTridentRenderState) {
-                RenderPropertyKey.setRenderProperty(entityRenderState,
+                RenderPropertyKey.set(entityRenderState,
                         PICKUP_ITEM_STACK_RENDER_PROPERTY,
                         thrownTrident.getPickupItemStackOrigin());
             }

@@ -1,27 +1,30 @@
 package fuzs.sneakycurses.network.client;
 
-import fuzs.puzzleslib.api.network.v3.PlayerSet;
-import fuzs.puzzleslib.api.network.v3.ServerMessageListener;
-import fuzs.puzzleslib.api.network.v3.ServerboundMessage;
-import fuzs.sneakycurses.SneakyCurses;
+import fuzs.puzzleslib.api.network.v4.MessageSender;
+import fuzs.puzzleslib.api.network.v4.PlayerSet;
+import fuzs.puzzleslib.api.network.v4.message.MessageListener;
+import fuzs.puzzleslib.api.network.v4.message.play.ServerboundPlayMessage;
 import fuzs.sneakycurses.network.ClientboundTridentItemMessage;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.projectile.ThrownTrident;
 
-public record ServerboundRequestTridentItemMessage(int entityId) implements ServerboundMessage<ServerboundRequestTridentItemMessage> {
+public record ServerboundRequestTridentItemMessage(int entityId) implements ServerboundPlayMessage {
+    public static final StreamCodec<ByteBuf, ServerboundRequestTridentItemMessage> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.INT,
+            ServerboundRequestTridentItemMessage::entityId,
+            ServerboundRequestTridentItemMessage::new);
 
     @Override
-    public ServerMessageListener<ServerboundRequestTridentItemMessage> getHandler() {
-        return new ServerMessageListener<>() {
-
+    public MessageListener<Context> getListener() {
+        return new MessageListener<Context>() {
             @Override
-            public void handle(ServerboundRequestTridentItemMessage message, MinecraftServer server, ServerGamePacketListenerImpl handler, ServerPlayer player, ServerLevel level) {
-                if (level.getEntity(message.entityId) instanceof ThrownTrident thrownTrident) {
-                    SneakyCurses.NETWORK.sendMessage(PlayerSet.ofPlayer(player),
-                            new ClientboundTridentItemMessage(message.entityId,
+            public void accept(Context context) {
+                if (context.level()
+                        .getEntity(ServerboundRequestTridentItemMessage.this.entityId) instanceof ThrownTrident thrownTrident) {
+                    MessageSender.broadcast(PlayerSet.ofPlayer(context.player()),
+                            new ClientboundTridentItemMessage(ServerboundRequestTridentItemMessage.this.entityId,
                                     thrownTrident.getPickupItemStackOrigin()));
                 }
             }

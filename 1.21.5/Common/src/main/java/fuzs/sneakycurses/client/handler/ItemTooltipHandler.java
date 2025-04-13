@@ -96,15 +96,14 @@ public class ItemTooltipHandler {
                 return false;
             }
             // show when holding shift in creative mode
-            Minecraft minecraft = Minecraft.getInstance();
-            if (minecraft.gameMode.hasInfiniteItems() && Screen.hasShiftDown() &&
+            if (player.hasInfiniteMaterials() && Screen.hasShiftDown() &&
                     SneakyCurses.CONFIG.get(ServerConfig.class).shiftShows) {
                 return false;
             } else if (itemStack.is(Items.ENCHANTED_BOOK) && !SneakyCurses.CONFIG.get(ServerConfig.class).affectBooks) {
                 return false;
             }
             // don't show in anvil output slot, since it would reveal curses without actually having to apply the operation
-            if (minecraft.screen instanceof AnvilScreen screen) {
+            if (Minecraft.getInstance().screen instanceof AnvilScreen screen) {
                 Slot hoveredSlot = screen.hoveredSlot;
                 if (hoveredSlot != null && screen.getMenu().getResultSlot() == hoveredSlot.index &&
                         hoveredSlot.getItem() == itemStack) {
