@@ -1,30 +1,32 @@
 package fuzs.sneakycurses.client;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import fuzs.puzzleslib.api.client.core.v1.ClientModConstructor;
 import fuzs.puzzleslib.api.client.core.v1.context.RenderBuffersContext;
+import fuzs.puzzleslib.api.client.core.v1.context.RenderPipelinesContext;
 import fuzs.puzzleslib.api.client.event.v1.entity.ClientEntityLevelEvents;
 import fuzs.puzzleslib.api.client.event.v1.gui.ItemTooltipCallback;
 import fuzs.puzzleslib.api.client.event.v1.gui.ScreenEvents;
 import fuzs.puzzleslib.api.client.event.v1.renderer.ExtractRenderStateCallback;
 import fuzs.puzzleslib.api.client.event.v1.renderer.RenderLevelEvents;
-import fuzs.puzzleslib.api.client.renderer.v1.RenderPropertyKey;
-import fuzs.puzzleslib.api.event.v1.core.EventResult;
-import fuzs.puzzleslib.api.network.v4.MessageSender;
+import fuzs.puzzleslib.api.core.v1.context.PackRepositorySourcesContext;
+import fuzs.puzzleslib.api.resources.v1.PackResourcesHelper;
 import fuzs.sneakycurses.SneakyCurses;
 import fuzs.sneakycurses.client.handler.ItemTooltipHandler;
+import fuzs.sneakycurses.client.handler.TridentGlintHandler;
+import fuzs.sneakycurses.client.packs.TransformingPackResources;
 import fuzs.sneakycurses.client.renderer.ModRenderType;
-import fuzs.sneakycurses.network.client.ServerboundRequestTridentItemMessage;
+import net.minecraft.client.Camera;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.ThrownTridentRenderState;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.projectile.ThrownTrident;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.client.renderer.culling.Frustum;
+import org.joml.Matrix4f;
 
 public class SneakyCursesClient implements ClientModConstructor {
-    public static final RenderPropertyKey<ItemStack> PICKUP_ITEM_STACK_RENDER_PROPERTY = new RenderPropertyKey<>(
-            SneakyCurses.id("pickup_item_stack"));
 
     @Override
     public void onConstructMod() {
@@ -34,31 +36,30 @@ public class SneakyCursesClient implements ClientModConstructor {
     private static void registerEventHandlers() {
         ItemTooltipCallback.EVENT.register(ItemTooltipHandler::onItemTooltip);
         ScreenEvents.afterInit(Screen.class).register(ItemTooltipHandler::onAfterInit);
-        RenderLevelEvents.AFTER_TRANSLUCENT.register((levelRenderer, camera, gameRenderer, tickDelta, poseStack, projectionMatrix, frustum, level) -> {
+        RenderLevelEvents.AFTER_TRANSLUCENT.register((LevelRenderer levelRenderer, Camera camera, GameRenderer gameRenderer, DeltaTracker deltaTracker, PoseStack poseStack, Matrix4f projectionMatrix, Frustum frustum, ClientLevel level) -> {
             MultiBufferSource.BufferSource multiBufferSource = gameRenderer.getMinecraft()
                     .renderBuffers()
                     .bufferSource();
-            ModRenderType.GLINT_RENDER_TYPES.keySet().forEach(multiBufferSource::endBatch);
+            ModRenderType.GLINT_RENDER_TYPES.values().forEach(multiBufferSource::endBatch);
         });
-        ClientEntityLevelEvents.LOAD.register((entity, level) -> {
-            if (entity instanceof ThrownTrident) {
-                // need to go this way around as during the server load event the entity has not yet been synced to clients
-                MessageSender.broadcast(new ServerboundRequestTridentItemMessage(entity.getId()));
-            }
-            return EventResult.PASS;
-        });
-        ExtractRenderStateCallback.EVENT.register((Entity entity, EntityRenderState entityRenderState, float partialTick) -> {
-            if (entity instanceof ThrownTrident thrownTrident &&
-                    entityRenderState instanceof ThrownTridentRenderState) {
-                RenderPropertyKey.set(entityRenderState,
-                        PICKUP_ITEM_STACK_RENDER_PROPERTY,
-                        thrownTrident.getPickupItemStackOrigin());
-            }
-        });
+        ClientEntityLevelEvents.LOAD.register(TridentGlintHandler::onEntityLoad);
+        ExtractRenderStateCallback.EVENT.register(TridentGlintHandler::onExtractRenderState);
     }
 
     @Override
     public void onRegisterRenderBuffers(RenderBuffersContext context) {
-        ModRenderType.GLINT_RENDER_TYPES.keySet().forEach(context::registerRenderBuffer);
+        ModRenderType.GLINT_RENDER_TYPES.values().forEach(context::registerRenderBuffer);
+    }
+
+    @Override
+    public void onAddResourcePackFinders(PackRepositorySourcesContext context) {
+        context.addRepositorySource(PackResourcesHelper.buildClientPack(SneakyCurses.id("grayscale_textures"),
+                TransformingPackResources::new,
+                true));
+    }
+
+    @Override
+    public void onRegisterRenderPipelines(RenderPipelinesContext context) {
+        context.registerRenderPipeline(ModRenderType.GLINT_RENDER_PIPELINE);
     }
 }

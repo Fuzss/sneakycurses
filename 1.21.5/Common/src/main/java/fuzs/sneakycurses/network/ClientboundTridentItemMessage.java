@@ -2,7 +2,6 @@ package fuzs.sneakycurses.network;
 
 import fuzs.puzzleslib.api.network.v4.message.MessageListener;
 import fuzs.puzzleslib.api.network.v4.message.play.ClientboundPlayMessage;
-import fuzs.sneakycurses.mixin.client.accessor.AbstractArrowAccessor;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -24,8 +23,7 @@ public record ClientboundTridentItemMessage(int entityId, ItemStack tridentItem)
             public void accept(Context context) {
                 if (context.level()
                         .getEntity(ClientboundTridentItemMessage.this.entityId) instanceof ThrownTrident thrownTrident) {
-                    ((AbstractArrowAccessor) thrownTrident).sneakycurses$setPickupItemStack(
-                            ClientboundTridentItemMessage.this.tridentItem);
+                    thrownTrident.pickupItemStack = ClientboundTridentItemMessage.this.tridentItem;
                 }
             }
         };

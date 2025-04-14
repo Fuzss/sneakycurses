@@ -2,7 +2,7 @@ package fuzs.sneakycurses.mixin.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import fuzs.puzzleslib.api.client.renderer.v1.RenderPropertyKey;
-import fuzs.sneakycurses.client.SneakyCursesClient;
+import fuzs.sneakycurses.client.handler.TridentGlintHandler;
 import fuzs.sneakycurses.client.util.GlintRenderStateHelper;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -27,7 +27,7 @@ abstract class ThrownTridentRendererMixin extends EntityRenderer<ThrownTrident, 
     public void render$0(ThrownTridentRenderState thrownTridentRenderState, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight, CallbackInfo callback) {
         // vanilla doesn't sync the stack to clients, we need to take care of that ourselves
         ItemStack itemStack = RenderPropertyKey.getOrDefault(thrownTridentRenderState,
-                SneakyCursesClient.PICKUP_ITEM_STACK_RENDER_PROPERTY,
+                TridentGlintHandler.PICKUP_ITEM_STACK_RENDER_PROPERTY,
                 ItemStack.EMPTY);
         GlintRenderStateHelper.extractRenderState(itemStack);
     }

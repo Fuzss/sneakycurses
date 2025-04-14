@@ -6,12 +6,11 @@
   "mixins": [
   ],
   "client": [
-    "client.BufferSourceMixin",
     "client.EquipmentLayerRendererMixin",
     "client.ItemModelResolverMixin",
+    "client.ItemRendererMixin",
     "client.ItemStackRenderStateMixin",
-    "client.ThrownTridentRendererMixin",
-    "client.accessor.AbstractArrowAccessor"
+    "client.ThrownTridentRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

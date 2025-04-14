@@ -6,6 +6,7 @@ import fuzs.puzzleslib.api.core.v1.context.PayloadTypesContext;
 import fuzs.puzzleslib.api.core.v1.utility.ResourceLocationHelper;
 import fuzs.puzzleslib.api.event.v1.entity.EntityTickEvents;
 import fuzs.puzzleslib.api.event.v1.entity.player.AnvilEvents;
+import fuzs.sneakycurses.config.ClientConfig;
 import fuzs.sneakycurses.config.ServerConfig;
 import fuzs.sneakycurses.handler.CurseRevealHandler;
 import fuzs.sneakycurses.init.ModRegistry;
@@ -20,7 +21,9 @@ public class SneakyCurses implements ModConstructor {
     public static final String MOD_NAME = "Sneaky Curses";
     public static final Logger LOGGER = LogManager.getLogger(MOD_NAME);
 
-    public static final ConfigHolder CONFIG = ConfigHolder.builder(MOD_ID).server(ServerConfig.class);
+    public static final ConfigHolder CONFIG = ConfigHolder.builder(MOD_ID)
+            .client(ClientConfig.class)
+            .server(ServerConfig.class);
 
     @Override
     public void onConstructMod() {
