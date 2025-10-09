@@ -54,7 +54,7 @@ public class TransformingPackResources extends AbstractModPackResources {
                                 int pixel = nativeImage.getPixel(x, y);
                                 int alpha = ARGB.alpha(pixel);
                                 if (alpha != 0) {
-                                    nativeImage.setPixel(x, y, this.transformPixel(pixel));
+                                    nativeImage.setPixel(x, y, this.applyPixelTransformation(pixel));
                                 }
                             }
                         }
@@ -74,7 +74,7 @@ public class TransformingPackResources extends AbstractModPackResources {
         }
     }
 
-    protected int transformPixel(int pixel) {
+    private int applyPixelTransformation(int pixel) {
         int greyscaleColor = ARGB.greyscale(pixel);
         int hsvColor = HSV.rgbToHsv(ARGB.redFloat(greyscaleColor),
                 ARGB.greenFloat(greyscaleColor),

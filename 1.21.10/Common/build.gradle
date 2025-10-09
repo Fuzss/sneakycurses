@@ -4,4 +4,3 @@ dependencies {
     // Puzzles Lib
     modApi libs.puzzleslib.common
 }
-

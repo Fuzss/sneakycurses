@@ -2,6 +2,7 @@ package fuzs.sneakycurses.client.handler;
 
 import com.google.common.collect.MapMaker;
 import fuzs.puzzleslib.api.core.v1.utility.ResourceLocationHelper;
+import fuzs.puzzleslib.api.util.v1.CommonHelper;
 import fuzs.puzzleslib.api.util.v1.ComponentHelper;
 import fuzs.sneakycurses.SneakyCurses;
 import fuzs.sneakycurses.config.ServerConfig;
@@ -56,15 +57,15 @@ public class ItemTooltipHandler {
 
     public static void onItemTooltip(ItemStack itemStack, List<Component> lines, Item.TooltipContext tooltipContext, @Nullable Player player, TooltipFlag tooltipFlag) {
         if (tooltipFlag.isCreative() || tooltipContext.registries() == null) return;
-        if (!SneakyCurses.CONFIG.getHolder(ServerConfig.class).isAvailable() ||
-                !SneakyCurses.CONFIG.get(ServerConfig.class).obfuscateCurses) {
+        if (!SneakyCurses.CONFIG.getHolder(ServerConfig.class).isAvailable()
+                || !SneakyCurses.CONFIG.get(ServerConfig.class).obfuscateCurses) {
             return;
         }
         if (!isAffected(player, itemStack)) return;
         ListIterator<Component> iterator = lines.listIterator();
         while (iterator.hasNext()) {
-            if (iterator.next().getContents() instanceof TranslatableContents contents &&
-                    contents.getKey().startsWith("enchantment.")) {
+            if (iterator.next().getContents() instanceof TranslatableContents contents && contents.getKey()
+                    .startsWith("enchantment.")) {
                 String[] enchantmentKey = contents.getKey().split("\\.");
                 Holder<Enchantment> enchantment = null;
                 if (enchantmentKey.length >= 3) {
@@ -91,13 +92,13 @@ public class ItemTooltipHandler {
     }
 
     private static boolean isAffected(@Nullable Player player, ItemStack itemStack) {
-        if (player != null && player.level().isClientSide) {
+        if (player != null && player.level().isClientSide()) {
             if (itemStack.isEmpty()) {
                 return false;
             }
             // show when holding shift in creative mode
-            if (player.hasInfiniteMaterials() && Screen.hasShiftDown() &&
-                    SneakyCurses.CONFIG.get(ServerConfig.class).shiftShows) {
+            if (player.hasInfiniteMaterials() && CommonHelper.hasShiftDown()
+                    && SneakyCurses.CONFIG.get(ServerConfig.class).shiftShows) {
                 return false;
             } else if (itemStack.is(Items.ENCHANTED_BOOK) && !SneakyCurses.CONFIG.get(ServerConfig.class).affectBooks) {
                 return false;
@@ -105,8 +106,8 @@ public class ItemTooltipHandler {
             // don't show in anvil output slot, since it would reveal curses without actually having to apply the operation
             if (Minecraft.getInstance().screen instanceof AnvilScreen screen) {
                 Slot hoveredSlot = screen.hoveredSlot;
-                if (hoveredSlot != null && screen.getMenu().getResultSlot() == hoveredSlot.index &&
-                        hoveredSlot.getItem() == itemStack) {
+                if (hoveredSlot != null && screen.getMenu().getResultSlot() == hoveredSlot.index
+                        && hoveredSlot.getItem() == itemStack) {
                     Slot inputSlot = screen.getMenu().getSlot(0);
                     if (!CurseRevealHandler.allCursesRevealed(inputSlot.getItem())) {
                         return true;
@@ -128,6 +129,6 @@ public class ItemTooltipHandler {
     private static Component getLoreForWidth(Font font) {
         double maxWidth = RANDOM.nextGaussian(100, 20);
         FormattedText formattedText = EnchantmentNames.getInstance().getRandomName(font, (int) maxWidth);
-        return ComponentHelper.toComponent(formattedText);
+        return ComponentHelper.getAsComponent(formattedText);
     }
 }

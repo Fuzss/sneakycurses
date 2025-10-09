@@ -1,20 +1,21 @@
 package fuzs.sneakycurses.mixin.client;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import fuzs.puzzleslib.api.client.renderer.v1.RenderPropertyKey;
+import com.llamalad7.mixinextras.sugar.Local;
+import fuzs.puzzleslib.api.client.renderer.v1.RenderStateExtraData;
 import fuzs.sneakycurses.client.handler.TridentGlintHandler;
-import fuzs.sneakycurses.client.util.GlintRenderStateHelper;
-import net.minecraft.client.renderer.MultiBufferSource;
+import fuzs.sneakycurses.client.renderer.ModRenderType;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.ThrownTridentRenderer;
 import net.minecraft.client.renderer.entity.state.ThrownTridentRenderState;
 import net.minecraft.world.entity.projectile.ThrownTrident;
-import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
+
+import java.util.List;
+import java.util.Optional;
 
 @Mixin(ThrownTridentRenderer.class)
 abstract class ThrownTridentRendererMixin extends EntityRenderer<ThrownTrident, ThrownTridentRenderState> {
@@ -23,17 +24,13 @@ abstract class ThrownTridentRendererMixin extends EntityRenderer<ThrownTrident, 
         super(context);
     }
 
-    @Inject(method = "render", at = @At("HEAD"))
-    public void render$0(ThrownTridentRenderState thrownTridentRenderState, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight, CallbackInfo callback) {
-        // vanilla doesn't sync the stack to clients, we need to take care of that ourselves
-        ItemStack itemStack = RenderPropertyKey.getOrDefault(thrownTridentRenderState,
-                TridentGlintHandler.PICKUP_ITEM_STACK_RENDER_PROPERTY,
-                ItemStack.EMPTY);
-        GlintRenderStateHelper.extractRenderState(itemStack);
-    }
-
-    @Inject(method = "render", at = @At("TAIL"))
-    public void render$1(ThrownTridentRenderState thrownTridentRenderState, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight, CallbackInfo callback) {
-        GlintRenderStateHelper.clearRenderState();
+    @ModifyVariable(method = "submit", at = @At("STORE"))
+    public List<RenderType> submit(List<RenderType> list, @Local(argsOnly = true) ThrownTridentRenderState renderState) {
+        boolean isCursed = RenderStateExtraData.getOrDefault(renderState,
+                TridentGlintHandler.IS_ITEM_STACK_CURSED_KEY,
+                Optional.empty()).orElse(false);
+        return isCursed ? list.stream().map((RenderType renderType) -> {
+            return ModRenderType.GLINT_RENDER_TYPES.getOrDefault(renderType, renderType);
+        }).toList() : list;
     }
 }

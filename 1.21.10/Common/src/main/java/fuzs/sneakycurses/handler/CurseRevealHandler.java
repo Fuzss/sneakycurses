@@ -43,7 +43,7 @@ public class CurseRevealHandler {
     }
 
     public static void onEndEntityTick(Entity entity) {
-        if (!entity.level().isClientSide && entity.tickCount % 1200 == 0
+        if (!entity.level().isClientSide() && entity.tickCount % 1200 == 0
                 && entity instanceof LivingEntity livingEntity) {
             if (!(entity instanceof Player player) || !player.getAbilities().invulnerable) {
                 for (EquipmentSlot equipmentSlot : EquipmentSlot.values()) {
@@ -60,6 +60,7 @@ public class CurseRevealHandler {
                                 player.displayClientMessage(Component.translatable(KEY_ITEM_CURSES_REVEALED,
                                         itemStack.getDisplayName()).withStyle(ChatFormatting.DARK_PURPLE), false);
                             }
+
                             break;
                         }
                     }
