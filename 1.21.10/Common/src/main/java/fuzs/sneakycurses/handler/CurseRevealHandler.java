@@ -7,7 +7,6 @@ import fuzs.sneakycurses.SneakyCurses;
 import fuzs.sneakycurses.config.ServerConfig;
 import fuzs.sneakycurses.init.ModRegistry;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -25,8 +24,8 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import org.jetbrains.annotations.Nullable;
 
 public class CurseRevealHandler {
-    public static final String KEY_ITEM_CURSES_REVEALED = Util.makeDescriptionId(Registries.elementsDirPath(Registries.ITEM),
-            SneakyCurses.id("curses_revealed"));
+    public static final String KEY_ITEM_CURSES_REVEALED = SneakyCurses.id("curses_revealed")
+            .toLanguageKey(Registries.elementsDirPath(Registries.ITEM));
 
     public static EventResult onCreateAnvilResult(Player player, ItemStack primaryItemStack, ItemStack secondaryItemStack, MutableValue<ItemStack> outputItemStack, @Nullable String itemName, MutableInt enchantmentLevelCost, MutableInt repairMaterialCost) {
         if (isAffected(primaryItemStack) && secondaryItemStack.is(ModRegistry.REVEALS_CURSES_ITEM_TAG)

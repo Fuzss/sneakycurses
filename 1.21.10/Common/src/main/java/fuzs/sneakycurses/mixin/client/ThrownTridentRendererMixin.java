@@ -27,7 +27,7 @@ abstract class ThrownTridentRendererMixin extends EntityRenderer<ThrownTrident, 
     @ModifyVariable(method = "submit", at = @At("STORE"))
     public List<RenderType> submit(List<RenderType> list, @Local(argsOnly = true) ThrownTridentRenderState renderState) {
         boolean isCursed = RenderStateExtraData.getOrDefault(renderState,
-                TridentGlintHandler.IS_ITEM_STACK_CURSED_KEY,
+                TridentGlintHandler.IS_TRIDENT_CURSED_KEY,
                 Optional.empty()).orElse(false);
         return isCursed ? list.stream().map((RenderType renderType) -> {
             return ModRenderType.GLINT_RENDER_TYPES.getOrDefault(renderType, renderType);

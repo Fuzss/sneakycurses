@@ -16,8 +16,8 @@ import net.minecraft.world.entity.projectile.ThrownTrident;
 import java.util.Optional;
 
 public class TridentGlintHandler {
-    public static final ContextKey<Optional<Boolean>> IS_ITEM_STACK_CURSED_KEY = new ContextKey<>(SneakyCurses.id(
-            "pickup_item_stack"));
+    public static final ContextKey<Optional<Boolean>> IS_TRIDENT_CURSED_KEY = new ContextKey<>(SneakyCurses.id(
+            "is_trident_cursed"));
 
     public static EventResult onEntityLoad(Entity entity, ClientLevel clientLevel) {
         if (entity instanceof ThrownTrident) {
@@ -32,7 +32,7 @@ public class TridentGlintHandler {
         if (entity instanceof ThrownTrident thrownTrident && entityRenderState instanceof ThrownTridentRenderState) {
             // vanilla doesn't sync the stack to clients, we need to take care of that ourselves
             RenderStateExtraData.set(entityRenderState,
-                    IS_ITEM_STACK_CURSED_KEY,
+                    IS_TRIDENT_CURSED_KEY,
                     Optional.of(CustomItemRenderer.isItemStackCursed(thrownTrident.getPickupItemStackOrigin())));
         }
     }

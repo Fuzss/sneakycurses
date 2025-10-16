@@ -39,13 +39,15 @@ public abstract class ModRenderType extends RenderType {
             .withVertexFormat(DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS)
             .build();
     /**
+     * We use the item glint texture as it looks much better.
+     *
      * @see RenderType#ARMOR_ENTITY_GLINT
      */
     private static final RenderType ARMOR_ENTITY_GLINT = create(SneakyCurses.id("armor_entity_glint").toString(),
             1536,
             GLINT_RENDER_PIPELINE,
             RenderType.CompositeState.builder()
-                    .setTextureState(new RenderStateShard.TextureStateShard(TransformingPackResources.ENCHANTED_GLINT_ARMOR,
+                    .setTextureState(new RenderStateShard.TextureStateShard(TransformingPackResources.ENCHANTED_GLINT_ITEM,
                             false))
                     .setTexturingState(ARMOR_ENTITY_GLINT_TEXTURING)
                     .setLayeringState(VIEW_OFFSET_Z_LAYERING)

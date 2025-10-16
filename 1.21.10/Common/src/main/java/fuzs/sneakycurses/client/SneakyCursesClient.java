@@ -37,7 +37,7 @@ public class SneakyCursesClient implements ClientModConstructor {
 
     @Override
     public void onAddResourcePackFinders(PackRepositorySourcesContext context) {
-        context.registerRepositorySource(PackResourcesHelper.buildClientPack(SneakyCurses.id("grayscale_textures"),
+        context.registerRepositorySource(PackResourcesHelper.buildClientPack(SneakyCurses.id("grayscale_glint"),
                 TransformingPackResources::new,
                 true));
     }
