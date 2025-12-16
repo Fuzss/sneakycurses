@@ -5,16 +5,16 @@ import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexMultiConsumer;
 import fuzs.sneakycurses.SneakyCurses;
-import fuzs.sneakycurses.client.renderer.ModRenderType;
+import fuzs.sneakycurses.client.renderer.rendertype.ModRenderTypes;
 import fuzs.sneakycurses.config.ClientConfig;
 import fuzs.sneakycurses.config.ServerConfig;
 import fuzs.sneakycurses.handler.CurseRevealHandler;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.OutlineBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.item.ItemStack;
 
@@ -22,8 +22,8 @@ import java.util.Locale;
 import java.util.function.Function;
 
 public class CustomItemRenderer {
-    private static final ResourceLocation STANDARD_CURSE_LOCATION = SneakyCurses.id("standard_curse");
-    private static final ResourceLocation SPECIAL_CURSE_LOCATION = SneakyCurses.id("special_curse");
+    private static final Identifier STANDARD_CURSE_LOCATION = SneakyCurses.id("standard_curse");
+    private static final Identifier SPECIAL_CURSE_LOCATION = SneakyCurses.id("special_curse");
     public static final ItemStackRenderState.FoilType STANDARD_CURSE_FOIL_TYPE = getEnumConstant(STANDARD_CURSE_LOCATION,
             ItemStackRenderState.FoilType::valueOf);
     public static final ItemStackRenderState.FoilType SPECIAL_CURSE_FOIL_TYPE = getEnumConstant(SPECIAL_CURSE_LOCATION,
@@ -50,8 +50,8 @@ public class CustomItemRenderer {
      */
     public static VertexConsumer getSpecialFoilBuffer(MultiBufferSource bufferSource, RenderType renderType, PoseStack.Pose pose) {
         return VertexMultiConsumer.create(new SheetedDecalTextureGenerator(getFoilBuffer(bufferSource.getBuffer(
-                ItemRenderer.useTransparentGlint(renderType) ? ModRenderType.glintTranslucent() :
-                        ModRenderType.glint())), pose, 0.0078125F), bufferSource.getBuffer(renderType));
+                ItemRenderer.useTransparentGlint(renderType) ? ModRenderTypes.glintTranslucent() :
+                        ModRenderTypes.glint())), pose, 0.0078125F), bufferSource.getBuffer(renderType));
     }
 
     /**
@@ -61,10 +61,10 @@ public class CustomItemRenderer {
     public static VertexConsumer getFoilBuffer(MultiBufferSource bufferSource, RenderType renderType, boolean isItem, boolean glint) {
         if (glint) {
             return ItemRenderer.useTransparentGlint(renderType) ?
-                    VertexMultiConsumer.create(getFoilBuffer(bufferSource.getBuffer(ModRenderType.glintTranslucent())),
+                    VertexMultiConsumer.create(getFoilBuffer(bufferSource.getBuffer(ModRenderTypes.glintTranslucent())),
                             bufferSource.getBuffer(renderType)) :
                     VertexMultiConsumer.create(getFoilBuffer(bufferSource.getBuffer(
-                                    isItem ? ModRenderType.glint() : ModRenderType.entityGlint())),
+                                    isItem ? ModRenderTypes.glint() : ModRenderTypes.entityGlint())),
                             bufferSource.getBuffer(renderType));
         } else {
             return bufferSource.getBuffer(renderType);
@@ -76,7 +76,7 @@ public class CustomItemRenderer {
                 ARGB.opaque(SneakyCurses.CONFIG.get(ClientConfig.class).cursedGlintColor.getTextureDiffuseColor()));
     }
 
-    private static <E extends Enum<E>> E getEnumConstant(ResourceLocation resourceLocation, Function<String, E> valueOfInvoker) {
-        return valueOfInvoker.apply(resourceLocation.toDebugFileName().toUpperCase(Locale.ROOT));
+    private static <E extends Enum<E>> E getEnumConstant(Identifier identifier, Function<String, E> valueOfInvoker) {
+        return valueOfInvoker.apply(identifier.toDebugFileName().toUpperCase(Locale.ROOT));
     }
 }

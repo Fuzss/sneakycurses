@@ -3,7 +3,6 @@ package fuzs.sneakycurses;
 import fuzs.puzzleslib.api.config.v3.ConfigHolder;
 import fuzs.puzzleslib.api.core.v1.ModConstructor;
 import fuzs.puzzleslib.api.core.v1.context.PayloadTypesContext;
-import fuzs.puzzleslib.api.core.v1.utility.ResourceLocationHelper;
 import fuzs.puzzleslib.api.event.v1.entity.EntityTickEvents;
 import fuzs.puzzleslib.api.event.v1.entity.player.CreateAnvilResultCallback;
 import fuzs.sneakycurses.config.ClientConfig;
@@ -12,7 +11,7 @@ import fuzs.sneakycurses.handler.CurseRevealHandler;
 import fuzs.sneakycurses.init.ModRegistry;
 import fuzs.sneakycurses.network.ClientboundTridentItemMessage;
 import fuzs.sneakycurses.network.client.ServerboundRequestTridentItemMessage;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -43,7 +42,7 @@ public class SneakyCurses implements ModConstructor {
                 ServerboundRequestTridentItemMessage.STREAM_CODEC);
     }
 
-    public static ResourceLocation id(String path) {
-        return ResourceLocationHelper.fromNamespaceAndPath(MOD_ID, path);
+    public static Identifier id(String path) {
+        return Identifier.fromNamespaceAndPath(MOD_ID, path);
     }
 }

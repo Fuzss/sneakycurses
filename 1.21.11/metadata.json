@@ -1,0 +1,61 @@
+{
+    "mod": {
+        "id": "sneakycurses",
+        "group": "fuzs.sneakycurses",
+        "name": "Sneaky Curses",
+        "version": "21.11.0",
+        "authors": [
+            "Fuzs"
+        ],
+        "description": "Obfuscates curses so you no longer know what to expect! Are you taking the risk?",
+        "license": "MPL-2.0"
+    },
+    "dependencies": [
+        {
+            "name": "fabricapi",
+            "type": "required",
+            "platforms": [
+                "fabric"
+            ]
+        },
+        {
+            "name": "forgeconfigapiport",
+            "type": "required",
+            "platforms": [
+                "fabric"
+            ]
+        },
+        {
+            "name": "puzzleslib",
+            "type": "required",
+            "platforms": [
+                "fabric",
+                "neoforge"
+            ]
+        }
+    ],
+    "links": [
+        {
+            "name": "github",
+            "slug": "sneakycurses"
+        },
+        {
+            "name": "curseforge",
+            "slug": "sneaky-curses",
+            "id": "322733"
+        },
+        {
+            "name": "modrinth",
+            "slug": "sneaky-curses",
+            "id": "TivKCwTx"
+        }
+    ],
+    "environments": {
+        "client": "required",
+        "server": "required"
+    },
+    "platforms": [
+        "fabric",
+        "neoforge"
+    ]
+}

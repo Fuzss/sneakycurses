@@ -5,7 +5,7 @@ import fuzs.puzzleslib.api.network.v4.message.play.ClientboundPlayMessage;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.world.entity.projectile.ThrownTrident;
+import net.minecraft.world.entity.projectile.arrow.ThrownTrident;
 import net.minecraft.world.item.ItemStack;
 
 public record ClientboundTridentItemMessage(int entityId, ItemStack tridentItem) implements ClientboundPlayMessage {

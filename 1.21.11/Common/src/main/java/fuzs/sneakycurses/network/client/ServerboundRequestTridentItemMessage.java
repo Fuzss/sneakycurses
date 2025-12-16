@@ -8,7 +8,7 @@ import fuzs.sneakycurses.network.ClientboundTridentItemMessage;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.world.entity.projectile.ThrownTrident;
+import net.minecraft.world.entity.projectile.arrow.ThrownTrident;
 
 public record ServerboundRequestTridentItemMessage(int entityId) implements ServerboundPlayMessage {
     public static final StreamCodec<ByteBuf, ServerboundRequestTridentItemMessage> STREAM_CODEC = StreamCodec.composite(

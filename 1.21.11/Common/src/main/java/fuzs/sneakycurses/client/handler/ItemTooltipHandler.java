@@ -1,7 +1,7 @@
 package fuzs.sneakycurses.client.handler;
 
 import com.google.common.collect.MapMaker;
-import fuzs.puzzleslib.api.core.v1.utility.ResourceLocationHelper;
+import net.minecraft.resources.Identifier;
 import fuzs.puzzleslib.api.util.v1.CommonHelper;
 import fuzs.puzzleslib.api.util.v1.ComponentHelper;
 import fuzs.sneakycurses.SneakyCurses;
@@ -21,7 +21,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
@@ -30,7 +30,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.enchantment.Enchantment;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.ListIterator;
@@ -71,9 +71,9 @@ public class ItemTooltipHandler {
                 if (enchantmentKey.length >= 3) {
                     HolderLookup.RegistryLookup<Enchantment> enchantments = tooltipContext.registries()
                             .lookupOrThrow(Registries.ENCHANTMENT);
-                    ResourceLocation resourceLocation = ResourceLocationHelper.fromNamespaceAndPath(enchantmentKey[1],
+                    Identifier identifier = Identifier.fromNamespaceAndPath(enchantmentKey[1],
                             enchantmentKey[2]);
-                    enchantment = enchantments.get(ResourceKey.create(Registries.ENCHANTMENT, resourceLocation))
+                    enchantment = enchantments.get(ResourceKey.create(Registries.ENCHANTMENT, identifier))
                             .orElse(null);
                 }
                 if (enchantment != null && enchantment.is(EnchantmentTags.CURSE)) {

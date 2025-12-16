@@ -13,7 +13,7 @@ import fuzs.sneakycurses.SneakyCurses;
 import fuzs.sneakycurses.client.handler.ItemTooltipHandler;
 import fuzs.sneakycurses.client.handler.TridentGlintHandler;
 import fuzs.sneakycurses.client.packs.TransformingPackResources;
-import fuzs.sneakycurses.client.renderer.ModRenderType;
+import fuzs.sneakycurses.client.renderer.rendertype.ModRenderTypes;
 import net.minecraft.client.gui.screens.Screen;
 
 public class SneakyCursesClient implements ClientModConstructor {
@@ -32,7 +32,7 @@ public class SneakyCursesClient implements ClientModConstructor {
 
     @Override
     public void onRegisterRenderBuffers(RenderBuffersContext context) {
-        ModRenderType.GLINT_RENDER_TYPES.values().forEach(context::registerRenderBuffer);
+        ModRenderTypes.GLINT_RENDER_TYPES.values().forEach(context::registerRenderBuffer);
     }
 
     @Override
@@ -44,6 +44,6 @@ public class SneakyCursesClient implements ClientModConstructor {
 
     @Override
     public void onRegisterRenderPipelines(RenderPipelinesContext context) {
-        context.registerRenderPipeline(ModRenderType.GLINT_RENDER_PIPELINE);
+        context.registerRenderPipeline(ModRenderTypes.GLINT_RENDER_PIPELINE);
     }
 }

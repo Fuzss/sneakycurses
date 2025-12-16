@@ -1,6 +1,6 @@
 package fuzs.sneakycurses.init;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import fuzs.puzzleslib.api.init.v3.registry.RegistryManager;
 import fuzs.puzzleslib.api.init.v3.tags.TagFactory;
 import fuzs.sneakycurses.SneakyCurses;
@@ -18,7 +18,7 @@ public class ModRegistry {
             Registries.DATA_COMPONENT_TYPE,
             "curses_revealed",
             () -> DataComponentType.<Unit>builder()
-                    .persistent(Codec.unit(Unit.INSTANCE))
+                    .persistent(MapCodec.unitCodec(Unit.INSTANCE))
                     .networkSynchronized(StreamCodec.unit(Unit.INSTANCE))
                     .build());
 

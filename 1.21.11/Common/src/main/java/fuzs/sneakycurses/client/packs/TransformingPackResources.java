@@ -8,13 +8,13 @@ import fuzs.puzzleslib.api.util.v1.HSV;
 import fuzs.sneakycurses.SneakyCurses;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.IoSupplier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ARGB;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -24,30 +24,30 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 
 public class TransformingPackResources extends AbstractModPackResources {
-    public static final ResourceLocation ENCHANTED_GLINT_ARMOR = SneakyCurses.id(ItemRenderer.ENCHANTED_GLINT_ARMOR.getPath());
-    public static final ResourceLocation ENCHANTED_GLINT_ITEM = SneakyCurses.id(ItemRenderer.ENCHANTED_GLINT_ITEM.getPath());
-    private static final Map<ResourceLocation, ResourceLocation> RESOURCE_LOCATIONS;
+    public static final Identifier ENCHANTED_GLINT_ARMOR = SneakyCurses.id(ItemRenderer.ENCHANTED_GLINT_ARMOR.getPath());
+    public static final Identifier ENCHANTED_GLINT_ITEM = SneakyCurses.id(ItemRenderer.ENCHANTED_GLINT_ITEM.getPath());
+    private static final Map<Identifier, Identifier> RESOURCE_LOCATIONS;
 
     private final ResourceManager resourceManager = Minecraft.getInstance().getResourceManager();
 
     static {
-        ImmutableMap.Builder<ResourceLocation, ResourceLocation> builder = ImmutableMap.builder();
+        ImmutableMap.Builder<Identifier, Identifier> builder = ImmutableMap.builder();
         registerTextureMapping(builder::put, ItemRenderer.ENCHANTED_GLINT_ARMOR, ENCHANTED_GLINT_ARMOR);
         registerTextureMapping(builder::put, ItemRenderer.ENCHANTED_GLINT_ITEM, ENCHANTED_GLINT_ITEM);
         RESOURCE_LOCATIONS = builder.build();
     }
 
-    protected static void registerTextureMapping(BiConsumer<ResourceLocation, ResourceLocation> consumer, ResourceLocation originalResourceLocation, ResourceLocation providedResourceLocation) {
+    protected static void registerTextureMapping(BiConsumer<Identifier, Identifier> consumer, Identifier originalResourceLocation, Identifier providedResourceLocation) {
         consumer.accept(providedResourceLocation, originalResourceLocation);
         consumer.accept(providedResourceLocation.withSuffix(".mcmeta"), originalResourceLocation.withSuffix(".mcmeta"));
     }
 
     @Override
-    public @Nullable IoSupplier<InputStream> getResource(PackType packType, ResourceLocation resourceLocation) {
-        if (RESOURCE_LOCATIONS.containsKey(resourceLocation)) {
-            Optional<Resource> optional = this.resourceManager.getResource(RESOURCE_LOCATIONS.get(resourceLocation));
+    public @Nullable IoSupplier<InputStream> getResource(PackType packType, Identifier identifier) {
+        if (RESOURCE_LOCATIONS.containsKey(identifier)) {
+            Optional<Resource> optional = this.resourceManager.getResource(RESOURCE_LOCATIONS.get(identifier));
             if (optional.isPresent()) {
-                if (resourceLocation.getPath().endsWith(".png")) {
+                if (identifier.getPath().endsWith(".png")) {
                     try (NativeImage nativeImage = NativeImage.read(optional.get().open())) {
                         for (int x = 0; x < nativeImage.getWidth(); x++) {
                             for (int y = 0; y < nativeImage.getHeight(); y++) {
@@ -70,7 +70,7 @@ public class TransformingPackResources extends AbstractModPackResources {
                 return null;
             }
         } else {
-            return super.getResource(packType, resourceLocation);
+            return super.getResource(packType, identifier);
         }
     }
 
